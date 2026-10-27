@@ -15,10 +15,12 @@ install -Dm755 "$binary" "$stage/usr/bin/open-data-recovery"
 install -Dm644 packaging/org.opendatarecovery.App.desktop "$stage/usr/share/applications/org.opendatarecovery.App.desktop"
 install -Dm644 packaging/org.opendatarecovery.App.svg "$stage/usr/share/icons/hicolor/scalable/apps/org.opendatarecovery.App.svg"
 install -Dm644 README.md "$stage/usr/share/doc/open-data-recovery/README.md"
+install -Dm644 LICENSE "$stage/usr/share/licenses/open-data-recovery/LICENSE"
 case "$format" in
 deb)
     arch=$(dpkg --print-architecture)
     mkdir -p "$stage/DEBIAN"
+    install -Dm644 LICENSE "$stage/usr/share/doc/open-data-recovery/copyright"
     cat > "$stage/DEBIAN/control" <<EOF
 Package: open-data-recovery
 Version: $version
@@ -29,7 +31,7 @@ Priority: optional
 Depends: libc6 (>= 2.36), libgtk-4-1 (>= 4.8), libglib2.0-0 (>= 2.74), util-linux, udisks2, policykit-1, sleuthkit, testdisk, gddrescue
 Recommends: ext4magic, extundelete, ntfs-3g, btrfs-progs, e2fsprogs, ewf-tools, scalpel, foremost, safecopy, magicrescue, recoverjpeg, bulk-extractor, open-data-recovery-engines
 Description: Native Linux data recovery workspace
- Read-only source access, persistent scans, and verified recovery to a separate drive.
+ Read-only source access, persistent scans, and verified recovery to validated output storage.
 EOF
     dpkg-deb --root-owner-group --build "$stage" "dist/open-data-recovery_${version}_${arch}.deb"
     ;;
@@ -42,13 +44,13 @@ Name: open-data-recovery
 Version: $version
 Release: 1
 Summary: Native Linux data recovery workspace
-License: LicenseRef-Unspecified
+License: GPL-3.0-only
 Source0: payload.tar.gz
 AutoReqProv: no
 Requires: glibc >= 2.36, gtk4 >= 4.8, glib2 >= 2.74, util-linux, udisks2, polkit, sleuthkit, testdisk, ddrescue
 Recommends: ext4magic, extundelete, ntfs-3g, btrfs-progs, e2fsprogs, libewf-tools, scalpel, foremost, safecopy, magicrescue, recoverjpeg, bulk_extractor, open-data-recovery-engines
 %description
-Read-only source access, persistent scans, and verified recovery to a separate drive.
+Read-only source access, persistent scans, and verified recovery to validated output storage.
 %install
 mkdir -p %{buildroot}
 tar -xzf %{SOURCE0} -C %{buildroot}
@@ -57,6 +59,7 @@ tar -xzf %{SOURCE0} -C %{buildroot}
 /usr/share/applications/org.opendatarecovery.App.desktop
 /usr/share/icons/hicolor/scalable/apps/org.opendatarecovery.App.svg
 /usr/share/doc/open-data-recovery/README.md
+%license /usr/share/licenses/open-data-recovery/LICENSE
 EOF
     mkdir -p "$root/tmp" "$root/rpmdb"
     rpmbuild -bb --define "_topdir $root" --define "_tmppath $root/tmp" --define "_dbpath $root/rpmdb" --nodeps --define '_build_id_links none' --define '__os_install_post %{nil}' "$root/SPECS/open-data-recovery.spec"
@@ -72,7 +75,7 @@ builddate = $(date +%s)
 packager = Open Data Recovery maintainers
 size = $(du -sb "$stage/usr" | cut -f1)
 arch = $(uname -m)
-license = LicenseRef-Unspecified
+license = GPL-3.0-only
 depend = gtk4
 depend = glib2
 depend = util-linux

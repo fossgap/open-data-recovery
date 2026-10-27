@@ -13,9 +13,11 @@ COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 COPY ui ./ui
 COPY scripts ./scripts
-COPY image.png ./image.png
+COPY tests ./tests
 COPY packaging ./packaging
-RUN cargo build --locked && cargo test --locked
+# Source/storage checks deliberately reject overlay filesystems.
+RUN --mount=type=tmpfs,target=/tmp cargo build --locked && cargo test --locked
+COPY README.md LICENSE ./
 
 ENV GDK_BACKEND=x11 GSK_RENDERER=cairo GTK_IM_MODULE=simple
 CMD ["sh", "scripts/check.sh"]

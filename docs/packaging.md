@@ -1,6 +1,6 @@
 # Native packages and AppImage
 
-`sh scripts/package.sh deb|rpm|arch|appdir` packages a release binary, desktop entry, icon and README. Artifacts go to `dist/`, which is ignored by Git. Set `ODR_BINARY` to package a binary built elsewhere. The RPM builder keeps its temporary files and private RPM database inside `target/packages`; it does not install packages or modify the system RPM database. `packaging/PKGBUILD` also supports a normal source build with makepkg.
+`sh scripts/package.sh deb|rpm|arch|appdir` packages a release binary, desktop entry, icon, README and license. Artifacts go to `dist/`, which is ignored by Git. Set `ODR_BINARY` to package a binary built elsewhere. The RPM builder keeps its temporary files and private RPM database inside `target/packages`; it does not install packages or modify the system RPM database. `packaging/PKGBUILD` also supports a normal source build with makepkg. Debian control metadata is generated in `scripts/package.sh`; the optional-engine package uses `scripts/package-engines.sh`.
 
 Build on the oldest supported runtime. The included Debian Bookworm container uses GTK 4.8 and glibc 2.36; a binary built on a newer distribution may require newer libraries. The runtime kernel must provide Landlock ABI 3 (Linux 6.2+). Packages are not published or installed automatically.
 
@@ -30,7 +30,7 @@ ODR_SKIP_ENGINE_BUILD=1 sh scripts/package-engines.sh rpm
 ODR_SKIP_ENGINE_BUILD=1 sh scripts/package-engines.sh arch
 ```
 
-The `open-data-recovery-engines` packages include upstream licenses and the corresponding GPL source, including the ext4rescue cache change. They install ordinary executables; they do not add privileged services. The application package does not assign a new source license to this repository; its package metadata uses `LicenseRef-Unspecified`.
+Open Data Recovery is licensed under [GPL-3.0-only](../LICENSE). Application packages include the license in `/usr/share/licenses/open-data-recovery/LICENSE`; the Debian package also installs `/usr/share/doc/open-data-recovery/copyright`. Optional engines retain their upstream licenses. The `open-data-recovery-engines` packages include those licenses and the corresponding GPL source, including the ext4rescue cache change. They install ordinary executables; they do not add privileged services.
 
 ## AppImage
 

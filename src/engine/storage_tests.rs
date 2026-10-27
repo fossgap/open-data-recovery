@@ -262,7 +262,7 @@ fn disposable_same_drive_image_scan_modes_and_segmented_ewf() {
             .unwrap()
             .success()
     );
-    let payload = include_bytes!("../../image.png");
+    let payload = include_bytes!("../../tests/fixtures/recovery.png");
     let original = root.path().join("original.png");
     fs::write(&original, payload).unwrap();
     for request in [

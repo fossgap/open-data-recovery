@@ -1989,6 +1989,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         messages,
     });
     ui.window().set_application(Some(app));
+    crate::appearance::set_brand_icon(&ui.builder);
     ui.window().set_title(Some("Open Data Recovery"));
     ui.widget::<gtk::Box>("demo_banner").set_visible(false);
     ui.label(

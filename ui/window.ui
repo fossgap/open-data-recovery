@@ -99,7 +99,7 @@
     </items>
   </object>
   <object class="GtkApplicationWindow" id="window">
-    <property name="title">Open Data Recovery — Design Preview</property>
+    <property name="title">Open Data Recovery — Demo</property>
     <property name="default-width">1380</property>
     <property name="default-height">920</property>
     <property name="width-request">1060</property>
@@ -116,8 +116,8 @@
           <object class="GtkBox">
             <property name="spacing">10</property>
             <child>
-              <object class="GtkImage">
-                <property name="icon-name">drive-harddisk-symbolic</property>
+              <object class="GtkImage" id="brand_icon">
+                <property name="pixel-size">24</property>
                 <style>
                   <class name="brand-icon" />
                 </style>
@@ -160,7 +160,7 @@
             </child>
             <child>
               <object class="GtkLabel">
-                <property name="label">Interactive prototype</property>
+                <property name="label">Demo mode</property>
                 <style>
                   <class name="strong" />
                   <class name="heading" />

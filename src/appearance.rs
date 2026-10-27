@@ -1,5 +1,16 @@
 use gtk::{gdk, prelude::*};
 
+/// Use the same scalable artwork in source builds and installed packages.
+pub fn set_brand_icon(builder: &gtk::Builder) {
+    let bytes =
+        gtk::glib::Bytes::from_static(include_bytes!("../packaging/org.opendatarecovery.App.svg"));
+    let icon = gtk::gio::BytesIcon::new(&bytes);
+    builder
+        .object::<gtk::Image>("brand_icon")
+        .expect("Window brand icon")
+        .set_from_gicon(&icon);
+}
+
 /// Custom disk maps use the active GTK palette, including dark and high-contrast themes.
 pub fn map_colors(widget: &impl IsA<gtk::Widget>) -> (gdk::RGBA, gdk::RGBA) {
     let context = widget.style_context();

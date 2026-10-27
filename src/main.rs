@@ -340,6 +340,7 @@ fn main() -> gtk::glib::ExitCode {
         .flags(gio::ApplicationFlags::NON_UNIQUE)
         .build();
     app.connect_activate(move |app| {
+        gtk::Window::set_default_icon_name("org.opendatarecovery.App");
         if demo {
             ui::activate(app, smoke)
         } else {

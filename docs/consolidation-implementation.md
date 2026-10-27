@@ -4,7 +4,7 @@ Validated on 2026-10-27 using the production `--consolidate` option. The option 
 
 ## Method
 
-The release was built against Debian Bookworm's GTK 4.8 and glibc 2.36. `scripts/check-consolidation.py` ran the same seven cases used in the [preceding spike](consolidation-spike.md), three times each, with consolidation off and on: **42 actual scans**. Both sides use the same current release binary. The fixture builder is shared with the spike; the prototype grouping code is not used.
+The release was built against Debian Bookworm's GTK 4.8 and glibc 2.36. `scripts/check-consolidation.py` ran seven cases, three times each, with consolidation off and on: **42 actual scans**. Both sides use the same release binary. The deterministic fixture helpers are maintained in `scripts/consolidation_fixtures.py`; no prototype code is required.
 
 Sources were freshly created regular ext2, FAT16 and NTFS images on `/tmp`; workspaces used the separate `/dev/shm` filesystem. Both are RAM-backed, with warm data. These are measured fixture costs, **not HDD/SSD timing forecasts**. Source images were hashed before and after all runs and were unchanged. No physical device was scanned or formatted.
 
@@ -32,7 +32,7 @@ Small Quick scans must extract matching-size TSK findings to compare their actua
 
 Full and Deep scans reuse verified content already retained by their engines. The NTFS Quick fixture also reuses content saved by its metadata engines. Original engine artifacts are preserved; consolidation does not reclaim that space. Only newly extracted duplicate temporary files are discarded. The additional retained space in these reuse cases is principally the grouping/path index and manifest/log records.
 
-The small-file stage is substantially faster than the spike's approximately 34-second prototype stage. Short extraction processes now wake the supervisor on exit instead of always paying a 50 ms polling delay. The final implementation also preserves the full recovery view, provenance, failure reporting and selection semantics. Neither this optimization nor consolidation changes source write protection or the engine plan.
+Short extraction processes wake the supervisor on exit instead of always paying a 50 ms polling delay. Consolidation preserves the full recovery view, provenance, failure reporting and selection semantics. Neither this optimization nor consolidation changes source write protection or the engine plan.
 
 The small ext2 Quick fixture returns 657 findings representing 597 unique contents; TSK misses three of the original unique files. Full scanning finds the additional contents and produces 600 groups. Consolidation preserves the actual findings; it does not manufacture results absent from every engine. PhotoRec can retain artifacts outside the PNG filter, so workspace totals can exceed the size of the listed PNG contents.
 

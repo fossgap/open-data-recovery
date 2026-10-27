@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 description = "Native Linux data recovery with read-only sources and persistent scan sessions"
+license = "GPL-3.0-only"
 publish = false
 
 [dependencies]

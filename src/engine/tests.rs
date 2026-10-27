@@ -363,7 +363,7 @@ fn disposable_photorec_content_carving() {
         .prefix("odr-carve-test-")
         .tempdir_in(std::env::var_os("ODR_TEST_STORAGE").expect("separate test storage"))
         .unwrap();
-    let payload = include_bytes!("../../image.png");
+    let payload = include_bytes!("../../tests/fixtures/recovery.png");
     let image = source_root.path().join("raw.img");
     let mut bytes = vec![0_u8; 1024 * 1024];
     bytes.extend_from_slice(payload);
@@ -408,7 +408,7 @@ fn disposable_optional_carvers_and_ntfs_reconstruction() {
         .prefix("odr-extra-test-")
         .tempdir_in(std::env::var_os("ODR_TEST_STORAGE").expect("separate test storage"))
         .unwrap();
-    let payload = include_bytes!("../../image.png");
+    let payload = include_bytes!("../../tests/fixtures/recovery.png");
     let raw = source_root.path().join("raw.img");
     let mut bytes = vec![0; 1024 * 1024];
     bytes.extend_from_slice(payload);

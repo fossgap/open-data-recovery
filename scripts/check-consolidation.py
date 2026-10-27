@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """Validate and time the real optional consolidation feature on disposable images.
 
-Reuses the deterministic fixtures from the preceding spike, not its prototype.
+Uses the deterministic fixtures in consolidation_fixtures.py.
 Needs separate /tmp and /dev/shm filesystems and the installed recovery engines.
 """
 import argparse
 import collections
 import hashlib
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -17,10 +16,9 @@ import subprocess
 import tempfile
 import time
 
+import consolidation_fixtures as fixture_tools
+
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location("fixtures", ROOT / "spikes/consolidation/run.py")
-fixture_tools = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(fixture_tools)
 
 
 def scan(binary, fixture, mode, workspace, consolidate, env, log):

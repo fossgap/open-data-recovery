@@ -6,6 +6,7 @@
   },
   "workspaceFolder": "/workspace",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "runArgs": ["--tmpfs", "/tmp:rw,exec"],
   "customizations": {
     "vscode": {
       "extensions": ["rust-lang.rust-analyzer"]

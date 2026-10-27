@@ -5,6 +5,10 @@ target
 .codex
 docs/screenshots
 *.png
-!image.png
+!tests/fixtures/*.png
 *.log
 dist
+spikes
+docs/consolidation-spike.md
+docs/benchmarks/consolidation-2026-10-27.json
+**/__pycache__

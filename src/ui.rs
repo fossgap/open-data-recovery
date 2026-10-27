@@ -125,7 +125,7 @@ impl Ui {
         self.action("search", |ui| {
             ui.widget::<gtk::SearchEntry>("search").grab_focus();
         });
-        self.action("about", |ui| ui.info("Open Data Recovery", "A native Linux recovery workspace.\n\nThis interactive design prototype uses Rust, GTK4, and declarative GtkBuilder layouts. Every source, file, preview, and destination is sample data. Saved scans live only in memory and disappear when the app closes.\n\nNo recovery backends, source access, disk writes, or permission prompts run in this prototype. The README requests layout validation before full implementation.\n\nVersion 0.1.0 · Design preview"));
+        self.action("about", |ui| ui.info("Open Data Recovery", "A native Linux recovery workspace.\n\nDemo mode uses fictional sources, files, previews, and destinations. Its saved scans live only in memory and disappear when the app closes.\n\nNo recovery backends, source access, disk writes, or permission prompts run in demo mode. Launch without --demo to use the recovery engines.\n\nVersion 0.1.0 · Demo mode"));
         self.action("shortcuts", |ui| ui.info("Keyboard shortcuts", "Ctrl+O    Add a sample source\nCtrl+S    Save a demo snapshot\nCtrl+F    Search files\nCtrl+R    Start scan\nCtrl+P    Toggle file preview\nCtrl+L    Toggle activity log\nCtrl+Q    Quit\n\nTab / Shift+Tab    Move between controls\nSpace    Toggle a focused checkbox\nEnter    Expand or collapse a focused folder"));
 
         for (name, panel) in [("preview", "preview_panel"), ("events", "events_panel")] {
@@ -1170,7 +1170,7 @@ impl Ui {
         let confirm_weak = confirm.downgrade();
         object::<gtk::DropDown>(&builder, "destination").connect_selected_notify(move |destination| {
             let result = model::demo_destination(destination.selected());
-            validation.set_text(match result { Ok(()) => "Sample destination is on a separate drive with enough space. Real device checks are not implemented in this prototype.", Err(message) => message });
+            validation.set_text(match result { Ok(()) => "Sample destination is on a separate drive with enough space. Demo mode uses simulated destination checks.", Err(message) => message });
             if let Some(confirm) = confirm_weak.upgrade() { confirm.set_sensitive(result.is_ok()); }
         });
         let weak = Rc::downgrade(self);
@@ -1391,6 +1391,7 @@ pub fn activate(app: &gtk::Application, smoke_test: bool) {
         dialog: RefCell::new(None),
     });
     ui.window().set_application(Some(app));
+    crate::appearance::set_brand_icon(&ui.builder);
     ui.connect(app);
     let bytes = glib::Bytes::from_static(include_bytes!("../ui/sample-landscape.svg"));
     let stream = gio::MemoryInputStream::from_bytes(&bytes);
