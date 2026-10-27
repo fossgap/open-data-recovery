@@ -13,6 +13,7 @@
             <property name="width-request">64</property>
             <style>
               <class name="muted" />
+              <class name="dim-label" />
               <class name="numeric" />
             </style>
           </object>

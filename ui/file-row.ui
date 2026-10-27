@@ -34,6 +34,7 @@
             <property name="xalign">1</property>
             <style>
               <class name="muted" />
+              <class name="dim-label" />
               <class name="numeric" />
             </style>
           </object>

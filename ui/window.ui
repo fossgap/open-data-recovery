@@ -128,6 +128,7 @@
                 <property name="label">Open Data Recovery</property>
                 <style>
                   <class name="app-title" />
+                  <class name="heading" />
                 </style>
               </object>
             </child>
@@ -139,16 +140,6 @@
             <property name="valign">center</property>
             <style>
               <class name="preview-badge" />
-            </style>
-          </object>
-        </child>
-        <child type="end">
-          <object class="GtkButton">
-            <property name="icon-name">help-about-symbolic</property>
-            <property name="action-name">win.about</property>
-            <property name="tooltip-text">About this prototype</property>
-            <style>
-              <class name="flat" />
             </style>
           </object>
         </child>
@@ -181,6 +172,7 @@
                 <property name="label">Interactive prototype</property>
                 <style>
                   <class name="strong" />
+                  <class name="heading" />
                 </style>
               </object>
             </child>
@@ -319,44 +311,8 @@
                     <property name="wrap">true</property>
                     <style>
                       <class name="sidebar-footnote" />
+                      <class name="dim-label" />
                     </style>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox">
-                    <property name="spacing">10</property>
-                    <style>
-                      <class name="source-protection" />
-                    </style>
-                    <child>
-                      <object class="GtkImage">
-                        <property name="icon-name">security-high-symbolic</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="orientation">vertical</property>
-                        <property name="spacing">4</property>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label">Your source stays untouched</property>
-                            <property name="xalign">0</property>
-                            <style>
-                              <class name="strong" />
-                            </style>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label">Recover to a separate drive.</property>
-                            <property name="xalign">0</property>
-                            <style>
-                              <class name="subtle" />
-                            </style>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>
@@ -390,6 +346,7 @@
                             <property name="xalign">0</property>
                             <style>
                               <class name="title" />
+                              <class name="heading" />
                             </style>
                           </object>
                         </child>
@@ -399,18 +356,28 @@
                             <property name="ellipsize">middle</property>
                             <style>
                               <class name="muted" />
+                              <class name="dim-label" />
                             </style>
                           </object>
                         </child>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="source_state">
-                        <property name="label">Read-only source</property>
+                      <object class="GtkBox">
+                        <property name="spacing">6</property>
                         <property name="valign">center</property>
-                        <style>
-                          <class name="safe-badge" />
-                        </style>
+                        <property name="tooltip-text">Source protection: read-only access</property>
+                        <child>
+                          <object class="GtkImage" id="source_lock">
+                            <property name="icon-name">changes-prevent-symbolic</property>
+                            <property name="pixel-size">16</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="source_state">
+                            <property name="label">Read-only source</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -453,7 +420,7 @@
                             <property name="label">Scan again</property>
                             <property name="action-name">win.start</property>
                             <style>
-                              <class name="primary" />
+                              <class name="suggested-action" />
                             </style>
                           </object>
                         </child>
@@ -499,6 +466,7 @@
                     <property name="wrap">true</property>
                     <style>
                       <class name="mode-hint" />
+                      <class name="dim-label" />
                     </style>
                   </object>
                 </child>
@@ -533,6 +501,7 @@
                                     <property name="xalign">0</property>
                                     <style>
                                       <class name="section-title" />
+                                      <class name="heading" />
                                     </style>
                                   </object>
                                 </child>
@@ -665,6 +634,7 @@
                                             <property name="pixel-size">34</property>
                                             <style>
                                               <class name="muted" />
+                                              <class name="dim-label" />
                                             </style>
                                           </object>
                                         </child>
@@ -672,6 +642,7 @@
                                           <object class="GtkLabel" id="empty_title">
                                             <style>
                                               <class name="section-title" />
+                                              <class name="heading" />
                                             </style>
                                           </object>
                                         </child>
@@ -681,6 +652,7 @@
                                             <property name="justify">center</property>
                                             <style>
                                               <class name="muted" />
+                                              <class name="dim-label" />
                                             </style>
                                           </object>
                                         </child>
@@ -744,6 +716,7 @@
                                     <property name="xalign">0</property>
                                     <style>
                                       <class name="section-title" />
+                                      <class name="heading" />
                                     </style>
                                   </object>
                                 </child>
@@ -788,6 +761,7 @@
                                         <property name="selectable">true</property>
                                         <style>
                                           <class name="preview-name" />
+                                          <class name="heading" />
                                         </style>
                                       </object>
                                     </child>
@@ -798,6 +772,7 @@
                                         <property name="selectable">true</property>
                                         <style>
                                           <class name="muted" />
+                                          <class name="dim-label" />
                                         </style>
                                       </object>
                                     </child>
@@ -818,6 +793,7 @@
                                         <property name="selectable">true</property>
                                         <style>
                                           <class name="text-preview" />
+                                          <class name="monospace" />
                                         </style>
                                       </object>
                                     </child>
@@ -841,6 +817,7 @@
                                         <property name="wrap">true</property>
                                         <style>
                                           <class name="preview-note" />
+                                          <class name="dim-label" />
                                         </style>
                                       </object>
                                     </child>
@@ -874,6 +851,7 @@
                                 <property name="label">Activity</property>
                                 <style>
                                   <class name="section-title" />
+                                  <class name="heading" />
                                 </style>
                               </object>
                             </child>
@@ -881,6 +859,7 @@
                               <object class="GtkLabel" id="event_count">
                                 <style>
                                   <class name="muted" />
+                                  <class name="dim-label" />
                                 </style>
                               </object>
                             </child>
@@ -935,6 +914,7 @@
                             <property name="xalign">0</property>
                             <style>
                               <class name="strong" />
+                              <class name="heading" />
                             </style>
                           </object>
                         </child>
@@ -945,6 +925,7 @@
                             <property name="ellipsize">end</property>
                             <style>
                               <class name="muted" />
+                              <class name="dim-label" />
                             </style>
                           </object>
                         </child>
@@ -955,7 +936,7 @@
                         <property name="label">Review recovery…</property>
                         <property name="action-name">win.recover</property>
                         <style>
-                          <class name="primary" />
+                          <class name="suggested-action" />
                         </style>
                       </object>
                     </child>
@@ -1014,6 +995,7 @@
                     <property name="xalign">0.5</property>
                     <style>
                       <class name="strong" />
+                      <class name="heading" />
                       <class name="numeric" />
                       <class name="progress-content" />
                     </style>

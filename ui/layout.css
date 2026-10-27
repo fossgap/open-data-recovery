@@ -1,0 +1,38 @@
+/* Layout only. GTK supplies widget colors, fonts, borders and states from the system theme. */
+.menubar { padding: 0 6px; }
+.demo-strip { padding: 4px 12px; }
+.sidebar-heading { padding: 12px 12px 6px; }
+.source-list { padding: 0 6px; }
+.source-row { padding: 8px; }
+.disk-row { margin-top: 4px; }
+.disk-row.contains-selected { box-shadow: inset 3px 0 currentColor; }
+.partition-row { margin-left: 26px; padding: 6px 8px; }
+.partition-marker { background-color: currentColor; opacity: 0.35; }
+.source-section { padding: 12px 8px 6px; }
+.sidebar-divider { margin: 10px 12px 0; }
+.sidebar-footnote { margin: 8px 12px 12px; }
+.source-heading { padding: 12px 16px 8px; }
+.source-hero-icon { padding: 8px; }
+.scan-toolbar { padding: 0 16px 8px; }
+.mode-hint { padding: 0 16px 10px; }
+.results-heading { padding: 10px 12px 8px; }
+.count-badge { padding: 2px 6px; }
+.filter-bar { padding: 0 12px 8px; }
+.table-header { padding: 6px 12px; }
+.file-row { padding: 6px 12px; }
+.folder-row { padding: 4px 12px; }
+.file-summary { padding: 6px 12px; }
+.preview-heading { padding: 8px 12px; }
+.preview-content { padding: 12px; }
+.text-preview { padding: 10px; }
+.events-heading { padding: 4px 12px; }
+.event-row { padding: 4px 12px; }
+.recovery-bar { padding: 10px 16px; }
+.dialog-content { padding: 18px; }
+.dialog-card { padding: 12px; }
+.dialog-warning { padding: 8px; }
+.numeric { font-feature-settings: "tnum"; }
+/* Keep the approved full-height progress layout without replacing theme colors. */
+progressbar.scan-progress { padding: 0; margin: 0; }
+progressbar.scan-progress trough,
+progressbar.scan-progress progress { min-height: 34px; }

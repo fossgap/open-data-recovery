@@ -19,6 +19,7 @@
             <property name="xalign">0</property>
             <style>
               <class name="dialog-title" />
+              <class name="heading" />
             </style>
           </object>
         </child>
@@ -36,6 +37,7 @@
                 <property name="selectable">true</property>
                 <style>
                   <class name="dialog-copy" />
+                  <class name="dim-label" />
                 </style>
                 <property name="max-width-chars">75</property>
               </object>
@@ -47,7 +49,7 @@
             <property name="label">Got it</property>
             <property name="halign">end</property>
             <style>
-              <class name="primary" />
+              <class name="suggested-action" />
             </style>
           </object>
         </child>

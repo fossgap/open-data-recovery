@@ -29,6 +29,7 @@
             <property name="xalign">0</property>
             <style>
               <class name="dialog-title" />
+              <class name="heading" />
             </style>
           </object>
         </child>
@@ -38,6 +39,7 @@
             <property name="wrap">true</property>
             <style>
               <class name="dialog-copy" />
+              <class name="dim-label" />
             </style>
           </object>
         </child>
@@ -95,6 +97,7 @@
                 <property name="max-width-chars">55</property>
                 <style>
                   <class name="dialog-copy" />
+                  <class name="dim-label" />
                 </style>
               </object>
             </child>
@@ -191,7 +194,7 @@
                 <property name="label">Simulate recovery</property>
                 <property name="sensitive">false</property>
                 <style>
-                  <class name="primary" />
+                  <class name="suggested-action" />
                 </style>
               </object>
             </child>

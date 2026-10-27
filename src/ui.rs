@@ -359,27 +359,25 @@ impl Ui {
                     let source = &state.sources[child];
                     (
                         source.size_mib,
-                        source_color(source),
                         source.kind == SourceKind::Unallocated,
                         child,
                     )
                 })
                 .collect();
             let weak = Rc::downgrade(self);
-            map.set_draw_func(move |_, context, width, height| {
+            map.set_draw_func(move |area, context, width, height| {
                 let selected = weak.upgrade().map(|ui| ui.state.borrow().session.source);
                 let segments: Vec<_> = segments
                     .iter()
-                    .map(|&(size, color, unallocated, child)| {
+                    .map(|&(size, unallocated, child)| {
                         (
                             size,
-                            color,
                             unallocated,
                             selected == Some(child) || selected == Some(id),
                         )
                     })
                     .collect();
-                draw_disk_map(context, width, height, &segments)
+                draw_disk_map(area, context, width, height, &segments)
             });
             self.source_maps
                 .borrow_mut()
@@ -406,7 +404,6 @@ impl Ui {
                         if source.mounted { " · mounted" } else { "" }
                     )
                 });
-                object::<gtk::Box>(&builder, "marker").add_css_class(source_color_class(source));
                 let row: gtk::ListBoxRow = object(&builder, "row");
                 row.set_tooltip_text(Some(&format!(
                     "{} · {} · {}\n{} on {}\nSample source — no device access",
@@ -540,7 +537,7 @@ impl Ui {
         self.label(
             "source_state",
             if source.mounted {
-                "Mounted · live source"
+                "Read-only source · mounted"
             } else {
                 "Read-only source"
             },
@@ -1295,28 +1292,16 @@ fn clear_list(list: &gtk::ListBox) {
     }
 }
 
-fn source_color_class(source: &Source) -> &'static str {
-    match (source.kind, source.filesystem) {
-        (SourceKind::Unallocated, _) => "fs-unallocated",
-        (_, "ext4" | "btrfs") => "fs-linux",
-        (_, "FAT32" | "exFAT") => "fs-fat",
-        _ => "fs-ntfs",
-    }
-}
-
-fn source_color(source: &Source) -> (f64, f64, f64) {
-    match source_color_class(source) {
-        "fs-unallocated" => (0.36, 0.44, 0.39),
-        "fs-linux" => (0.56, 0.71, 0.75),
-        "fs-fat" => (0.77, 0.67, 0.46),
-        _ => (0.62, 0.75, 0.59),
-    }
-}
-
-type MapSegment = (u64, (f64, f64, f64), bool, bool);
+type MapSegment = (u64, bool, bool);
 
 /// Schematic size map. Tiny partitions get a minimum width so they remain visible.
-fn draw_disk_map(context: &gtk::cairo::Context, width: i32, height: i32, segments: &[MapSegment]) {
+fn draw_disk_map(
+    area: &gtk::DrawingArea,
+    context: &gtk::cairo::Context,
+    width: i32,
+    height: i32,
+    segments: &[MapSegment],
+) {
     if segments.is_empty() || width < 1 || height < 1 {
         return;
     }
@@ -1329,17 +1314,28 @@ fn draw_disk_map(context: &gtk::cairo::Context, width: i32, height: i32, segment
         .map(|segment| segment.0 as f64)
         .sum::<f64>()
         .max(1.0);
+    let (foreground, accent) = crate::appearance::map_colors(area);
     let mut x = 0.0;
-    for &(size, (r, g, b), unallocated, selected) in segments {
+    for &(size, unallocated, selected) in segments {
         let segment_width = minimum + proportional * size as f64 / total;
-        context.set_source_rgb(r, g, b);
+        crate::appearance::source(
+            context,
+            if selected { &accent } else { &foreground },
+            if selected {
+                1.0
+            } else if unallocated {
+                0.1
+            } else {
+                0.35
+            },
+        );
         context.rectangle(x, 0.0, segment_width, height as f64);
         let _ = context.fill();
         if unallocated {
             let _ = context.save();
             context.rectangle(x, 0.0, segment_width, height as f64);
             context.clip();
-            context.set_source_rgb(0.54, 0.61, 0.54);
+            crate::appearance::source(context, &foreground, 0.45);
             context.set_line_width(1.0);
             let mut stripe = -(height as f64);
             while stripe < segment_width {
@@ -1351,7 +1347,7 @@ fn draw_disk_map(context: &gtk::cairo::Context, width: i32, height: i32, segment
             let _ = context.restore();
         }
         if selected {
-            context.set_source_rgb(0.94, 0.98, 0.90);
+            crate::appearance::source(context, &foreground, 1.0);
             context.set_line_width(1.5);
             context.rectangle(
                 x + 0.75,
@@ -1367,7 +1363,7 @@ fn draw_disk_map(context: &gtk::cairo::Context, width: i32, height: i32, segment
 
 pub fn activate(app: &gtk::Application, smoke_test: bool) {
     let css = gtk::CssProvider::new();
-    css.load_from_data(include_str!("../ui/style.css"));
+    css.load_from_data(include_str!("../ui/layout.css"));
     gtk::style_context_add_provider_for_display(
         &gtk::gdk::Display::default().expect("GTK display"),
         &css,

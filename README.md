@@ -2,6 +2,8 @@
 
 A native Linux workspace for **choose a source → scan → inspect and select files → recover to a separate drive**. Built with Rust, GTK4, and declarative GtkBuilder layouts.
 
+The interface uses the system GTK theme, including its light/dark appearance, fonts, and native widget styling. Custom Scan keeps its settings in compact **Scan**, **Engines**, and **Advanced** tabs.
+
 The application now runs real recovery engines, stores scans in SQLite, and writes selected files with SHA-256 audit records. Run `--demo` for the separate, non-destructive fixture demonstration used in the screenshots.
 
 ![GTK recovery workspace, including physical disks and partition maps](docs/screenshots/workspace.png)

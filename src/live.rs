@@ -404,7 +404,7 @@ impl Live {
             self.label(
                 "source_state",
                 if source.mounted {
-                    "Mounted · live source"
+                    "Read-only source · mounted"
                 } else {
                     "Read-only source"
                 },
@@ -549,8 +549,9 @@ impl Live {
                 let size = source.size.max(1);
                 let segments = children.clone();
                 obj::<gtk::DrawingArea>(&b, "layout").set_draw_func(
-                    move |_, ctx, width, height| {
-                        ctx.set_source_rgb(0.15, 0.19, 0.23);
+                    move |area, ctx, width, height| {
+                        let (foreground, accent) = crate::appearance::map_colors(area);
+                        crate::appearance::source(ctx, &foreground, 0.1);
                         let _ = ctx.paint();
                         for (j, s) in &segments {
                             let start =
@@ -558,15 +559,15 @@ impl Live {
                             let width = (s.size as f64 / size as f64 * width as f64).max(2.0);
                             let active = selected == Some(*j);
                             if active {
-                                ctx.set_source_rgb(0.35, 0.83, 0.78);
+                                crate::appearance::source(ctx, &accent, 1.0);
                             } else {
-                                ctx.set_source_rgb(0.24, 0.43, 0.55);
+                                crate::appearance::source(ctx, &foreground, 0.35);
                             }
                             ctx.rectangle(start, 0.0, width - 1.0, height as f64);
                             let _ = ctx.fill();
                         }
                         if segments.is_empty() {
-                            ctx.set_source_rgb(0.28, 0.55, 0.62);
+                            crate::appearance::source(ctx, &accent, 0.65);
                             ctx.rectangle(0.0, 0.0, width as f64, height as f64);
                             let _ = ctx.fill();
                         }
@@ -1553,7 +1554,7 @@ fn scan_options(b: &gtk::Builder) -> engine::Result<ScanOptions> {
 
 pub fn activate(app: &gtk::Application, smoke: bool) {
     let css = gtk::CssProvider::new();
-    css.load_from_data(include_str!("../ui/style.css"));
+    css.load_from_data(include_str!("../ui/layout.css"));
     gtk::style_context_add_provider_for_display(
         &gtk::gdk::Display::default().expect("GTK display"),
         &css,
@@ -1604,7 +1605,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         "snapshot_notice",
         "Scans are saved automatically in your workspace.",
     );
-    ui.label("demo_indicator", "SOURCE PROTECTED");
+    ui.widget::<gtk::Label>("demo_indicator").set_visible(false);
     ui.label("progress_text", "0%");
     ui.widget::<gtk::ProgressBar>("progress").set_fraction(0.0);
     ui.widget::<gtk::Picture>("preview_picture")

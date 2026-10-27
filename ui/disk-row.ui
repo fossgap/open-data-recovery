@@ -41,6 +41,7 @@
                         <property name="ellipsize">end</property>
                         <style>
                           <class name="source-name" />
+                          <class name="heading" />
                         </style>
                       </object>
                     </child>
@@ -49,6 +50,7 @@
                         <property name="xalign">1</property>
                         <style>
                           <class name="source-capacity" />
+                          <class name="dim-label" />
                         </style>
                       </object>
                     </child>
@@ -60,6 +62,7 @@
                     <property name="ellipsize">end</property>
                     <style>
                       <class name="source-detail" />
+                      <class name="dim-label" />
                     </style>
                   </object>
                 </child>

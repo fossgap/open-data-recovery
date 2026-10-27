@@ -1,3 +1,4 @@
+mod appearance;
 mod engine;
 mod live;
 mod model;

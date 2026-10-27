@@ -18,3 +18,9 @@ The GUI recovery check opens a saved scan, selects a candidate, validates a sepa
 These checks validate specific fixtures and workflows. They do not establish recovery success for every damaged filesystem or installed backend version, and native packages have not been installed into the host system.
 
 Reproduce with `scripts/check.sh`, `scripts/check-engines.sh`, and `scripts/check-ui-recovery.sh`. Optional integration engines must be installed or present on `PATH`; the complete run included the locally packaged RecuperaBit, Digler and ext4rescue builds. See [packaging](packaging.md) for testing a packaged binary.
+
+## System theme and compact dialog revision — 2026-10-27
+
+The prior implementation was checkpointed in commit `74fbf52` before these UI changes. All 13 unit tests passed again in the GTK 4.8 release build. GtkBuilder validation and existing demo/production smoke checks passed with native GTK styling, including dark and high-contrast checks. All three Custom Scan tabs were visually checked at 600 × 480; scrollable tab contents accommodate larger fonts without the earlier sizing warning.
+
+Debian, RPM, Arch and AppImage application packages were rebuilt and their checksums refreshed. The final AppImage passed both UI smoke checks and the complete disposable-image recovery workflow with verified output. The earlier four engine integration results remain applicable to the unchanged recovery engine code.

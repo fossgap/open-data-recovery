@@ -27,21 +27,21 @@ sleep 1
 xdotool windowfocus --sync "$window"
 xdotool key --clearmodifiers ctrl+r
 sleep 2
-xdotool mousemove --window "$window" 710 230 click 1
+xdotool mousemove --window "$window" 740 196 click 1
 sleep 1
 import -window "$window" docs/screenshots/scan-progress.png
-xdotool mousemove --window "$window" 775 230 click 1
-xdotool mousemove --window "$window" 1280 105 click 1
+xdotool mousemove --window "$window" 803 196 click 1
+xdotool mousemove --window "$window" 1280 95 click 1
 sleep 1
 xdotool key --clearmodifiers ctrl+f
 xdotool type --clearmodifiers 'Alpine'
 sleep 1
-xdotool mousemove --window "$window" 500 469 click 1
+xdotool mousemove --window "$window" 500 425 click 1
 sleep 1
 import -window "$window" docs/screenshots/image-preview.png
 xdotool key --clearmodifiers ctrl+f ctrl+a BackSpace
 sleep 1
-xdotool mousemove --window "$window" 332 400 click 1
+xdotool mousemove --window "$window" 325 355 click 1
 sleep 1
 xdotool mousemove --window "$window" 1280 847 click 1
 dialog=$(timeout 10s xdotool search --sync --onlyvisible --all --pid "$app_pid" --name '^Review recovery$' | head -n 1)

@@ -20,6 +20,7 @@
             <property name="wrap">true</property>
             <style>
               <class name="dialog-title" />
+              <class name="heading" />
             </style>
           </object>
         </child>
@@ -117,7 +118,7 @@
               <object class="GtkButton" id="confirm">
                 <property name="label">Open scan</property>
                 <style>
-                  <class name="primary" />
+                  <class name="suggested-action" />
                 </style>
               </object>
             </child>
