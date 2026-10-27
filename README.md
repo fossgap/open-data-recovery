@@ -6,6 +6,8 @@ The interface uses the system GTK theme, including its light/dark appearance, fo
 
 The application now runs real recovery engines, stores scans in SQLite, and writes selected files with SHA-256 audit records. Run `--demo` for the separate, non-destructive fixture demonstration used in the screenshots.
 
+The [user wiki](docs/wiki/README.md) explains the complete workflow, storage locations and space use, implemented engines, exact scan sequences, consolidation, and recovery.
+
 ![GTK recovery workspace, including physical disks and partition maps](docs/screenshots/workspace.png)
 
 ## Run

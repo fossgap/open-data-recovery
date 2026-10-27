@@ -1,0 +1,48 @@
+# Open Data Recovery user wiki
+
+This wiki describes the current implementation. Start here for the workflow, then follow the topic pages for details.
+
+| Topic | Questions answered |
+| --- | --- |
+| [Storage and workspace](storage.md) | Where is data written? Does the workspace contain real files? How much space is needed? |
+| [Implemented engines](engines.md) | What does each engine do? Which run automatically, and which require a custom choice? |
+| [Scan modes](scan-modes.md) | What exactly runs in Quick, Deep and Full? Can a scan use several engines? |
+| [Final consolidation](consolidation.md) | How are duplicate findings displayed or grouped? What changes in time, storage and recovery? |
+| [Recovering files](recovery.md) | Where do recovered bytes come from? What do the recovery options and verification mean? |
+
+## Start-to-finish workflow
+
+1. **Choose the source.** Select a disk/partition from the sidebar, or add an image, unlocked mapper or mounted folder. The application opens the source read-only.
+2. **Choose the workspace.** Use storage on a different physical drive from the original source. Each scan creates its own saved-scan directory there.
+3. **Choose the mode and options.** The main Scan button uses the selected mode, workspace and clone checkbox with default engine options. Use its **Custom…** dropdown for filters, explicit engines and optional consolidation.
+4. **Prepare and scan.** E01 conversion, optional cloning and a custom byte-range copy happen before scanning when applicable. Engines run sequentially and save findings and any extracted contents in the workspace.
+5. **Finish consolidation, if enabled.** This option is off by default. It compares contents and publishes the final grouped list after scanning finishes.
+6. **Inspect and select results.** Search, preview and select files or groups. A listed candidate is not a guarantee that its original contents are intact.
+7. **Review recovery.** Choose a destination outside the saved-scan directory, on storage separate from the source, and choose the output options. Workspace and destination may share the same non-source drive.
+8. **Recover and check the files.** Recovery writes the selected copies and records outcomes in the saved scan. Keep the workspace for future use, or remove that saved-scan directory when its contents and history are no longer needed.
+
+```mermaid
+flowchart LR
+    S["Source: read-only"] --> W["Workspace: saved scan, extracted files, optional clone/cache"]
+    W --> R["Select files and recover"]
+    S -. "Read content not retained in the workspace" .-> R
+    R --> D["Recovery destination: selected file copies"]
+```
+
+The optional clone is inside the workspace. When available, it can supply the source reads shown above without reconnecting the original source.
+
+## Terms used in the application
+
+| Term | Meaning |
+| --- | --- |
+| Engine / backend | An external tool invoked by an implemented adapter. Installed engines are not necessarily all used by a scan. |
+| Finding / candidate | One result from an engine: a path, metadata and either a source location or a retained file. Several findings can describe identical contents. |
+| Artifact | A file kept with the scan: extracted content, a report, diagnostic output, or a cache file. Not every artifact is a recoverable original file. |
+| Consolidated group | A result representing identical contents, with all member findings and recorded paths retained. Findings without a verified match remain separate. |
+| Recovery destination | The output folder for selected final file copies. It is separate from the saved scan. |
+
+**One engine runs at a time, but one scan can run several engines in sequence.** Quick can run several metadata engines; Full adds one carver afterward. Deep runs one carver. Diagnostics and preparation tools have separate supporting roles.
+
+**Metadata-based scanning does not always mean metadata-only storage.** Some metadata engines already extract file contents. Recovery of retained contents creates another copy at the destination; the workspace copy remains.
+
+For measured results and implementation details, see [consolidation costs](../consolidation-implementation.md), [validation](../validation.md), [architecture](../architecture.md), and [packaging](../packaging.md).

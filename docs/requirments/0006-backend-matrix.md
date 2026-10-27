@@ -1,5 +1,7 @@
 # Backend matrix per scan mode
 
+This original inventory lists backend options, not an instruction to run every listed engine. The current [engine roles](../wiki/engines.md) and [scan sequences](../wiki/scan-modes.md) explain automatic selection, custom-only engines and the one-carver limit.
+
 Quick (metadata undelete, keeps names): ext4magic + extundelete (ext3/4 journal), ntfsundelete + RecuperaBit (NTFS MFT), TSK fls/icat/tsk_recover + testdisk, btrfs restore / btrfs-find-root native, debugfs/dumpe2fs for ext forensics, ext4rescue on ddrescue image+log.
 Deep (carve, content-based): photorec + scalpel (preferred) + foremost/digler + magicrescue/recoverjpeg/bulk_extractor via same carver trait.
 Clone-first (safety pre-step for failing media): ddrescue + safecopy. E01 via ewf-tools.
