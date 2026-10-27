@@ -4,6 +4,10 @@
 
 <h1 align="center">Open Data Recovery</h1>
 
+[![Test CI](https://github.com/fossgap/open-data-recovery/actions/workflows/test-ci.yml/badge.svg)](https://github.com/fossgap/open-data-recovery/actions/workflows/test-ci.yml)
+[![Release CI](https://github.com/fossgap/open-data-recovery/actions/workflows/release-ci.yml/badge.svg)](https://github.com/fossgap/open-data-recovery/actions/workflows/release-ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/fossgap/open-data-recovery)](https://github.com/fossgap/open-data-recovery/releases)
+[![Downloads](https://img.shields.io/github/downloads/fossgap/open-data-recovery/total)](https://github.com/fossgap/open-data-recovery/releases)
 [![License: GPL-3.0-only](https://img.shields.io/badge/License-GPL--3.0--only-blue.svg)](LICENSE)
 [![Rust 2024](https://img.shields.io/badge/Rust-2024-orange.svg)](Cargo.toml)
 [![GTK 4.8+](https://img.shields.io/badge/GTK-4.8%2B-blue.svg)](Cargo.toml)
@@ -17,7 +21,7 @@ Open Data Recovery (ODR) brings Sleuth Kit, TestDisk, PhotoRec and other recover
 
 ![Open Data Recovery main window](docs/screenshots/workspace.png)
 
-*Demo mode with fictional sources and files. The application uses your system GTK theme.*
+*Recovered-file review after scanning a disk image. The interface follows your system GTK theme.*
 
 ## Features
 
@@ -87,18 +91,20 @@ Device and mounted-folder sources require workspace and destination storage on a
 
 The workspace can contain extracted files, a clone and consolidation caches; recovery writes separate selected copies to the destination. Some metadata engines already extract contents during Quick scanning. See [storage and cleanup](docs/wiki/storage.md) and [how recovery works](docs/wiki/recovery.md).
 
-Try the interface without accessing sources using `open-data-recovery --demo`. For CLI options, run `open-data-recovery --help`.
+For CLI options, run `open-data-recovery --help`. Report problems through [GitHub Issues](https://github.com/fossgap/open-data-recovery/issues), including your distribution, engine versions and steps to reproduce.
 
 ## Building from source
 
 Source builds require Rust 1.85+, a C compiler, `pkg-config` and GTK4 development headers. From the repository root:
 
 ```sh
+git clone https://github.com/fossgap/open-data-recovery.git
+cd open-data-recovery
+
 # Debian / Ubuntu build dependencies and default recovery tools
 sudo apt install build-essential pkg-config libgtk-4-dev sleuthkit testdisk gddrescue udisks2
 
 cargo run --locked                    # Launch the application
-cargo run --locked -- --demo          # Run with fictional data
 cargo test --locked                   # Unit tests
 sh scripts/check.sh                  # Build, layouts and GTK smoke checks; requires Xvfb
 cargo build --release --locked
@@ -112,17 +118,17 @@ docker build -t open-data-recovery-dev .
 docker run --rm --tmpfs /tmp:rw,exec open-data-recovery-dev
 ```
 
-See the [development guide](docs/development.md) for real-engine and GUI checks, [packaging](docs/packaging.md) for portable builds, and [Repository Guidelines](AGENTS.md) for contribution conventions.
+See [CI and releases](docs/ci-release.md) for automated builds and tagged publication, the [development guide](docs/development.md) for real-engine and GUI checks, [packaging](docs/packaging.md) for portable builds, and [Repository Guidelines](AGENTS.md) for contribution conventions.
 
 ## Powered by
 
-- [Sleuth Kit](https://www.sleuthkit.org/sleuthkit/) — filesystem metadata discovery and extraction
-- [TestDisk / PhotoRec](https://www.cgsecurity.org/) — lost-partition discovery, NTFS undelete and file carving
-- [GNU ddrescue](https://www.gnu.org/software/ddrescue/) — source cloning with a retained recovery map
-- [GTK](https://www.gtk.org/) and [gtk-rs](https://gtk-rs.org/) — native Linux interface
-- [SQLite](https://sqlite.org/) — persistent scan catalogues and selections
+- [Sleuth Kit](https://github.com/sleuthkit/sleuthkit) [![GitHub stars](https://img.shields.io/github/stars/sleuthkit/sleuthkit?style=social)](https://github.com/sleuthkit/sleuthkit) — filesystem metadata discovery and extraction
+- [TestDisk / PhotoRec](https://github.com/cgsecurity/testdisk) [![GitHub stars](https://img.shields.io/github/stars/cgsecurity/testdisk?style=social)](https://github.com/cgsecurity/testdisk) — lost-partition discovery, NTFS undelete and file carving
+- [GTK](https://github.com/GNOME/gtk) [![GitHub stars](https://img.shields.io/github/stars/GNOME/gtk?style=social)](https://github.com/GNOME/gtk) — native Linux interface; official GitHub mirror
+- [gtk-rs](https://github.com/gtk-rs/gtk4-rs) [![GitHub stars](https://img.shields.io/github/stars/gtk-rs/gtk4-rs?style=social)](https://github.com/gtk-rs/gtk4-rs) — Rust bindings for GTK4
+- [SQLite](https://github.com/sqlite/sqlite) [![GitHub stars](https://img.shields.io/github/stars/sqlite/sqlite?style=social)](https://github.com/sqlite/sqlite) — persistent scan catalogues and selections
 
-See the [complete engine guide](docs/wiki/engines.md) for additional backends and their roles.
+Source cloning uses [GNU ddrescue](https://www.gnu.org/software/ddrescue/) with a retained recovery map. See the [complete engine guide](docs/wiki/engines.md) for additional backends and their roles.
 
 ## License
 

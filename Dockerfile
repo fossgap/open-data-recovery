@@ -4,9 +4,12 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        build-essential pkg-config libgtk-4-dev libgtk-4-bin \
        xvfb xauth dbus-x11 xdotool imagemagick \
+       curl file rpm zstd desktop-file-utils \
        sleuthkit testdisk gddrescue ext4magic extundelete ntfs-3g btrfs-progs \
        e2fsprogs ewf-tools scalpel foremost safecopy magicrescue recoverjpeg \
     && rm -rf /var/lib/apt/lists/*
+
+RUN rustup component add rustfmt
 
 WORKDIR /workspace
 COPY Cargo.toml Cargo.lock ./

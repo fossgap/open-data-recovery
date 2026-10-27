@@ -1,5 +1,7 @@
 # Native packages and AppImage
 
+See [CI and releases](ci-release.md) for automated checks, package artifacts and tag-based publication.
+
 `sh scripts/package.sh deb|rpm|arch|appdir` packages a release binary, desktop entry, icon, README and license. Artifacts go to `dist/`, which is ignored by Git. Set `ODR_BINARY` to package a binary built elsewhere. The RPM builder keeps its temporary files and private RPM database inside `target/packages`; it does not install packages or modify the system RPM database. `packaging/PKGBUILD` also supports a normal source build with makepkg. Debian control metadata is generated in `scripts/package.sh`; the optional-engine package uses `scripts/package-engines.sh`.
 
 Build on the oldest supported runtime. The included Debian Bookworm container uses GTK 4.8 and glibc 2.36; a binary built on a newer distribution may require newer libraries. The runtime kernel must provide Landlock ABI 3 (Linux 6.2+). Packages are not published or installed automatically.

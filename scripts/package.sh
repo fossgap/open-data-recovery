@@ -28,6 +28,7 @@ Architecture: $arch
 Maintainer: Open Data Recovery maintainers
 Section: utils
 Priority: optional
+Homepage: https://github.com/fossgap/open-data-recovery
 Depends: libc6 (>= 2.36), libgtk-4-1 (>= 4.8), libglib2.0-0 (>= 2.74), util-linux, udisks2, policykit-1, sleuthkit, testdisk, gddrescue
 Recommends: ext4magic, extundelete, ntfs-3g, btrfs-progs, e2fsprogs, ewf-tools, scalpel, foremost, safecopy, magicrescue, recoverjpeg, bulk-extractor, open-data-recovery-engines
 Description: Native Linux data recovery workspace
@@ -44,6 +45,7 @@ Name: open-data-recovery
 Version: $version
 Release: 1
 Summary: Native Linux data recovery workspace
+URL: https://github.com/fossgap/open-data-recovery
 License: GPL-3.0-only
 Source0: payload.tar.gz
 AutoReqProv: no

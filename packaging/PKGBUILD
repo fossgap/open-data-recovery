@@ -2,6 +2,7 @@
 pkgname=open-data-recovery
 pkgver=0.1.0
 pkgrel=1
+url='https://github.com/fossgap/open-data-recovery'
 pkgdesc='Native Linux recovery with read-only sources and persistent scans'
 arch=('x86_64' 'aarch64')
 license=('GPL-3.0-only')

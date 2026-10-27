@@ -1,6 +1,6 @@
 # Development and validation
 
-[README](../README.md) · [Repository Guidelines](../AGENTS.md) · [Packaging](packaging.md)
+[README](../README.md) · [Repository Guidelines](../AGENTS.md) · [Packaging](packaging.md) · [CI and releases](ci-release.md)
 
 ## Build locally
 
@@ -75,7 +75,11 @@ prototype reports are ignored and are not required to build or test.
 
 Keep workflow details in `docs/wiki/` and the README focused on getting started.
 Record checks actually performed, including limitations, in
-[validation results](validation.md). Capture screenshots in an isolated display
-using fictional data; `scripts/capture-preview.sh` provides a starting point.
+[validation results](validation.md). `sh scripts/capture-preview.sh` captures the
+production application with a disposable ext2 image, real scans, isolated XDG
+settings and a private display. It requires ImageMagick, xdotool, Xvfb, and the
+system Python packages `python3-gi`, `python3-cairo` and `gir1.2-rsvg-2.0`. It
+verifies the source hash after capturing all eight screenshots; no user data or
+in-memory demonstration catalogue is used.
 Package outputs go to ignored `dist/`; build outputs and temporary reports go
 to ignored `target/`. Packaging does not install or publish a release.

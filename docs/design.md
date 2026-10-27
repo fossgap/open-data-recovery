@@ -16,7 +16,7 @@ The main **Scan** action uses the selected Quick, Deep, or Full mode with defaul
 
 The Custom Scan dialog opens at 600 × 480, with labels beside their controls and three native tabs. **Scan** contains the mode, workspace picker, extensions, existing-file inclusion and clone switch. **Engines** contains metadata/carving engine choices, PhotoRec options, clone engine and retry passes. **Advanced** contains size limits, source byte range, timeout and btrfs root. Every existing option remains available. Typed fields accept values, never shell commands. Invalid input remains in the dialog with an explanation. Starting validates physical storage before creating session files.
 
-![Custom scan dialog in demo mode](screenshots/custom-scan.png)
+![Custom scan dialog](screenshots/custom-scan.png)
 
 The same dialog also follows the [system dark theme](screenshots/custom-scan-dark.png). Tabs scroll when a larger system font needs more space.
 
@@ -26,7 +26,7 @@ The dialog shows the selected file count and total size, then the destination an
 
 Options preserve folder structure and modification times, choose rename/skip for conflicts, verify hashes after writing, and continue after individual errors. There is no overwrite mode. Actual output paths and errors remain in the session log, including partial-file paths when a copy fails.
 
-![Recovery dialog in demo mode](screenshots/recovery.png)
+![Review recovery dialog](screenshots/recovery.png)
 
 ## Saved Scans
 
@@ -34,7 +34,7 @@ Options preserve folder structure and modification times, choose rename/skip for
 
 The sidebar remains a convenient shortcut to the same persisted scans. Loading does not rewrite or migrate the candidate database. Saved selections are separate from that tree.
 
-![Saved Scans dialog in demo mode](screenshots/saved-scans.png)
+![Saved Scans dialog](screenshots/saved-scans.png)
 
 ## Interaction and responsiveness
 
