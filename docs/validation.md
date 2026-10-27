@@ -74,3 +74,9 @@ Both GTK workflows passed with `ODR_TEST_STORAGE=/tmp`, including the rebuilt Ap
 Debian, RPM, Arch and AppImage packages were rebuilt. Native package binaries and AppDir match the tested portable release, and `dist/SHA256SUMS` was refreshed and verified for all seven packages. No package was installed on the host or published. Physical-device policy checks use disposable descriptors; no physical recovery device was scanned or written. Allowing an image to share storage is not a hardware-health assessment, and unknown network/overlay storage remains unsupported.
 
 Reproduce the same-filesystem GUI cases with `ODR_TEST_STORAGE=/tmp sh scripts/check-ui-partitions.sh` and `ODR_TEST_STORAGE=/tmp ODR_MANAGE_SCANS=1 ODR_CONSOLIDATE=1 sh scripts/check-ui-recovery.sh`. Add `APPIMAGE_EXTRACT_AND_RUN=1 ODR_BINARY=dist/OpenDataRecovery-x86_64.AppImage` to test the package. The new engine case is `cargo test --locked disposable_same_drive_image_scan_modes_and_segmented_ewf -- --ignored --nocapture`.
+
+## Header, consolidation tooltip and recovery wording — 2026-10-27
+
+The image-storage exception was committed as `b33bfd6` before these UI changes. The header's extra source label was removed, the consolidation tooltip now ends with the requested review benefit, and the recovery dialog omits its redundant destination heading and the overwrite sentence. The main window, hovered tooltip and recovery dialog were visually checked with native GTK styling.
+
+All **44 unit tests**, GtkBuilder validation and demo/production smoke checks passed. The rebuilt AppImage passed the same-filesystem consolidated recovery and saved-scan management workflow, including verified recovery output. The seven broader engine integration cases were not rerun for these text and layout changes. Debian, RPM, Arch and AppImage packages were rebuilt; extracted native package binaries match the tested portable release, and all seven package checksums were refreshed and verified.

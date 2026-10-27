@@ -144,7 +144,7 @@
                       <object class="GtkCheckButton" id="consolidate">
                         <property name="label">Consolidate identical files when the scan finishes</property>
                         <property name="active">false</property>
-                        <property name="tooltip-text">Optional, off by default. Compare file contents after scanning and group only byte-identical findings, preserving all names and engine details. This can substantially extend the scan and require extra workspace to extract and cache files. Existing verified copies are reused. The grouped list appears only when consolidation finishes.</property>
+                        <property name="tooltip-text">Compare file contents after scanning and group only byte-identical findings, preserving all names and engine details. This can substantially extend the scan and require extra workspace to extract and cache files. Existing verified copies are reused. The grouped list appears only when consolidation finishes. Improve Recoverable files review by grouping duplicates.</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">5</property>

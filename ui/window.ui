@@ -134,15 +134,6 @@
             </child>
           </object>
         </property>
-        <child type="start">
-          <object class="GtkLabel" id="app_badge">
-            <property name="label">DESIGN PREVIEW</property>
-            <property name="valign">center</property>
-            <style>
-              <class name="preview-badge" />
-            </style>
-          </object>
-        </child>
       </object>
     </property>
     <child>

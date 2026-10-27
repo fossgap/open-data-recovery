@@ -1201,9 +1201,9 @@ impl Live {
                 .as_ref()
                 .is_some_and(SourceDescriptor::is_image_file)
             {
-                "Existing files are never overwritten. The destination may share the image's drive, but must be outside the saved scan folder and must not contain the source image or its segments."
+                "The destination may share the image's drive, but must be outside the saved scan folder and must not contain the source image or its segments."
             } else {
-                "Existing files are never overwritten. Keep the destination outside the saved scan folder and on a different physical drive from the original source."
+                "Keep the destination outside the saved scan folder and on a different physical drive from the original source."
             },
         );
         Self::browse(&b, "browse", "destination_path", "chooser");
@@ -1991,7 +1991,6 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
     ui.window().set_application(Some(app));
     ui.window().set_title(Some("Open Data Recovery"));
     ui.widget::<gtk::Box>("demo_banner").set_visible(false);
-    ui.label("app_badge", "READ-ONLY SOURCE");
     ui.label(
         "snapshot_notice",
         "Scans are saved automatically in your workspace.",
