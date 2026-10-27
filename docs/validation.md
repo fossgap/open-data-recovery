@@ -34,3 +34,13 @@ The final release passed **42 off/on scans** across seven ext2, FAT16 and NTFS c
 GtkBuilder validation, demo/production smoke checks and the real GTK consolidation workflow passed. The workflow opens a saved grouped scan, inspects its findings, selects the group, validates a separate destination, enables every-path recovery and verifies both resulting files. Both the portable release and the rebuilt AppImage passed this workflow. The new checkbox defaults off, and the Custom Scan dialog was visually checked at 600 × 480 with default GTK styling.
 
 Debian, RPM, Arch and AppImage application packages were rebuilt in `dist/`; the optional engine packages are unchanged. Native package binaries were extracted and compared with the tested portable release, whose SHA-256 is recorded in the benchmark JSON. `dist/SHA256SUMS` covers all seven application/engine packages. Packages were not installed on the host or published.
+
+## Retained results and saved-scan deletion — 2026-10-27
+
+The GTK 4.8 release build passes **29 unit tests**. All **five real-engine integration tests** passed again after adding session lifetime locks. New deletion tests cover active readers, folder replacement, changed scan identity, symbolic links, source overlap, mount boundaries, partial-deletion retries, and preservation of other snapshots and external files, including hard-linked content.
+
+GtkBuilder validation and demo/production smoke checks passed. The extended production GUI workflow passed with consolidation both disabled and enabled. It adds another image source, switches sidebar sources in both directions, and checks that the open scan, selection, search and preview survive. Recovery still uses the open scan. Cancelling deletion keeps its folder; confirming deletion removes it and clears the open results, while recovered files remain and the source hash is unchanged. The workflow also checks that a pending page refresh cannot cancel opening a saved scan.
+
+The final rebuilt AppImage passed the consolidated source-switching, recovery and deletion workflow. Saved Scans and the deletion confirmation were visually checked with native GTK styling. Debian, RPM, Arch and AppImage packages were rebuilt; native package binaries match the tested portable release, and all seven package checksums in `dist/SHA256SUMS` were refreshed and verified. Native packages were not installed on the host, and no physical recovery sources or user snapshots were used in these tests.
+
+Reproduce the management workflow with `ODR_MANAGE_SCANS=1 scripts/check-ui-recovery.sh`; add `ODR_CONSOLIDATE=1` for grouped results. For the packaged application, also set `APPIMAGE_EXTRACT_AND_RUN=1 ODR_BINARY=dist/OpenDataRecovery-x86_64.AppImage`.

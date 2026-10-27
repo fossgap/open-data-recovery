@@ -95,6 +95,16 @@ These are arithmetic examples, not scan-size predictions. Several engines may re
 
 Scanning again creates a new attempt. A retained input may be shared through a hard link when possible, or copied otherwise; the old catalogue is kept. This input reuse is separate from recovery, which writes independent destination copies.
 
-Recovery does not automatically remove workspace contents. After checking the recovered files, you can remove a saved-scan directory when you no longer need its results, logs, cached contents or retained inputs. Removing only its engine artifacts can break later previews and recovery. Deleting the saved scan does not delete the independent files already written to the recovery destination.
+Recovery does not automatically remove workspace contents. After checking the recovered files, remove an unneeded snapshot through **Menu → Scan → Saved Scan**:
+
+1. Choose its workspace and select the saved scan.
+2. Click **Delete…**. The confirmation identifies the source, saved date and exact folder.
+3. Choose **Cancel** to keep it, or **Delete saved scan** to permanently remove that whole folder. This includes its catalogue, selection, logs, extracted contents, caches and any clone. There is no trash or undo operation.
+
+The application performs deletion in the background and refreshes the saved-scans list. Deleting the open snapshot also clears its displayed results and preview; deleting a different snapshot leaves the current scan open. The original source and independent recovered files outside that folder remain intact.
+
+Deletion refuses a snapshot in active use by a current application scan/recovery operation. It checks the folder identity again after confirmation, does not follow symbolic links, and refuses traversal into nested mounts. If a nested filesystem is mounted inside a snapshot, unmount it before deletion. No free-space reserve is required to delete a snapshot from a full workspace. A failure can leave a partly deleted folder; the error identifies it, and remaining contents can be removed with another deletion attempt if its manifest is still present.
+
+Removing only engine artifacts manually can break later previews and recovery. When another attempt shares a retained image through a hard link, deleting one snapshot removes its link but does not free the image's storage until the remaining links are removed.
 
 Read-only source access applies to this application and its tools. It does not stop other applications from changing a mounted source filesystem.

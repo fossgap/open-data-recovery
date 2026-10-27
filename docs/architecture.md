@@ -14,6 +14,7 @@
 | `jobs.rs` | Scan preparation, E01 export, clone/range retention, worker orchestration, recovery, preview and audit hashes |
 | `consolidation.rs` | Optional final content grouping, bounded comparison/extraction, verified artifact reuse and atomic publication |
 | `store.rs` | SQLite candidates and selection, JSON manifests, legacy projections, logs and recorded-version comparison |
+| `sessions.rs` | Shared session lifetime locks and confined, identity-checked saved-scan deletion |
 
 ## Source protection
 
@@ -65,6 +66,10 @@ source-range.img       Optional normalized custom byte range
 Manifest updates use a temporary file, fsync and rename. Candidate inserts are batched. The GTK tree queries bounded pages; it does not load a whole drive's result set into memory. Older `files`/`entries`/`candidates` tables are projected onto the current candidate model without schema migration during load. A saved clone can be referenced in a new attempt by a retained hard link or a checked copy; the prior tree is unchanged.
 
 Comparison requires matching source fingerprints and uses the versions/hashes recorded in both manifests. The currently installed tools do not redefine old attempts. Selecting and recovering files writes a sidecar and log only after validating the session's storage again.
+
+The production controller stores the next selected source separately from the source of its open scan. Source selection/addition retains the current catalogue page, persisted selection, search and preview. Result and recovery labels identify the open scan; starting a scan, opening another attempt or deleting the open attempt changes that context. Asynchronous open responses carry a generation so obsolete results cannot reopen a deleted/replaced view.
+
+Saved-scan deletion uses a prepared identity (manifest ID/source and directory device/inode), then revalidates it after UI confirmation. Every `Store` holds a shared advisory lock on its directory; deletion requires an exclusive lock, protecting active scans, recovery and readers across current application instances without migrating legacy files. A two-pass traversal checks the tree before deletion and uses directory-relative `openat2` with `RESOLVE_BENEATH`, `RESOLVE_NO_SYMLINKS` and `RESOLVE_NO_XDEV`, followed by `unlinkat`. Symlinks are unlinked, never followed; nested mounts are rejected. The catalogue and manifest are removed last to leave a recognizable remainder after most partial failures. Source-separation validation remains required, but deletion does not require free-space headroom. These operations run on the worker thread.
 
 ## Verification and limits
 

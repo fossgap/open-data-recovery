@@ -52,6 +52,10 @@ The screenshots use explicitly labeled demo data. Production dialogs use real pa
 
 **Menu → Scan → Saved Scan** opens a dedicated dialog. Choose a workspace, inspect recorded source identity, state, results and engine versions, open an attempt, compare attempts, or scan again into a new session. Retained clones can be reopened and rescanned without the original source. Restarting creates a new attempt; it does not edit the old candidate tree or resume an interrupted third-party process at its internal checkpoint.
 
+Selecting or adding another source keeps the current results, selection, search and preview open. **Results from…** identifies the displayed scan; **Next scan: …** identifies a different source selected for the next scan. Recovery continues to use the open scan. Starting a new scan or opening another saved scan replaces the displayed results.
+
+In **Saved Scan**, select a snapshot and choose **Delete…** to permanently remove its entire folder after confirmation, including extracted files, caches, logs and any retained clone. The confirmation shows the exact folder. Active scans/recovery are protected; the original source and recovered files outside the snapshot are kept. Deleting the open snapshot clears its results. See [storage and cleanup](docs/wiki/storage.md).
+
 ### Optional final consolidation
 
 **Custom… → Scan → Consolidate identical files when the scan finishes** is off by default. After the selected engines finish, it groups only files whose complete contents match by SHA-256 **and byte-for-byte comparison**. Names, sizes and source offsets alone never establish equivalence. The complete grouped list is published atomically; it stays stable when the scan is reopened or files are recovered.
@@ -129,6 +133,7 @@ sh scripts/check.sh          # GtkBuilder validation + demo and production GTK s
 sh scripts/check-engines.sh  # Real tools on disposable images; /tmp and /dev/shm must be separate
 sh scripts/check-ui-recovery.sh # Full GTK recovery flow on a disposable image
 ODR_CONSOLIDATE=1 sh scripts/check-ui-recovery.sh # Group details and every-path recovery
+ODR_MANAGE_SCANS=1 sh scripts/check-ui-recovery.sh # Source switching, recovery, cancel/confirm deletion
 python3 scripts/check-consolidation.py --runs 3 --output target/consolidation-check
 sh scripts/capture-preview.sh
 

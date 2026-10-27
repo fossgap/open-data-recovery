@@ -35,6 +35,7 @@ pub struct Store {
     pub(super) connection: Connection,
     projection: String,
     table: String,
+    _session_lease: super::sessions::Lease,
     // Released by the OS even if a scan crashes. This distinguishes a live
     // finalizer from a saved manifest whose last state was still active.
     _scan_lock: Option<ScanLock>,
@@ -74,6 +75,7 @@ impl Store {
         fs::create_dir(&directory)?;
         use std::os::unix::fs::PermissionsExt;
         fs::set_permissions(&directory, fs::Permissions::from_mode(0o700))?;
+        let session_lease = super::sessions::Lease::shared(&directory)?;
         fs::create_dir(directory.join("artifacts"))?;
         let connection = Connection::open_with_flags(
             directory.join("tree.sqlite"),
@@ -129,6 +131,7 @@ impl Store {
             projection: native_projection().into(),
             table: "candidates".into(),
             _scan_lock: scan_lock,
+            _session_lease: session_lease,
         };
         write_json(&store.directory.join("source.json"), source)?;
         store.save()?;
@@ -140,6 +143,7 @@ impl Store {
     }
 
     pub fn open(directory: &Path) -> Result<Self> {
+        let session_lease = super::sessions::Lease::shared(directory)?;
         GuardedDir::existing(directory)?;
         let manifest: Manifest =
             read_json(&safety::confined_artifact(directory, "manifest.json")?)?;
@@ -163,6 +167,7 @@ impl Store {
             projection,
             table,
             _scan_lock: None,
+            _session_lease: session_lease,
         })
     }
     pub fn save(&mut self) -> Result<()> {

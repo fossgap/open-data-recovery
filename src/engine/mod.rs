@@ -5,6 +5,9 @@ mod consolidation_tests;
 pub mod jobs;
 pub mod process;
 pub mod safety;
+pub mod sessions;
+#[cfg(test)]
+mod sessions_tests;
 pub mod sources;
 pub mod store;
 #[cfg(test)]

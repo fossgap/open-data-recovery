@@ -21,6 +21,10 @@ This wiki describes the current implementation. Start here for the workflow, the
 7. **Review recovery.** Choose a destination outside the saved-scan directory, on storage separate from the source, and choose the output options. Workspace and destination may share the same non-source drive.
 8. **Recover and check the files.** Recovery writes the selected copies and records outcomes in the saved scan. Keep the workspace for future use, or remove that saved-scan directory when its contents and history are no longer needed.
 
+Selecting or adding another source does not close the displayed scan. Its results, selection, search and preview remain available. **Results from…** identifies those results, while **Next scan: …** identifies a different source selected for a new scan. Recovery always uses the displayed scan. Start a new scan or explicitly open another saved scan to replace it.
+
+To remove a saved attempt, use **Menu → Scan → Saved Scan → select the scan → Delete…** and review the folder before confirming permanent deletion. See [storage and cleanup](storage.md).
+
 ```mermaid
 flowchart LR
     S["Source: read-only"] --> W["Workspace: saved scan, extracted files, optional clone/cache"]

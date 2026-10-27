@@ -1111,7 +1111,7 @@ impl Ui {
         let b = self.show_dialog(include_str!("../ui/saved-scans.ui"));
         object::<gtk::Entry>(&b, "workspace").set_text("Demo snapshots · in memory");
         object::<gtk::Entry>(&b, "workspace").set_sensitive(false);
-        for id in ["browse", "refresh", "resume", "compare"] {
+        for id in ["browse", "refresh", "resume", "compare", "delete"] {
             object::<gtk::Button>(&b, id).set_visible(false);
         }
         let list: gtk::ListBox = object(&b, "scans");

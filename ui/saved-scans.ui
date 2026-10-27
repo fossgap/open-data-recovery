@@ -98,7 +98,14 @@
           <object class="GtkBox">
             <property name="orientation">horizontal</property>
             <property name="spacing">10</property>
-            <property name="halign">end</property>
+            <child>
+              <object class="GtkButton" id="delete">
+                <property name="label">Delete…</property>
+                <property name="sensitive">false</property>
+                <property name="tooltip-text">Permanently delete the selected saved-scan folder and its contents.</property>
+              </object>
+            </child>
+            <child><object class="GtkLabel"><property name="hexpand">true</property></object></child>
             <child>
               <object class="GtkButton" id="close">
                 <property name="label">Close</property>

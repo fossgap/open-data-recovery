@@ -24,6 +24,8 @@ This means that recovering already-extracted files is chiefly a controlled copy 
 4. Open **Review recovery**, choose a destination, review the selection count and storage amount, and adjust the options below.
 5. Start recovery once destination validation succeeds. Review the saved, failed and skipped counts and inspect the resulting files.
 
+Changing or adding a source in the sidebar leaves the current scan and its selections open. The result area identifies their source with **Results from…**; **Next scan: …** marks a different selected target. Review recovery also identifies the open scan's source. Selecting another source does not redirect recovery to it.
+
 Small image/text previews and metadata can help selection. Preview extraction is limited to files up to 8 MiB. A preview is not proof that every original byte is intact, and the scan's file count is not a guaranteed recovery count.
 
 ## Destination validation
@@ -59,7 +61,7 @@ Opening a saved scan retains its findings and selections. A usable retained arti
 
 Repeating recovery writes again according to the conflict option; it does not remove earlier output copies. Scanning again is a separate operation that creates a new saved attempt rather than resuming an interrupted backend at its internal checkpoint.
 
-After checking the final files, keep the saved scan for later selection, recovery or audit, or remove it when no longer needed. Workspace cleanup is not automatic. See [storage and cleanup](storage.md).
+After checking the final files, keep the saved scan for later selection, recovery or audit, or use **Saved Scan → select the snapshot → Delete…** when it is no longer needed. Deletion requires confirmation of the exact folder and is permanent. Workspace cleanup is not automatic. See [storage and cleanup](storage.md).
 
 ## CLI recovery
 

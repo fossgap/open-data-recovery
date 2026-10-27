@@ -3,6 +3,7 @@ use crate::{
     engine::{
         self, adapters,
         jobs::{self, Job},
+        sessions::Deletion,
         sources,
         store::{self, Store},
         types::*,
@@ -26,7 +27,9 @@ enum Message {
     Sources(engine::Result<Vec<SourceDescriptor>>),
     Added(u64, engine::Result<SourceDescriptor>),
     Page(u64, engine::Result<Page>),
-    Opened(PathBuf, engine::Result<(Manifest, Page)>),
+    Opened(u64, PathBuf, engine::Result<(Manifest, Page)>),
+    DeletePrepared(u64, engine::Result<Deletion>),
+    Deleted(PathBuf, bool, engine::Result<()>),
     Selected(engine::Result<()>),
     Preview(u64, engine::Result<PathBuf>),
     Saved(u64, engine::Result<Vec<SavedScan>>),
@@ -43,15 +46,18 @@ pub struct Live {
     collapsed_disks: RefCell<BTreeSet<PathBuf>>,
     collapsed: RefCell<BTreeSet<String>>,
     directory: RefCell<Option<PathBuf>>,
+    view_source: RefCell<Option<SourceDescriptor>>,
     options: RefCell<ScanOptions>,
     page: RefCell<Page>,
     query: RefCell<Query>,
     files: RefCell<Vec<Option<i64>>>,
     job: RefCell<Option<Job>>,
+    deleting: Cell<bool>,
     paused: Cell<bool>,
     pulse: Cell<bool>,
     rendering: Cell<bool>,
     generation: Cell<u64>,
+    view_generation: Cell<u64>,
     preview_generation: Cell<u64>,
     saved: RefCell<Vec<SavedScan>>,
     quitting: Cell<bool>,
@@ -131,7 +137,7 @@ impl Live {
         let _ = self.tasks.send(Box::new(task));
     }
     fn busy(&self) -> bool {
-        self.job.borrow().is_some()
+        self.job.borrow().is_some() || self.deleting.get()
     }
     fn action(self: &Rc<Self>, name: &str, handler: fn(&Rc<Self>)) {
         let action = gio::SimpleAction::new(name, None);
@@ -224,7 +230,11 @@ impl Live {
                     ui.cancel();
                     ui.label(
                         "status_text",
-                        "Stopping the running job and saving partial results…",
+                        if ui.deleting.get() {
+                            "Finishing saved-scan deletion before closing…"
+                        } else {
+                            "Stopping the running job and saving partial results…"
+                        },
                     );
                     return glib::Propagation::Stop;
                 }
@@ -240,11 +250,6 @@ impl Live {
                     }
                     let selected = ui.source_rows.borrow().get(row.index() as usize).copied();
                     ui.selected.set(selected);
-                    ui.invalidate_view();
-                    ui.directory.replace(None);
-                    ui.page.replace(Page::default());
-                    ui.query.borrow_mut().offset = 0;
-                    ui.render_files();
                     ui.render_sources();
                     ui.controls();
                 }
@@ -366,8 +371,8 @@ impl Live {
         for name in ["add-source", "reset", "saved-scans", "save"] {
             self.enable(name, !busy);
         }
-        self.enable("pause", busy);
-        self.enable("cancel", busy);
+        self.enable("pause", self.job.borrow().is_some());
+        self.enable("cancel", self.job.borrow().is_some());
         self.enable("recover", !busy && self.page.borrow().selected > 0);
         self.widget::<gtk::ListBox>("sources").set_sensitive(!busy);
         self.widget::<gtk::ListBox>("snapshots")
@@ -384,7 +389,19 @@ impl Live {
         self.widget::<gtk::CheckButton>("select_all")
             .set_sensitive(!busy && !self.page.borrow().files.is_empty());
         if let Some(source) = source {
-            self.label("source_title", &source.name);
+            let different = self
+                .view_source
+                .borrow()
+                .as_ref()
+                .is_some_and(|view| view.path != source.path || view.scope != source.scope);
+            self.label(
+                "source_title",
+                &if different {
+                    format!("Next scan: {}", source.name)
+                } else {
+                    source.name.clone()
+                },
+            );
             self.label(
                 "source_detail",
                 &format!(
@@ -439,6 +456,14 @@ impl Live {
             );
         }
         let page = self.page.borrow();
+        let result_source: gtk::Label = self.widget("results_source");
+        let view_source = self.view_source.borrow();
+        result_source.set_visible(view_source.is_some());
+        if let Some(source) = view_source.as_ref() {
+            let caption = format!("Results from {} · {}", source.name, source.path.display());
+            result_source.set_text(&caption);
+            result_source.set_tooltip_text(Some(&caption));
+        }
         self.label(
             "selection_summary",
             &format!(
@@ -597,6 +622,7 @@ impl Live {
     }
     fn invalidate_view(&self) {
         self.generation.set(self.generation.get() + 1);
+        self.view_generation.set(self.view_generation.get() + 1);
         self.preview_generation
             .set(self.preview_generation.get() + 1);
         self.widget::<gtk::Picture>("preview_picture")
@@ -1002,6 +1028,7 @@ impl Live {
             return;
         };
         self.options.replace(options.clone());
+        self.view_source.replace(Some(source.clone()));
         self.invalidate_view();
         self.directory.replace(None);
         self.page.replace(Page::default());
@@ -1085,11 +1112,17 @@ impl Live {
         obj::<gtk::Window>(&b, "dialog").set_default_size(590, 680);
         let page = self.page.borrow().clone();
         obj::<gtk::CheckButton>(&b, "all_paths").set_visible(page.consolidated);
+        let recovery_source = self
+            .view_source
+            .borrow()
+            .as_ref()
+            .map(|source| format!("From: {} · {}\n", source.name, source.path.display()))
+            .unwrap_or_default();
         text(
             &b,
             "summary",
             &format!(
-                "{} selected {} · {}\n{}Each output path, error, and SHA-256 is recorded with this scan.",
+                "{recovery_source}{} selected {} · {}\n{}Each output path, error, and SHA-256 is recorded with this scan.",
                 page.selected,
                 if page.consolidated { "groups" } else { "files" },
                 model::size(page.selected_bytes),
@@ -1103,8 +1136,8 @@ impl Live {
         let dialog = b.downgrade();
         obj::<gtk::CheckButton>(&b,"all_paths").connect_toggled(move |button| {
             if let Some(b)=dialog.upgrade() {
-                text(&b,"summary",&if button.is_active() { format!("{} recorded paths · {}\nEach distinct recorded path will receive a copy.",page.selected_paths,model::size(page.selected_path_bytes)) }
-                    else { format!("{} selected groups · {}\nOne copy per group; all findings remain saved.",page.selected,model::size(page.selected_bytes)) });
+                text(&b,"summary",&if button.is_active() { format!("{recovery_source}{} recorded paths · {}\nEach distinct recorded path will receive a copy.",page.selected_paths,model::size(page.selected_path_bytes)) }
+                    else { format!("{recovery_source}{} selected groups · {}\nOne copy per group; all findings remain saved.",page.selected,model::size(page.selected_bytes)) });
                 obj::<gtk::Entry>(&b,"destination_path").emit_by_name::<()>("changed",&[]);
             }
         });
@@ -1203,6 +1236,9 @@ impl Live {
         });
     }
     fn saved_scans(self: &Rc<Self>) {
+        if self.busy() {
+            return;
+        }
         let b = self.show(include_str!("../ui/saved-scans.ui"));
         obj::<gtk::Entry>(&b, "workspace")
             .set_text(&self.options.borrow().workspace.to_string_lossy());
@@ -1223,6 +1259,7 @@ impl Live {
             let Some(dialog) = dialog.upgrade() else {
                 return;
             };
+            obj::<gtk::Button>(&dialog, "delete").set_sensitive(row.is_some());
             if let (Some(ui), Some(row)) = (weak.upgrade(), row) {
                 if let Some(scan) = ui.saved.borrow().get(row.index() as usize) {
                     text(
@@ -1252,6 +1289,26 @@ impl Live {
                 }
             }
         });
+        let weak = Rc::downgrade(self);
+        let dialog = b.downgrade();
+        obj::<gtk::Button>(&b, "delete").connect_clicked(move |button| {
+            let (Some(ui), Some(dialog)) = (weak.upgrade(), dialog.upgrade()) else {
+                return;
+            };
+            if ui.busy() {
+                return;
+            }
+            let Some(row) = obj::<gtk::ListBox>(&dialog, "scans").selected_row() else {
+                return;
+            };
+            let Some(scan) = ui.saved.borrow().get(row.index() as usize).cloned() else {
+                return;
+            };
+            button.set_sensitive(false);
+            text(&dialog, "validation", "Checking the selected saved scan…");
+            let generation = ui.dialog_generation.get();
+            ui.submit(move || Message::DeletePrepared(generation, Deletion::prepare(scan)));
+        });
         for (id, operation) in [("confirm", 0), ("resume", 1), ("compare", 2)] {
             let weak = Rc::downgrade(self);
             let dialog = b.downgrade();
@@ -1270,6 +1327,7 @@ impl Live {
             return;
         }
         self.invalidate_view();
+        let generation = self.view_generation.get();
         self.submit(move || {
             let result = Store::open(&dir).and_then(|s| {
                 let page = s.page(&Query {
@@ -1278,10 +1336,67 @@ impl Live {
                 })?;
                 Ok((s.manifest, page))
             });
-            Message::Opened(dir, result)
+            Message::Opened(generation, dir, result)
         });
     }
+    fn confirm_delete(self: &Rc<Self>, plan: Deletion) {
+        let b = self.show(include_str!("../ui/delete-scan.ui"));
+        text(
+            &b,
+            "details",
+            &format!(
+                "{}\nSaved: {}\n\n{}",
+                plan.scan.manifest.source.name,
+                date(plan.scan.manifest.updated_at as i64),
+                plan.scan.directory.display()
+            ),
+        );
+        let weak = Rc::downgrade(self);
+        obj::<gtk::Window>(&b, "dialog").connect_close_request(move |_| {
+            if let Some(ui) = weak.upgrade() {
+                if ui.deleting.get() {
+                    return glib::Propagation::Stop;
+                }
+                let weak = Rc::downgrade(&ui);
+                glib::idle_add_local_once(move || {
+                    if let Some(ui) = weak.upgrade() {
+                        ui.saved_scans();
+                    }
+                });
+            }
+            glib::Propagation::Proceed
+        });
+        let weak = Rc::downgrade(self);
+        let dialog = b.downgrade();
+        obj::<gtk::Button>(&b, "confirm").connect_clicked(move |button| {
+            let (Some(ui), Some(dialog)) = (weak.upgrade(), dialog.upgrade()) else {
+                return;
+            };
+            if ui.busy() {
+                return;
+            }
+            ui.deleting.set(true);
+            button.set_sensitive(false);
+            obj::<gtk::Button>(&dialog, "close").set_sensitive(false);
+            text(&dialog, "validation", "Deleting the saved-scan folder…");
+            let plan = plan.clone();
+            ui.submit(move || {
+                let result = plan.execute();
+                Message::Deleted(
+                    plan.scan.directory.clone(),
+                    !plan.scan.directory.exists(),
+                    result,
+                )
+            });
+            ui.controls();
+        });
+        obj::<gtk::Button>(&b, "close").grab_focus();
+    }
     fn restart(self: &Rc<Self>, scan: SavedScan) {
+        if self.busy() {
+            return;
+        }
+        self.view_source.replace(Some(scan.manifest.source.clone()));
         self.options.replace(scan.manifest.options.clone());
         self.invalidate_view();
         self.directory.replace(None);
@@ -1461,7 +1576,14 @@ impl Live {
                         }
                         self.render_sources();
                         self.controls();
-                        self.label("status_text", "Ready · choose a source and scan mode");
+                        self.label(
+                            "status_text",
+                            if self.directory.borrow().is_some() {
+                                "Sources refreshed · current scan kept open"
+                            } else {
+                                "Ready · choose a source and scan mode"
+                            },
+                        );
                     }
                     Err(e) => self.info("Source discovery", &e.to_string()),
                 },
@@ -1477,11 +1599,8 @@ impl Live {
                         if let Some(dialog) = self.dialog.borrow().as_ref() {
                             obj::<gtk::Window>(dialog, "dialog").close();
                         }
-                        self.invalidate_view();
-                        self.directory.replace(None);
-                        self.page.replace(Page::default());
                         self.render_sources();
-                        self.render_files();
+                        self.controls();
                     }
                     Err(e) => {
                         if generation != self.dialog_generation.get() {
@@ -1513,41 +1632,100 @@ impl Live {
                     }
                     self.reload();
                 }
-                Message::Opened(dir, result) => match result {
-                    Ok((manifest, page)) => {
-                        let id = self.sources.borrow().iter().position(|s| {
-                            s.path == manifest.source.path && s.scope == manifest.source.scope
-                        });
-                        let id = id.unwrap_or_else(|| {
-                            let id = self.sources.borrow().len();
-                            self.sources.borrow_mut().push(manifest.source.clone());
-                            id
-                        });
-                        self.selected.set(Some(id));
-                        self.directory.replace(Some(dir.clone()));
-                        self.options.replace(manifest.options.clone());
-                        self.page.replace(page);
-                        self.query.replace(Query {
-                            limit: 250,
-                            ..Default::default()
-                        });
-                        self.widget::<gtk::SearchEntry>("search").set_text("");
-                        self.widget::<gtk::ToggleButton>("filter_all")
-                            .set_active(true);
-                        self.widget::<gtk::DropDown>("scan_mode")
-                            .set_selected(index(manifest.options.mode));
-                        self.label(
-                            "status_text",
-                            &format!("Saved scan · {} · {}", manifest.state, dir.display()),
-                        );
-                        self.label("progress_text", if manifest.complete { "100%" } else { "" });
+                Message::Opened(generation, dir, result) => {
+                    if generation != self.view_generation.get() || self.deleting.get() {
+                        continue;
+                    }
+                    match result {
+                        Ok((manifest, page)) => {
+                            self.invalidate_view();
+                            let id = self.sources.borrow().iter().position(|s| {
+                                s.path == manifest.source.path && s.scope == manifest.source.scope
+                            });
+                            let id = id.unwrap_or_else(|| {
+                                let id = self.sources.borrow().len();
+                                self.sources.borrow_mut().push(manifest.source.clone());
+                                id
+                            });
+                            self.selected.set(Some(id));
+                            self.directory.replace(Some(dir.clone()));
+                            self.view_source.replace(Some(manifest.source.clone()));
+                            self.options.replace(manifest.options.clone());
+                            self.page.replace(page);
+                            self.query.replace(Query {
+                                limit: 250,
+                                ..Default::default()
+                            });
+                            self.widget::<gtk::SearchEntry>("search").set_text("");
+                            self.widget::<gtk::ToggleButton>("filter_all")
+                                .set_active(true);
+                            self.widget::<gtk::DropDown>("scan_mode")
+                                .set_selected(index(manifest.options.mode));
+                            self.label(
+                                "status_text",
+                                &format!("Saved scan · {} · {}", manifest.state, dir.display()),
+                            );
+                            self.label(
+                                "progress_text",
+                                if manifest.complete { "100%" } else { "" },
+                            );
+                            self.widget::<gtk::ProgressBar>("progress")
+                                .set_fraction(if manifest.complete { 1.0 } else { 0.0 });
+                            self.render_sources();
+                            self.render_files();
+                        }
+                        Err(error) => self.info("Open saved scan", &error.to_string()),
+                    }
+                }
+                Message::DeletePrepared(generation, result) => {
+                    if generation != self.dialog_generation.get() || self.busy() {
+                        continue;
+                    }
+                    match result {
+                        Ok(plan) => self.confirm_delete(plan),
+                        Err(error) => {
+                            if let Some(dialog) = self.dialog.borrow().as_ref() {
+                                text(dialog, "validation", &error.to_string());
+                                obj::<gtk::Button>(dialog, "delete").set_sensitive(true);
+                            }
+                        }
+                    }
+                }
+                Message::Deleted(directory, removed, result) => {
+                    self.deleting.set(false);
+                    let current = self.directory.borrow().as_ref() == Some(&directory);
+                    if removed && current {
+                        self.invalidate_view();
+                        self.directory.replace(None);
+                        self.view_source.replace(None);
+                        self.page.replace(Page::default());
+                        self.query.borrow_mut().offset = 0;
+                        self.pulse.set(false);
                         self.widget::<gtk::ProgressBar>("progress")
-                            .set_fraction(if manifest.complete { 1.0 } else { 0.0 });
-                        self.render_sources();
+                            .set_fraction(0.0);
+                        self.label("progress_text", "");
                         self.render_files();
                     }
-                    Err(error) => self.info("Open saved scan", &error.to_string()),
-                },
+                    match result {
+                        Ok(()) => {
+                            self.label("status_text", "Saved scan deleted");
+                            self.event(&format!("Deleted saved scan: {}", directory.display()));
+                            if !self.quitting.get() {
+                                self.saved_scans();
+                            }
+                        }
+                        Err(error) => {
+                            self.event(&error.to_string());
+                            self.info("Could not delete saved scan", &error.to_string());
+                            let root = self.options.borrow().workspace.clone();
+                            self.load_saved(root);
+                        }
+                    }
+                    self.controls();
+                    if self.quitting.get() {
+                        self.window().close();
+                    }
+                }
                 Message::Preview(generation, result) => {
                     if generation == self.preview_generation.get() {
                         match result {
@@ -1622,7 +1800,7 @@ impl Live {
                                 label.set_text(if self.saved.borrow().is_empty() {
                                     "No saved scans in this workspace."
                                 } else {
-                                    "Select a scan to open, compare, or scan again."
+                                    "Select a scan to open, compare, scan again, or delete."
                                 });
                             }
                         }
@@ -1709,6 +1887,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         collapsed_disks: RefCell::new(BTreeSet::new()),
         collapsed: RefCell::new(BTreeSet::new()),
         directory: RefCell::new(None),
+        view_source: RefCell::new(None),
         options: RefCell::new(ScanOptions::default()),
         page: RefCell::new(Page::default()),
         query: RefCell::new(Query {
@@ -1717,10 +1896,12 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         }),
         files: RefCell::new(vec![]),
         job: RefCell::new(None),
+        deleting: Cell::new(false),
         paused: Cell::new(false),
         pulse: Cell::new(false),
         rendering: Cell::new(false),
         generation: Cell::new(0),
+        view_generation: Cell::new(0),
         preview_generation: Cell::new(0),
         saved: RefCell::new(vec![]),
         quitting: Cell::new(false),
@@ -1772,17 +1953,23 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
             let destination = PathBuf::from(destination);
             let inspect_consolidation = std::env::var_os("ODR_SMOKE_CONSOLIDATION").is_some();
             let all_paths = std::env::var_os("ODR_SMOKE_ALL_PATHS").is_some();
+            let other_source = std::env::var_os("ODR_SMOKE_OTHER_SOURCE").map(PathBuf::from);
             ui.open(session.clone());
             let weak = Rc::downgrade(&ui);
             let mut step = 0;
             let mut ticks = 0;
+            let mut switched_sources = false;
+            let mut selected_before_switch = 0;
+            let mut preview_before_switch = String::new();
+            let mut checked_reopen = false;
+            let mut reopen_generation = 0;
             glib::timeout_add_local(Duration::from_millis(100), move || {
                 let Some(ui) = weak.upgrade() else {
                     return glib::ControlFlow::Break;
                 };
                 ticks += 1;
                 assert!(
-                    ticks < 200,
+                    ticks < 400,
                     "GUI recovery workflow stalled: {}",
                     ui.widget::<gtk::Label>("status_text").text()
                 );
@@ -1790,6 +1977,16 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
                     0 if ui.directory.borrow().as_ref() == Some(&session)
                         && !ui.page.borrow().files.is_empty() =>
                     {
+                        if other_source.is_some() && !checked_reopen {
+                            // A pending old-page refresh must neither cancel an
+                            // explicit open nor overwrite its new result view.
+                            ui.open(session.clone());
+                            reopen_generation = ui.view_generation.get();
+                            ui.reload();
+                            checked_reopen = true;
+                            step = 30;
+                            return glib::ControlFlow::Continue;
+                        }
                         if inspect_consolidation {
                             let group = ui
                                 .page
@@ -1807,6 +2004,9 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
                         ui.widget::<gtk::CheckButton>("select_all").set_active(true);
                         step = 1;
                     }
+                    30 if ui.view_generation.get() > reopen_generation => {
+                        step = 0;
+                    }
                     10 => {
                         let b = ui.dialog.borrow().clone().unwrap();
                         let buffer = obj::<gtk::TextView>(&b, "body").buffer();
@@ -1819,6 +2019,13 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
                         }
                     }
                     1 if ui.page.borrow().selected > 0 => {
+                        if other_source.is_some() && !switched_sources {
+                            let id = ui.page.borrow().files.first().unwrap().id;
+                            ui.preview(id);
+                            ui.widget::<gtk::SearchEntry>("search").set_text("txt");
+                            step = 11;
+                            return glib::ControlFlow::Continue;
+                        }
                         ui.recovery();
                         let b = ui.dialog.borrow().clone().unwrap();
                         if all_paths {
@@ -1828,6 +2035,71 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
                         obj::<gtk::Entry>(&b, "destination_path")
                             .set_text(&destination.to_string_lossy());
                         step = 2;
+                    }
+                    11 if ui
+                        .widget::<gtk::Label>("preview_text")
+                        .text()
+                        .contains("Verified recovery") =>
+                    {
+                        selected_before_switch = ui.page.borrow().selected;
+                        preview_before_switch =
+                            ui.widget::<gtk::Label>("preview_text").text().to_string();
+                        ui.add_source();
+                        let b = ui.dialog.borrow().clone().unwrap();
+                        obj::<gtk::Entry>(&b, "path")
+                            .set_text(&other_source.as_ref().unwrap().to_string_lossy());
+                        obj::<gtk::Button>(&b, "confirm").emit_clicked();
+                        step = 12;
+                    }
+                    12 if ui
+                        .selected
+                        .get()
+                        .and_then(|id| ui.sources.borrow().get(id).map(|s| s.path.clone()))
+                        .as_ref()
+                        == other_source.as_ref() =>
+                    {
+                        assert_eq!(ui.directory.borrow().as_ref(), Some(&session));
+                        assert_eq!(ui.page.borrow().selected, selected_before_switch);
+                        assert_eq!(ui.query.borrow().text, "txt");
+                        assert_eq!(
+                            ui.widget::<gtk::Label>("preview_text").text().as_str(),
+                            preview_before_switch
+                        );
+                        let original = other_source.as_ref().unwrap().with_file_name("source.img");
+                        assert_eq!(ui.view_source.borrow().as_ref().unwrap().path, original);
+                        assert!(
+                            ui.widget::<gtk::Label>("source_title")
+                                .text()
+                                .starts_with("Next scan:")
+                        );
+                        // Exercise real sidebar row clicks in both directions.
+                        let other = ui.selected.get().unwrap();
+                        let first = ui
+                            .sources
+                            .borrow()
+                            .iter()
+                            .position(|s| s.path == original)
+                            .unwrap();
+                        for source in [first, other] {
+                            let row_index = ui
+                                .source_rows
+                                .borrow()
+                                .iter()
+                                .position(|id| *id == source)
+                                .unwrap();
+                            let list: gtk::ListBox = ui.widget("sources");
+                            let row = list.row_at_index(row_index as i32).unwrap();
+                            list.select_row(Some(&row));
+                            assert_eq!(ui.directory.borrow().as_ref(), Some(&session));
+                            assert_eq!(ui.page.borrow().selected, selected_before_switch);
+                            assert_eq!(ui.query.borrow().text, "txt");
+                            assert_eq!(
+                                ui.widget::<gtk::Label>("preview_text").text().as_str(),
+                                preview_before_switch
+                            );
+                        }
+                        switched_sources = true;
+                        step = 1;
                     }
                     2 => {
                         let b = ui.dialog.borrow().clone().unwrap();
@@ -1847,6 +2119,69 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
                         );
                         println!(
                             "Production GTK recovery workflow passed: saved scan, selection, destination validation, options, verified output."
+                        );
+                        if other_source.is_some() {
+                            ui.saved_scans();
+                            step = 20;
+                            return glib::ControlFlow::Continue;
+                        }
+                        ui.window().close();
+                        return glib::ControlFlow::Break;
+                    }
+                    20 | 22 => {
+                        let Some(b) = ui.dialog.borrow().clone() else {
+                            return glib::ControlFlow::Continue;
+                        };
+                        if let Some(list) = b.object::<gtk::ListBox>("scans") {
+                            let index = ui
+                                .saved
+                                .borrow()
+                                .iter()
+                                .position(|s| s.directory == session);
+                            if let Some(row) = index.and_then(|i| list.row_at_index(i as i32)) {
+                                list.select_row(Some(&row));
+                                obj::<gtk::Button>(&b, "delete").emit_clicked();
+                                step += 1;
+                            }
+                        }
+                    }
+                    21 | 23 => {
+                        let b = ui.dialog.borrow().clone().unwrap();
+                        if obj::<gtk::Window>(&b, "dialog").title().as_deref()
+                            == Some("Delete saved scan?")
+                        {
+                            assert!(
+                                obj::<gtk::Label>(&b, "details")
+                                    .text()
+                                    .contains(session.to_str().unwrap())
+                            );
+                            assert!(session.join("manifest.json").exists());
+                            if step == 21 {
+                                obj::<gtk::Button>(&b, "close").emit_clicked();
+                            } else {
+                                obj::<gtk::Button>(&b, "confirm").emit_clicked();
+                            }
+                            step += 1;
+                        }
+                    }
+                    24 if !ui.busy()
+                        && !session.exists()
+                        && ui.saved.borrow().iter().all(|s| s.directory != session) =>
+                    {
+                        assert!(ui.directory.borrow().is_none());
+                        assert_eq!(ui.page.borrow().total, 0);
+                        assert_eq!(ui.page.borrow().selected, 0);
+                        assert!(ui.view_source.borrow().is_none());
+                        assert!(destination.join("recovered.txt").is_file());
+                        assert!(
+                            other_source
+                                .as_ref()
+                                .unwrap()
+                                .with_file_name("source.img")
+                                .is_file()
+                        );
+                        println!(
+                            "GTK saved-scan management passed: source switching preserved selection/search/preview, recovery used the open scan, cancellation kept the folder, and confirmed deletion removed it without deleting recovered files."
                         );
                         ui.window().close();
                         return glib::ControlFlow::Break;

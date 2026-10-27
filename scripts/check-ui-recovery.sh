@@ -21,6 +21,11 @@ if [ "${ODR_CONSOLIDATE:-0}" = 1 ]; then
     set -- "$@" --consolidate
     export ODR_SMOKE_CONSOLIDATION=1 ODR_SMOKE_ALL_PATHS=1
 fi
+if [ "${ODR_MANAGE_SCANS:-0}" = 1 ]; then
+    cp "$source_root/source.img" "$source_root/other.img"
+    export ODR_SMOKE_OTHER_SOURCE="$source_root/other.img"
+fi
+source_hash=$(sha256sum "$source_root/source.img" | cut -d ' ' -f 1)
 "$binary" "$@" > "$work_root/scan.log"
 session=$(sed -n 's/^SAVED=//p' "$work_root/scan.log")
 test -n "$session"
@@ -28,4 +33,8 @@ env ODR_SMOKE_SESSION="$session" ODR_SMOKE_DESTINATION="$work_root/recovered" GT
 cmp "$source_root/original.txt" "$work_root/recovered/recovered.txt"
 if [ "${ODR_CONSOLIDATE:-0}" = 1 ]; then
     cmp "$source_root/original.txt" "$work_root/recovered/alias.txt"
+fi
+if [ "${ODR_MANAGE_SCANS:-0}" = 1 ]; then
+    test ! -e "$session"
+    test "$source_hash" = "$(sha256sum "$source_root/source.img" | cut -d ' ' -f 1)"
 fi

@@ -177,6 +177,19 @@ pub fn validate_storage(
     target: &Path,
     required_bytes: u64,
 ) -> Result<Vec<String>> {
+    let target_devices = validate_storage_location(source, target)?;
+    let existing = existing_parent(target)?;
+    if free_bytes(&existing)? < required_bytes.saturating_add(8 * 1024 * 1024) {
+        return fail(
+            "The chosen storage does not have enough available space (including an 8 MiB reserve).",
+        );
+    }
+    Ok(target_devices)
+}
+
+/// Validate source separation without requiring free space. Removing a saved
+/// scan must remain possible when its workspace is full.
+pub fn validate_storage_location(source: &SourceDescriptor, target: &Path) -> Result<Vec<String>> {
     let existing = existing_parent(target)?;
     if source.ancestry.is_empty() {
         return fail("The source storage ancestry could not be verified.");
@@ -193,11 +206,6 @@ pub fn validate_storage(
     }
     if target.starts_with(&source.path) || source.path.starts_with(target) {
         return fail("The source and output storage must not contain each other.");
-    }
-    if free_bytes(&existing)? < required_bytes.saturating_add(8 * 1024 * 1024) {
-        return fail(
-            "The chosen storage does not have enough available space (including an 8 MiB reserve).",
-        );
     }
     Ok(target_devices)
 }
