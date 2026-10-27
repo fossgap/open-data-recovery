@@ -171,6 +171,7 @@ fn legacy_session(root: &Path, version: &str) -> Store {
         ancestry: vec![],
         ewf: false,
         segments: vec![],
+        partition: None,
     };
     let connection = rusqlite::Connection::open(root.join("tree.sqlite")).unwrap();
     connection.execute_batch("CREATE TABLE files(id INTEGER PRIMARY KEY,path TEXT,size INTEGER,mtime INTEGER,inode TEXT,partition_offset INTEGER,partition_length INTEGER); INSERT INTO files VALUES(1,'photos/test.jpg',32,0,'39-128-4',1048576,67108864);").unwrap();

@@ -32,6 +32,7 @@ fn fixture(root: &Path) -> (Store, File) {
         ancestry: vec!["disconnected-test-source".into()],
         ewf: false,
         segments: vec![],
+        partition: None,
     };
     let options = ScanOptions {
         workspace: root.join("scans"),

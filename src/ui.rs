@@ -113,6 +113,13 @@ impl Ui {
         self.action("add-source", Self::add_source);
         self.action("custom-scan", Self::custom_scan);
         self.action("saved-scans", Self::saved_scans);
+        self.action("discover-partitions", |ui| {
+            ui.info(
+                "Demo mode",
+                "Partition discovery is available in the normal application.",
+            )
+        });
+        self.enable("discover-partitions", false);
         self.action("backends", |ui| ui.info("Demo mode", "The demonstration runs no recovery tools. Launch without --demo to discover devices, inspect installed backends, and perform real recovery."));
         self.action("reset", Self::reset);
         self.action("search", |ui| {

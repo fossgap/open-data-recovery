@@ -68,10 +68,12 @@ These paths are relative to `WORKSPACE/SESSION/`; optional files exist only when
 | `artifacts/recovery-…/` | Recovery job working directory |
 | `clone/clone.img`, `clone/clone.map` or `clone/clone.badblocks` | Optional clone and its associated map/report |
 | `ewf.raw` | Optional E01-to-raw conversion |
-| `source-range.img` | Optional custom-range input |
+| `source-range.img` | Retained input for a custom byte range or a selected discovered partition |
 | `retained-input.img` | Input reused by a new attempt from an older saved scan |
 
 ## Space needed through the workflow
+
+[Partition discovery](partition-discovery.md) writes metadata and logs under `WORKSPACE/partition-searches/SEARCH-ID/`. Those reports are separate from saved file scans and can be reopened through **Find lost partitions → Open report…**. Scanning a selected partition then retains its complete byte range in a normal saved scan, in addition to any clone or engine artifacts. Search reports can be removed manually after the search finishes; deleting a saved file scan does not remove the separate discovery report.
 
 Budget additional storage for:
 

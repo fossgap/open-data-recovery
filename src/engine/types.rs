@@ -37,6 +37,62 @@ pub struct SourceDescriptor {
     pub ewf: bool,
     #[serde(default)]
     pub segments: Vec<PathBuf>,
+    /// Virtual partition on the original source. Its fingerprint and ancestry
+    /// still identify the whole input; scans retain this bounded range.
+    #[serde(default)]
+    pub partition: Option<DiscoveredPartition>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct DiscoveredPartition {
+    pub offset_bytes: u64,
+    pub length_bytes: u64,
+    pub sector_size: u32,
+    pub filesystem: String,
+    pub label: String,
+    pub description: String,
+    pub verified: bool,
+    pub sample_sha256: String,
+}
+impl DiscoveredPartition {
+    pub fn validate(&self, source_size: u64) -> Result<()> {
+        if ![512, 1024, 2048, 4096].contains(&self.sector_size)
+            || self.length_bytes == 0
+            || self.offset_bytes % self.sector_size as u64 != 0
+            || self.length_bytes % self.sector_size as u64 != 0
+            || self
+                .offset_bytes
+                .checked_add(self.length_bytes)
+                .is_none_or(|end| end > source_size)
+        {
+            return fail("The discovered partition has an invalid or out-of-source byte range.");
+        }
+        Ok(())
+    }
+}
+impl SourceDescriptor {
+    pub fn same_target(&self, other: &Self) -> bool {
+        self.path == other.path
+            && self.scope == other.scope
+            && self
+                .partition
+                .as_ref()
+                .map(|p| (p.offset_bytes, p.length_bytes, p.sector_size))
+                == other
+                    .partition
+                    .as_ref()
+                    .map(|p| (p.offset_bytes, p.length_bytes, p.sector_size))
+    }
+    pub fn target_size(&self) -> u64 {
+        self.partition
+            .as_ref()
+            .map_or(self.size, |p| p.length_bytes)
+    }
+    pub fn target_offset(&self) -> u64 {
+        self.partition
+            .as_ref()
+            .map_or(self.fingerprint.partition_offset, |p| p.offset_bytes)
+    }
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, Default)]

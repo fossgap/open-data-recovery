@@ -1,7 +1,9 @@
 //! Production GTK controller. All blocking discovery, database and engine work runs off the UI thread.
+mod partitions;
+mod partitions_smoke;
 use crate::{
     engine::{
-        self, adapters,
+        self, adapters, discovery,
         jobs::{self, Job},
         sessions::Deletion,
         sources,
@@ -30,6 +32,7 @@ enum Message {
     Opened(u64, PathBuf, engine::Result<(Manifest, Page)>),
     DeletePrepared(u64, engine::Result<Deletion>),
     Deleted(PathBuf, bool, engine::Result<()>),
+    PartitionReport(u64, engine::Result<discovery::Report>),
     Selected(engine::Result<()>),
     Preview(u64, engine::Result<PathBuf>),
     Saved(u64, engine::Result<Vec<SavedScan>>),
@@ -53,6 +56,11 @@ pub struct Live {
     files: RefCell<Vec<Option<i64>>>,
     job: RefCell<Option<Job>>,
     deleting: Cell<bool>,
+    partition_search: RefCell<Option<discovery::SearchJob>>,
+    partition_report: RefCell<Option<discovery::Report>>,
+    partition_source: RefCell<Option<SourceDescriptor>>,
+    partition_generation: Cell<u64>,
+    close_partition_search: Cell<bool>,
     paused: Cell<bool>,
     pulse: Cell<bool>,
     rendering: Cell<bool>,
@@ -137,7 +145,9 @@ impl Live {
         let _ = self.tasks.send(Box::new(task));
     }
     fn busy(&self) -> bool {
-        self.job.borrow().is_some() || self.deleting.get()
+        self.job.borrow().is_some()
+            || self.deleting.get()
+            || self.partition_search.borrow().is_some()
     }
     fn action(self: &Rc<Self>, name: &str, handler: fn(&Rc<Self>)) {
         let action = gio::SimpleAction::new(name, None);
@@ -163,6 +173,7 @@ impl Live {
             ("start", Self::start as fn(&Rc<Self>)),
             ("custom-scan", Self::custom_scan),
             ("saved-scans", Self::saved_scans),
+            ("discover-partitions", Self::find_partitions),
             ("save", Self::saved_scans),
             ("add-source", Self::add_source),
             ("reset", Self::refresh),
@@ -368,7 +379,13 @@ impl Live {
         for name in ["start", "custom-scan"] {
             self.enable(name, !busy && source.is_some());
         }
-        for name in ["add-source", "reset", "saved-scans", "save"] {
+        for name in [
+            "add-source",
+            "reset",
+            "saved-scans",
+            "save",
+            "discover-partitions",
+        ] {
             self.enable(name, !busy);
         }
         self.enable("pause", self.job.borrow().is_some());
@@ -393,7 +410,7 @@ impl Live {
                 .view_source
                 .borrow()
                 .as_ref()
-                .is_some_and(|view| view.path != source.path || view.scope != source.scope);
+                .is_some_and(|view| !view.same_target(source));
             self.label(
                 "source_title",
                 &if different {
@@ -412,12 +429,17 @@ impl Live {
                     } else {
                         &source.filesystem
                     },
-                    model::size(source.size),
+                    model::size(source.target_size()),
                     source
-                        .scope
+                        .partition
                         .as_ref()
-                        .map(|s| format!(" · folder {s}"))
+                        .map(|p| format!(" · discovered range at byte {}", p.offset_bytes))
                         .unwrap_or_default()
+                        + &source
+                            .scope
+                            .as_ref()
+                            .map(|s| format!(" · folder {s}"))
+                            .unwrap_or_default()
                 ),
             );
             self.label(
@@ -491,7 +513,7 @@ impl Live {
                 return;
             }
             order.push(i);
-            if !collapsed.contains(&sources[i].path) {
+            if sources[i].partition.is_none() && !collapsed.contains(&sources[i].path) {
                 for (j, s) in sources.iter().enumerate() {
                     if s.parent_path.as_ref() == Some(&sources[i].path) {
                         walk(sources, j, order, collapsed);
@@ -500,10 +522,11 @@ impl Live {
             }
         }
         for (i, s) in sources.iter().enumerate() {
-            if s.parent_path
-                .as_ref()
-                .is_none_or(|p| !sources.iter().any(|s| &s.path == p))
-            {
+            if s.parent_path.as_ref().is_none_or(|p| {
+                !sources
+                    .iter()
+                    .any(|s| s.partition.is_none() && &s.path == p)
+            }) {
                 walk(&sources, i, &mut order, &self.collapsed_disks.borrow());
             }
         }
@@ -512,7 +535,9 @@ impl Live {
             let children: Vec<_> = sources
                 .iter()
                 .enumerate()
-                .filter(|(_, s)| s.parent_path.as_ref() == Some(&source.path))
+                .filter(|(_, s)| {
+                    source.partition.is_none() && s.parent_path.as_ref() == Some(&source.path)
+                })
                 .map(|(i, s)| (i, s.clone()))
                 .collect();
             let disk = !children.is_empty()
@@ -537,11 +562,19 @@ impl Live {
                     } else {
                         &source.filesystem
                     },
-                    if source.mounted { " · mounted" } else { "" }
+                    source
+                        .partition
+                        .as_ref()
+                        .map(|p| format!(" · byte {}", p.offset_bytes))
+                        .unwrap_or_else(|| if source.mounted {
+                            " · mounted".into()
+                        } else {
+                            String::new()
+                        })
                 ),
             );
             if let Some(label) = b.object::<gtk::Label>("capacity") {
-                label.set_text(&model::size(source.size));
+                label.set_text(&model::size(source.target_size()));
             }
             if let Some(icon) = b.object::<gtk::Image>("icon") {
                 icon.set_icon_name(Some(if source.kind == SourceType::Image {
@@ -581,9 +614,9 @@ impl Live {
                         crate::appearance::source(ctx, &foreground, 0.1);
                         let _ = ctx.paint();
                         for (j, s) in &segments {
-                            let start =
-                                s.fingerprint.partition_offset as f64 / size as f64 * width as f64;
-                            let width = (s.size as f64 / size as f64 * width as f64).max(2.0);
+                            let start = s.target_offset() as f64 / size as f64 * width as f64;
+                            let width =
+                                (s.target_size() as f64 / size as f64 * width as f64).max(2.0);
                             let active = selected == Some(*j);
                             if active {
                                 crate::appearance::source(ctx, &accent, 1.0);
@@ -1055,6 +1088,21 @@ impl Live {
         obj::<gtk::CheckButton>(&b, "clone")
             .set_active(self.widget::<gtk::CheckButton>("clone_first").is_active());
         obj::<gtk::CheckButton>(&b, "consolidate").set_active(options.consolidate);
+        if let Some(partition) = self
+            .selected
+            .get()
+            .and_then(|i| self.sources.borrow().get(i)?.partition.clone())
+        {
+            for (id, value) in [
+                ("offset", partition.offset_bytes.to_string()),
+                ("length", partition.length_bytes.to_string()),
+            ] {
+                let entry: gtk::Entry = obj(&b, id);
+                entry.set_text(&value);
+                entry.set_sensitive(false);
+                entry.set_tooltip_text(Some("The discovered partition defines this range. It is retained in the workspace before scanning."));
+            }
+        }
         Self::browse(&b, "browse", "workspace", "chooser");
         let weak = Rc::downgrade(self);
         let dialog = b.downgrade();
@@ -1098,6 +1146,9 @@ impl Live {
         self.controls();
     }
     fn cancel(self: &Rc<Self>) {
+        if let Some(search) = self.partition_search.borrow().as_ref() {
+            search.control.cancel();
+        }
         if let Some(job) = self.job.borrow().as_ref() {
             job.control.cancel();
             self.label("status_text", "Cancelling · saving partial results…");
@@ -1408,6 +1459,7 @@ impl Live {
         self.render_files();
     }
     fn tick(self: &Rc<Self>) {
+        self.poll_partition_search();
         let events: Vec<_> = self
             .job
             .borrow()
@@ -1501,6 +1553,18 @@ impl Live {
         }
         while let Ok(message) = self.messages.try_recv() {
             match message {
+                Message::PartitionReport(generation, result) => {
+                    if generation == self.dialog_generation.get() && !self.busy() {
+                        match result {
+                            Ok(report) => self.show_partition_report(report),
+                            Err(error) => {
+                                if let Some(b) = self.dialog.borrow().as_ref() {
+                                    text(b, "validation", &error.to_string());
+                                }
+                            }
+                        }
+                    }
+                }
                 Message::Findings(generation, after, result) => {
                     if generation == self.dialog_generation.get() {
                         if let Some(b) = self.dialog.borrow().as_ref() {
@@ -1551,7 +1615,7 @@ impl Live {
                             .sources
                             .borrow()
                             .iter()
-                            .filter(|s| s.kind != SourceType::Block)
+                            .filter(|s| s.kind != SourceType::Block || s.partition.is_some())
                             .cloned()
                             .collect::<Vec<_>>();
                         self.sources.replace(sources);
@@ -1560,7 +1624,7 @@ impl Live {
                             self.sources
                                 .borrow()
                                 .iter()
-                                .position(|s| s.path == old.path && s.scope == old.scope)
+                                .position(|s| s.same_target(old))
                         });
                         if selected.is_none() && self.directory.borrow().is_some() {
                             if let Some(old) = previous {
@@ -1639,9 +1703,11 @@ impl Live {
                     match result {
                         Ok((manifest, page)) => {
                             self.invalidate_view();
-                            let id = self.sources.borrow().iter().position(|s| {
-                                s.path == manifest.source.path && s.scope == manifest.source.scope
-                            });
+                            let id = self
+                                .sources
+                                .borrow()
+                                .iter()
+                                .position(|s| s.same_target(&manifest.source));
                             let id = id.unwrap_or_else(|| {
                                 let id = self.sources.borrow().len();
                                 self.sources.borrow_mut().push(manifest.source.clone());
@@ -1897,6 +1963,11 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         files: RefCell::new(vec![]),
         job: RefCell::new(None),
         deleting: Cell::new(false),
+        partition_search: RefCell::new(None),
+        partition_report: RefCell::new(None),
+        partition_source: RefCell::new(None),
+        partition_generation: Cell::new(0),
+        close_partition_search: Cell::new(false),
         paused: Cell::new(false),
         pulse: Cell::new(false),
         rendering: Cell::new(false),
@@ -1945,6 +2016,9 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         }
     });
     if smoke {
+        if partitions_smoke::run(&ui) {
+            return;
+        }
         if let (Some(session), Some(destination)) = (
             std::env::var_os("ODR_SMOKE_SESSION"),
             std::env::var_os("ODR_SMOKE_DESTINATION"),
@@ -2213,6 +2287,15 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
                         .as_ref()
                         .unwrap()
                         .object::<gtk::ListBox>("scans")
+                        .is_some()
+                );
+                ui.find_partitions();
+                assert!(
+                    ui.dialog
+                        .borrow()
+                        .as_ref()
+                        .unwrap()
+                        .object::<gtk::ListBox>("partitions")
                         .is_some()
                 );
                 ui.add_source();

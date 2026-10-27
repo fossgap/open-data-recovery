@@ -21,6 +21,7 @@ fn fixture(root: &Path) -> Store {
         ancestry: vec!["disconnected-test-source".into()],
         ewf: false,
         segments: vec![],
+        partition: None,
     };
     Store::create(
         &source,

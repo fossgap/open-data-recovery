@@ -10,9 +10,11 @@ use std::path::PathBuf;
 
 fn cli(args: &[String]) -> engine::Result<()> {
     let (valued, flags): (&[&str], &[&str]) = match args[0].as_str() {
-        "--scan" => (
+        "--scan" | "--scan-partition" => (
             &[
                 "--scan",
+                "--scan-partition",
+                "--partition",
                 "--workspace",
                 "--mode",
                 "--extensions",
@@ -20,6 +22,15 @@ fn cli(args: &[String]) -> engine::Result<()> {
                 "--carver",
             ],
             &["--clone", "--include-existing", "--consolidate"],
+        ),
+        "--discover-partitions" => (
+            &[
+                "--discover-partitions",
+                "--workspace",
+                "--table",
+                "--timeout",
+            ],
+            &["--deeper"],
         ),
         "--recover" => (
             &["--recover", "--destination", "--ids"],
@@ -50,6 +61,11 @@ fn cli(args: &[String]) -> engine::Result<()> {
     }
     if seen.contains("--all") && seen.contains("--ids") {
         return engine::fail("Choose --all or --ids, not both.");
+    }
+    if (args[0] == "--scan" && (seen.contains("--scan-partition") || seen.contains("--partition")))
+        || (args[0] == "--scan-partition" && seen.contains("--scan"))
+    {
+        return engine::fail("Choose --scan SOURCE or --scan-partition REPORT --partition NUMBER.");
     }
     fn argument(args: &[String], key: &str) -> engine::Result<String> {
         let i = args
@@ -107,6 +123,47 @@ fn cli(args: &[String]) -> engine::Result<()> {
         );
         return Ok(());
     }
+    if args[0] == "--discover-partitions" {
+        let source =
+            engine::sources::inspect(&PathBuf::from(argument(args, "--discover-partitions")?))?;
+        let table = if seen.contains("--table") {
+            match argument(args, "--table")?.as_str() {
+                "auto" => engine::discovery::Table::Auto,
+                "intel" | "mbr" => engine::discovery::Table::Intel,
+                "gpt" => engine::discovery::Table::Gpt,
+                _ => return engine::fail("Partition table must be auto, intel/mbr or gpt."),
+            }
+        } else {
+            engine::discovery::Table::Auto
+        };
+        let timeout_seconds = if seen.contains("--timeout") {
+            argument(args, "--timeout")?.parse::<u64>().map_err(|_| {
+                engine::Error::Message("Timeout must be a nonnegative number of seconds.".into())
+            })?
+        } else {
+            0
+        };
+        let report = engine::discovery::discover(
+            source,
+            engine::discovery::Options {
+                workspace: PathBuf::from(argument(args, "--workspace")?),
+                table,
+                deeper: seen.contains("--deeper"),
+                timeout_seconds,
+            },
+            &engine::process::Control::default(),
+        )?;
+        eprintln!("Partition search report: {}", report.path().display());
+        println!("{}", serde_json::to_string_pretty(&report)?);
+        if !report.complete {
+            return engine::fail(
+                report
+                    .error
+                    .unwrap_or_else(|| "Partition search did not complete.".into()),
+            );
+        }
+        return Ok(());
+    }
     if args[0] == "--list" {
         let dir = PathBuf::from(argument(args, "--list")?);
         let store = Store::open(&dir)?;
@@ -148,8 +205,21 @@ fn cli(args: &[String]) -> engine::Result<()> {
         }
         return Ok(());
     }
-    if args[0] == "--scan" {
-        let source = engine::sources::inspect(&PathBuf::from(argument(args, "--scan")?))?;
+    if args[0] == "--scan" || args[0] == "--scan-partition" {
+        let source = if args[0] == "--scan-partition" {
+            let report =
+                engine::discovery::load(&PathBuf::from(argument(args, "--scan-partition")?))?;
+            let number = argument(args, "--partition")?
+                .parse::<usize>()
+                .ok()
+                .and_then(|n| n.checked_sub(1))
+                .ok_or_else(|| {
+                    engine::Error::Message("Partition numbers start at 1, in report order.".into())
+                })?;
+            report.target(number)?
+        } else {
+            engine::sources::inspect(&PathBuf::from(argument(args, "--scan")?))?
+        };
         let mut options = ScanOptions {
             workspace: PathBuf::from(argument(args, "--workspace")?),
             ..Default::default()
@@ -246,7 +316,7 @@ fn main() -> gtk::glib::ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args.iter().any(|a| a == "--help" || a == "-h") {
         println!(
-            "Open Data Recovery\n\nUsage:\n  open-data-recovery                         Native GTK workspace\n  open-data-recovery --demo                  Safe fixture demonstration\n  open-data-recovery --sources | --backends\n  open-data-recovery --scan SOURCE --workspace DIRECTORY [--mode quick|deep|full]\n      [--extensions jpg,pdf] [--metadata ENGINE] [--carver ENGINE] [--clone] [--include-existing] [--consolidate]\n  open-data-recovery --list SESSION\n  open-data-recovery --findings SESSION --id GROUP_ID\n  open-data-recovery --recover SESSION --destination DIRECTORY [--ids 1,2 | --all] [--flat] [--skip] [--all-paths]\n  open-data-recovery --smoke-test | --live-smoke-test\n\nSources are read-only. Workspace and recovery destination must be on a separate physical drive.\nConsolidation is off by default; --consolidate compares contents after scanning.\nRecovery uses the persisted selection unless --ids or --all is supplied.\nConsolidated groups recover one copy each; --all-paths restores every recorded path."
+            "Open Data Recovery\n\nUsage:\n  open-data-recovery                         Native GTK workspace\n  open-data-recovery --demo                  Safe fixture demonstration\n  open-data-recovery --sources | --backends\n  open-data-recovery --scan SOURCE --workspace DIRECTORY [--mode quick|deep|full]\n      [--extensions jpg,pdf] [--metadata ENGINE] [--carver ENGINE] [--clone] [--include-existing] [--consolidate]\n  open-data-recovery --discover-partitions SOURCE --workspace DIRECTORY [--table auto|intel|gpt] [--deeper] [--timeout SECONDS]\n  open-data-recovery --scan-partition REPORT.json --partition NUMBER --workspace DIRECTORY [scan options]\n  open-data-recovery --list SESSION\n  open-data-recovery --findings SESSION --id GROUP_ID\n  open-data-recovery --recover SESSION --destination DIRECTORY [--ids 1,2 | --all] [--flat] [--skip] [--all-paths]\n  open-data-recovery --smoke-test | --live-smoke-test\n\nSources are read-only. Workspace and recovery destination must be on a separate physical drive.\nPartition discovery only searches; it never writes a partition table. Partition numbers start at 1.\nConsolidation is off by default; --consolidate compares contents after scanning.\nRecovery uses the persisted selection unless --ids or --all is supplied.\nConsolidated groups recover one copy each; --all-paths restores every recorded path."
         );
         return gtk::glib::ExitCode::SUCCESS;
     }

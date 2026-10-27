@@ -580,6 +580,21 @@ pub fn compare_recorded(first: &Store, second: &Store) -> Result<String> {
     if first.manifest.source.fingerprint != second.manifest.source.fingerprint {
         return fail("The saved scans refer to different source fingerprints.");
     }
+    let partition_identity = |source: &SourceDescriptor| {
+        source.partition.as_ref().map(|p| {
+            (
+                p.offset_bytes,
+                p.length_bytes,
+                p.sector_size,
+                p.sample_sha256.clone(),
+            )
+        })
+    };
+    if partition_identity(&first.manifest.source) != partition_identity(&second.manifest.source) {
+        return fail(
+            "The saved scans refer to different discovered partition ranges or fingerprints.",
+        );
+    }
     if first.manifest.engines != second.manifest.engines {
         return Ok(format!(
             "Recorded engine versions differ. Counts are not directly comparable.\n\nCurrent: {:?}\nSelected: {:?}",

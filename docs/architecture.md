@@ -15,6 +15,7 @@
 | `consolidation.rs` | Optional final content grouping, bounded comparison/extraction, verified artifact reuse and atomic publication |
 | `store.rs` | SQLite candidates and selection, JSON manifests, legacy projections, logs and recorded-version comparison |
 | `sessions.rs` | Shared session lifetime locks and confined, identity-checked saved-scan deletion |
+| `discovery.rs` | Read-only TestDisk partition search, bounded CHS/LBA parsing, header verification, persisted reports and virtual targets |
 
 ## Source protection
 
@@ -27,6 +28,10 @@ Backend processes receive a read-only source as FD 3 and literal argument arrays
 These controls protect against unintended writes by the application and its engines. They do not freeze a live filesystem or stop other processes from modifying it. A clone of a mounted filesystem is not automatically a consistent filesystem snapshot.
 
 ## Scanning and recovery
+
+Partition discovery is an explicit preparation action with its own cancellable worker and GTK dialog (`src/live/partitions.rs`). It preserves the open catalogue. TestDisk receives a read-only FD and an enum-generated script containing only optional table selection, `analyze` and optional `search`; no shell hints from its log are executed. The parser accepts Intel CHS and GPT LBA records only in search sections, checks inclusive ends and real source bounds, deduplicates exact ranges and retains overlapping alternatives. `blkid` independently probes candidate headers. Reports under `partition-searches/` are separate from ordinary scan sessions; failed or cancelled reports cannot supply targets.
+
+`SourceDescriptor.partition` is optional for backwards compatibility. A virtual target retains the whole source's path, size, fingerprint and physical ancestry, and adds a bounded range, filesystem hint and sampled partition fingerprint. Target equality includes the range. Source verification checks both identities; the scan worker fixes its range options and retains `source-range.img` before invoking normal engines. A retained-range restart avoids slicing the already-normalized input again. Source rows display the partition's size and location rather than the underlying input's full size. File-scan defaults, including the existing-files option, are unchanged.
 
 Quick uses metadata adapters; Deep uses signature/content extraction; Full performs both. Defaults prefer TSK and PhotoRec, adding installed journal/MFT alternatives when the identified filesystem supports them. btrfs uses its native restore tools. Explicit custom engines are available through the same traits. Metadata extractors that write files eagerly retain them under `artifacts/`; TSK candidates retain addresses for later `icat` extraction. bulk_extractor feature reports remain reports.
 
@@ -60,12 +65,12 @@ artifacts/             Per-engine outputs, bounded diagnostics and small preview
 clone/clone.img         Optional retained clone
 clone/clone.map         ddrescue map (or clone.badblocks for safecopy)
 ewf.raw                Optional normalized E01 input
-source-range.img       Optional normalized custom byte range
+source-range.img       Optional normalized custom or discovered-partition byte range
 ```
 
 Manifest updates use a temporary file, fsync and rename. Candidate inserts are batched. The GTK tree queries bounded pages; it does not load a whole drive's result set into memory. Older `files`/`entries`/`candidates` tables are projected onto the current candidate model without schema migration during load. A saved clone can be referenced in a new attempt by a retained hard link or a checked copy; the prior tree is unchanged.
 
-Comparison requires matching source fingerprints and uses the versions/hashes recorded in both manifests. The currently installed tools do not redefine old attempts. Selecting and recovering files writes a sidecar and log only after validating the session's storage again.
+Comparison requires matching source fingerprints, including the range and sample identity for discovered partitions, and uses the versions/hashes recorded in both manifests. The currently installed tools do not redefine old attempts. Selecting and recovering files writes a sidecar and log only after validating the session's storage again.
 
 The production controller stores the next selected source separately from the source of its open scan. Source selection/addition retains the current catalogue page, persisted selection, search and preview. Result and recovery labels identify the open scan; starting a scan, opening another attempt or deleting the open attempt changes that context. Asynchronous open responses carry a generation so obsolete results cannot reopen a deleted/replaced view.
 

@@ -56,6 +56,8 @@ Selecting or adding another source keeps the current results, selection, search 
 
 In **Saved Scan**, select a snapshot and choose **Delete…** to permanently remove its entire folder after confirmation, including extracted files, caches, logs and any retained clone. The confirmation shows the exact folder. Active scans/recovery are protected; the original source and recovered files outside the snapshot are kept. Deleting the open snapshot clears its results. See [storage and cleanup](docs/wiki/storage.md).
 
+For missing partitions, **Menu → Scan → Find lost partitions…** runs a separate read-only TestDisk Quick/Deeper Search. Choose a candidate with **Use partition**, then run a file scan; enable **Include existing files** in Custom Scan for files lost with the partition. Search reports can be reopened, and no partition table is rewritten. See [lost-partition discovery](docs/wiki/partition-discovery.md) for supported inputs, storage costs and CLI commands.
+
 ### Optional final consolidation
 
 **Custom… → Scan → Consolidate identical files when the scan finishes** is off by default. After the selected engines finish, it groups only files whose complete contents match by SHA-256 **and byte-for-byte comparison**. Names, sizes and source offsets alone never establish equivalence. The complete grouped list is published atomically; it stays stable when the scan is reopened or files are recovered.
@@ -85,6 +87,7 @@ Cancellation, insufficient space or a changed canonical artifact leaves the orig
 | --- | --- |
 | Quick metadata | TSK `fls`/`icat`, `tsk_recover`, ext4magic, extundelete, ntfsundelete, RecuperaBit, btrfs restore, TestDisk scripted NTFS undelete, ext4rescue |
 | Read-only diagnostics | debugfs, dumpe2fs, btrfs-find-root, TSK partition discovery |
+| Lost-partition discovery | Separate TestDisk Quick/Deeper Search for MBR/GPT candidates; retained reports and virtual scan targets |
 | Deep carving | PhotoRec, Scalpel, Foremost, Digler, Magicrescue, recoverjpeg |
 | Forensic extraction | bulk_extractor; feature reports are retained as artifacts rather than mislabeled as original recovered files |
 | Clone-first | GNU ddrescue with map, or safecopy with bad-block report |
@@ -134,6 +137,7 @@ sh scripts/check-engines.sh  # Real tools on disposable images; /tmp and /dev/sh
 sh scripts/check-ui-recovery.sh # Full GTK recovery flow on a disposable image
 ODR_CONSOLIDATE=1 sh scripts/check-ui-recovery.sh # Group details and every-path recovery
 ODR_MANAGE_SCANS=1 sh scripts/check-ui-recovery.sh # Source switching, recovery, cancel/confirm deletion
+sh scripts/check-ui-partitions.sh # Read-only partition discovery, report reopening, range scan and recovery
 python3 scripts/check-consolidation.py --runs 3 --output target/consolidation-check
 sh scripts/capture-preview.sh
 

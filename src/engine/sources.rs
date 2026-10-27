@@ -96,6 +96,7 @@ pub fn discover() -> Result<Vec<SourceDescriptor>> {
             ancestry,
             ewf: false,
             segments: vec![],
+            partition: None,
         });
         if let Some(children) = node["children"].as_array() {
             for child in children {
@@ -289,6 +290,7 @@ pub fn inspect(path: &Path) -> Result<SourceDescriptor> {
         ancestry: ancestry.into_iter().collect(),
         ewf,
         segments,
+        partition: None,
     })
 }
 
@@ -302,7 +304,63 @@ pub fn verify(source: &SourceDescriptor) -> Result<SourceDescriptor> {
             "The source identity or image fingerprint changed. Start a new scan for this source.",
         );
     }
+    if let Some(partition) = &source.partition {
+        partition.validate(current.size)?;
+        let input = open_readonly(&current)?;
+        if super::discovery::sample(&input, partition)? != partition.sample_sha256 {
+            return fail(
+                "The discovered partition's contents changed. Search for partitions again.",
+            );
+        }
+        current = partition_source(&current, partition)?;
+        current.name = source.name.clone();
+    }
     Ok(current)
+}
+
+pub fn partition_source(
+    source: &SourceDescriptor,
+    partition: &super::types::DiscoveredPartition,
+) -> Result<SourceDescriptor> {
+    if source.kind == SourceType::Folder
+        || source.scope.is_some()
+        || source.partition.is_some()
+        || source.ewf
+    {
+        return fail("Choose the original raw disk image or device for this partition.");
+    }
+    partition.validate(source.size)?;
+    if partition.sector_size != source.sector_size {
+        return fail("The discovered partition's sector size differs from its source.");
+    }
+    if partition.sample_sha256.len() != 64
+        || !partition
+            .sample_sha256
+            .bytes()
+            .all(|b| b.is_ascii_hexdigit())
+    {
+        return fail("The discovered partition has no valid source fingerprint.");
+    }
+    let mut target = source.clone();
+    target.name = format!(
+        "Discovered {} · byte {}{}",
+        if partition.filesystem.is_empty() {
+            "partition"
+        } else {
+            &partition.filesystem
+        },
+        partition.offset_bytes,
+        if partition.label.is_empty() {
+            String::new()
+        } else {
+            format!(" · {}", partition.label)
+        }
+    );
+    target.filesystem = partition.filesystem.clone();
+    target.sector_size = partition.sector_size;
+    target.parent_path = Some(source.path.clone());
+    target.partition = Some(partition.clone());
+    Ok(target)
 }
 
 pub fn open_readonly(source: &SourceDescriptor) -> Result<File> {

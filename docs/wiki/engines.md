@@ -19,7 +19,7 @@ These can be used in Quick or in Full's metadata stage. “Automatic” below me
 | `ntfsundelete` | NTFS metadata-based undelete | Automatic additional engine on NTFS, or custom choice | Extracted files |
 | RecuperaBit — `recuperabit` | NTFS filesystem reconstruction and extraction; reconstruction state is also retained | Automatic additional engine on NTFS, or custom choice | Extracted files |
 | `btrfs restore` — `btrfs` | Native btrfs tree-based extraction; Custom Scan can specify a tree root | Default metadata engine on btrfs, or custom choice | Extracted files |
-| TestDisk — `testdisk` | Scripted NTFS undelete; this adapter does not expose TestDisk partition repair or its full interactive feature set | Automatic additional engine on NTFS, or custom choice | Extracted files |
+| TestDisk — `testdisk` | Scripted NTFS undelete in file scans; a separate action also discovers lost partitions (see below) | Automatic additional engine on NTFS, or custom choice | Extracted files |
 | `ext4rescue` | ext4 recovery using a retained ddrescue clone and its matching map | Custom choice; requires ddrescue clone-first and a complete filesystem source, not a custom byte range | Extracted files and engine cache |
 
 TSK uses `mmls` to enumerate partition ranges. Specialized metadata engines should be given the filesystem partition they expect; an explicit choice does not make an incompatible engine suitable for another filesystem. TestDisk's adapter explicitly requires NTFS. ext4rescue does not accept safecopy's report in place of a ddrescue map.
@@ -41,6 +41,8 @@ Deep and Full each select **one** content engine. Auto chooses the first availab
 Carvers save actual contents in the workspace. Original filenames and folder structure may not be available. bulk_extractor shares the content-engine selection interface, but choosing it does not turn its reports into file-recovery candidates.
 
 ## Preparation and diagnostic tools
+
+**Menu → Scan → Find lost partitions…** uses TestDisk's scripted Quick/Deeper Search separately from the metadata sequence. It finds MBR/GPT candidate ranges, saves a report and log, and allows a candidate to become a virtual scan target. It never repairs or writes the source partition table. A following file scan retains the selected range and uses the existing filesystem engines. See [partition discovery](partition-discovery.md).
 
 These are supporting operations, not additional competing file-recovery engines.
 

@@ -124,6 +124,21 @@ fn scan_attempt(
     } else {
         source
     };
+    if retained.is_none() {
+        if let Some(partition) = &source.partition {
+            partition.validate(source.size)?;
+            if (options.offset_bytes != 0 || options.length_bytes.is_some())
+                && (options.offset_bytes != partition.offset_bytes
+                    || options.length_bytes != Some(partition.length_bytes))
+            {
+                return fail(
+                    "A discovered partition already defines its byte range. Leave the custom range empty.",
+                );
+            }
+            options.offset_bytes = partition.offset_bytes;
+            options.length_bytes = Some(partition.length_bytes);
+        }
+    }
     if matches!(
         source.filesystem.to_ascii_lowercase().as_str(),
         "zfs" | "zfs_member" | "crypto_luks" | "bitlocker"

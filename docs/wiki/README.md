@@ -7,6 +7,7 @@ This wiki describes the current implementation. Start here for the workflow, the
 | [Storage and workspace](storage.md) | Where is data written? Does the workspace contain real files? How much space is needed? |
 | [Implemented engines](engines.md) | What does each engine do? Which run automatically, and which require a custom choice? |
 | [Scan modes](scan-modes.md) | What exactly runs in Quick, Deep and Full? Can a scan use several engines? |
+| [Lost-partition discovery](partition-discovery.md) | How can TestDisk find missing partition boundaries and make them available as scan targets? |
 | [Final consolidation](consolidation.md) | How are duplicate findings displayed or grouped? What changes in time, storage and recovery? |
 | [Recovering files](recovery.md) | Where do recovered bytes come from? What do the recovery options and verification mean? |
 
@@ -24,6 +25,8 @@ This wiki describes the current implementation. Start here for the workflow, the
 Selecting or adding another source does not close the displayed scan. Its results, selection, search and preview remain available. **Results from…** identifies those results, while **Next scan: …** identifies a different source selected for a new scan. Recovery always uses the displayed scan. Start a new scan or explicitly open another saved scan to replace it.
 
 To remove a saved attempt, use **Menu → Scan → Saved Scan → select the scan → Delete…** and review the folder before confirming permanent deletion. See [storage and cleanup](storage.md).
+
+For a missing or damaged partition table, use **Menu → Scan → Find lost partitions…** before the file scan. TestDisk searches read-only; **Use partition** adds a bounded virtual source. Enable **Include existing files** in Custom Scan when recovering files that were lost with the partition. See [partition discovery](partition-discovery.md).
 
 ```mermaid
 flowchart LR

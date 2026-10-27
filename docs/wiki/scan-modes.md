@@ -76,6 +76,8 @@ Pause/resume controls the active job; cancel retains partial results. Cancellati
 
 ## Filesystem scope
 
+[Lost-partition discovery](partition-discovery.md) is a separate, explicit TestDisk operation before a file scan. Its Quick/Deeper Search finds boundaries; it does not add TestDisk stages to these scan modes. Selecting a discovered target fixes and retains its byte range. Enable **Include existing files** when the partition was lost but its files were not individually deleted.
+
 The implemented scope includes ext2/3/4, btrfs, FAT12/16/32, exFAT and NTFS. XFS is best-effort carving; APFS/HFS are carving-only. Quick is rejected for these carving-only filesystems; Full skips metadata recovery and runs its content stage. Locked encrypted volumes and ZFS are rejected. An already-unlocked mapper can be selected as a source.
 
 ## CLI examples

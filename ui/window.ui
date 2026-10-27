@@ -39,6 +39,10 @@
       </section>
       <section>
         <item>
+          <attribute name="label">Find lost partitions…</attribute>
+          <attribute name="action">win.discover-partitions</attribute>
+        </item>
+        <item>
           <attribute name="label">Custom scan…</attribute>
           <attribute name="action">win.custom-scan</attribute>
         </item>
@@ -445,13 +449,6 @@
                     <child>
                       <object class="GtkLabel">
                         <property name="hexpand">true</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton">
-                        <property name="label">Save scan</property>
-                        <property name="action-name">win.save</property>
-                        <property name="tooltip-text">Save an in-memory demo snapshot</property>
                       </object>
                     </child>
                   </object>
