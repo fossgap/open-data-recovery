@@ -7,8 +7,8 @@ There are three main storage locations. An optional clone is part of the workspa
 | Location | Contents | Storage rule |
 | --- | --- | --- |
 | Source | Original disk, partition, image or filesystem containing the selected folder | Opened read-only by the application |
-| Workspace | Saved scans, catalogues, logs, extracted files, comparison/preview caches, and optional retained input images | Must be on a different physical drive from the original source |
-| Recovery destination | Selected final files, written using the recovery options | Must be on a different physical drive from the source and outside the saved-scan directory |
+| Workspace | Saved scans, catalogues, logs, extracted files, comparison/preview caches, and optional retained input images | Separate physical drive for device/folder sources; may share an image file's drive |
+| Recovery destination | Selected final files, written using the recovery options | Same device/image rule as the workspace; must be outside the saved-scan directory |
 
 Workspace and destination **can share the same non-source drive**. For example:
 
@@ -21,7 +21,20 @@ Drive B: /media/recovery/
   restored/               selected recovered files
 ```
 
-Another partition on Drive A does not satisfy the separation rule. The recovery destination must neither be inside the saved-scan directory nor contain that directory. A separate Drive C for the destination is allowed, but is not required. Storage whose physical relationship to the source cannot be verified is rejected.
+For device and mounted-folder sources, another partition on Drive A does not satisfy the separation rule. The recovery destination must neither be inside the saved-scan directory nor contain that directory. A separate Drive C for the destination is allowed, but is not required. Storage whose physical relationship to the source cannot be verified is rejected.
+
+**Regular image-file exception:** raw/dd and E01 images may share their hosting drive with both output locations. The same applies to a virtual partition discovered inside an image. This assumes a healthy filesystem hosting the image: writing separate output files does not allocate blocks inside the image itself.
+
+```text
+One healthy drive:
+  images/disk.img         read-only source (or images/evidence.E01, E02, ...)
+  scans/SESSION/          workspace and saved scan
+  restored/              recovered files
+```
+
+The workspace and destination must not contain the source image or **any** E01 segment. Choose separate folders such as the siblings above; choosing the image's containing directory as an output root is rejected. Existing output files, including hard links or symbolic links to an image, are never overwritten: recovery renames or skips conflicts. Source inputs must remain regular files; changed device/directory/symlink paths are rejected. Free-space, output-path and known-storage checks still apply; this exception does not enable unverified network/overlay storage.
+
+The exception is automatic and requires no checkbox. Saved scans retain their original source type. A device scan using its retained clone therefore still protects the original device; it does not become an image-file scan automatically. Saved image scans can still use retained contents, rescan or be deleted after their original image is disconnected, without changing their recorded storage policy. Fresh scans require the original image to be available and verified.
 
 The default workspace is `$XDG_DATA_HOME/open-data-recovery/snapshots`, or `~/.local/share/open-data-recovery/snapshots`. This default is still checked against the selected source and may need changing in **Custom… → Scan → Workspace**.
 

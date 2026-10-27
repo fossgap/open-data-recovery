@@ -12,6 +12,8 @@ pub mod sessions;
 #[cfg(test)]
 mod sessions_tests;
 pub mod sources;
+#[cfg(test)]
+mod storage_tests;
 pub mod store;
 #[cfg(test)]
 mod tests;

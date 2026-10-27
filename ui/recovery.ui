@@ -70,7 +70,7 @@
                 <property name="spacing">10</property>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">Destination on a separate drive</property>
+                    <property name="label">Destination folder</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                   </object>
@@ -96,7 +96,7 @@
             </child>
             <child>
               <object class="GtkLabel" id="validation">
-                <property name="label">Choose a separate drive for recovered files.</property>
+                <property name="label">Choose where to save recovered files.</property>
                 <property name="xalign">0</property>
                 <property name="wrap">true</property>
                 <property name="max-width-chars">55</property>

@@ -1,6 +1,6 @@
 # Open Data Recovery
 
-A native Linux workspace for **choose a source → scan → inspect and select files → recover to a separate drive**. Built with Rust, GTK4, and declarative GtkBuilder layouts.
+A native Linux workspace for **choose a source → scan → inspect and select files → recover selected files**. Built with Rust, GTK4, and declarative GtkBuilder layouts.
 
 The interface uses the system GTK theme, including its light/dark appearance, fonts, and native widget styling. Custom Scan keeps its settings in compact **Scan**, **Engines**, and **Advanced** tabs.
 
@@ -41,10 +41,10 @@ cargo run --locked -- --sources    # Read-only device discovery as JSON
 
 1. Select a disk or partition in the disk layout sidebar, or use **File → Add source** for a raw/dd image, E01 image, unlocked mapper, or mounted local folder. Mounted filesystems remain mounted. Their contents can still change while other applications use them.
 2. Choose **Quick**, **Deep**, or **Full**. **Scan** starts with that mode's defaults. Its dropdown offers **Custom…** for extensions, workspace, optional final consolidation, engine selection, clone engine/retries, size filters, a byte range, timeout, PhotoRec settings, and an alternate btrfs tree root.
-3. Choose a workspace on a **different physical drive from the original source**. The default is `$XDG_DATA_HOME/open-data-recovery/snapshots`, falling back to `~/.local/share/open-data-recovery/snapshots`; it is rejected if unsafe. Another partition of the source disk is not sufficient. Unknown network, overlay, or virtual shared-filesystem ancestry is rejected. No scan storage is initialized before this check.
+3. Choose a workspace. **Device and mounted-folder sources require a different physical drive**; another partition of that disk is not sufficient. **Regular raw/dd/E01 images may share their hosting drive with the workspace and recovery destination**, including partitions discovered inside an image. Keep the image and every segment outside both output folders. The default is `$XDG_DATA_HOME/open-data-recovery/snapshots`, falling back to `~/.local/share/open-data-recovery/snapshots`; it is still validated before any scan storage is created. Unknown network, overlay, or virtual shared-filesystem ancestry remains rejected. See [storage rules and examples](docs/wiki/storage.md).
 4. Scans run in the background. Pause/resume controls the process group; cancel retains partial results. Status stays outside the full-height progress bar. Only a percentage appears inside it; engines without measurable progress use an indeterminate bar.
 5. Search and filter the SQLite results. Lists contain at most 250 candidates per page. File, folder, and select-all controls apply to the current page; selections persist across pages, filters, and application restarts. Preview supports small images/text and metadata; a preview is not a guarantee of recovery.
-6. **Review recovery** checks the destination and available space before enabling recovery. Choose whether to preserve folders and timestamps, rename or skip filename conflicts, reread outputs to verify SHA-256, and continue after individual errors. Existing files are never overwritten. Recover outside the saved scan folder, on storage separate from the original source.
+6. **Review recovery** checks the destination and available space before enabling recovery. Choose whether to preserve folders and timestamps, rename or skip filename conflicts, reread outputs to verify SHA-256, and continue after individual errors. Existing files are never overwritten. Recover outside the saved scan folder, following the same device/image storage rules above.
 
 ![Recovery options](docs/screenshots/recovery.png)
 
@@ -138,6 +138,7 @@ sh scripts/check-ui-recovery.sh # Full GTK recovery flow on a disposable image
 ODR_CONSOLIDATE=1 sh scripts/check-ui-recovery.sh # Group details and every-path recovery
 ODR_MANAGE_SCANS=1 sh scripts/check-ui-recovery.sh # Source switching, recovery, cancel/confirm deletion
 sh scripts/check-ui-partitions.sh # Read-only partition discovery, report reopening, range scan and recovery
+ODR_TEST_STORAGE=/tmp sh scripts/check-ui-partitions.sh # Image, workspace and destination on the same filesystem
 python3 scripts/check-consolidation.py --runs 3 --output target/consolidation-check
 sh scripts/capture-preview.sh
 

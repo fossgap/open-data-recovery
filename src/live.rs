@@ -186,7 +186,7 @@ impl Live {
         self.action("search", |ui| {
             ui.widget::<gtk::SearchEntry>("search").grab_focus();
         });
-        self.action("about",|ui|ui.info("Open Data Recovery","Native Linux recovery workspace · 0.1.0\n\nRead-only source access, isolated recovery engines, persistent SQLite scans, and verified recovery to a separate drive.\n\nSource discovery does not unmount live filesystems. Recovery results depend on filesystem damage and the installed backend versions."));
+        self.action("about",|ui|ui.info("Open Data Recovery","Native Linux recovery workspace · 0.1.0\n\nRead-only source access, isolated recovery engines, persistent SQLite scans, and verified recovery to validated output storage.\n\nSource discovery does not unmount live filesystems. Recovery results depend on filesystem damage and the installed backend versions."));
         self.action("shortcuts",|ui|ui.info("Keyboard shortcuts","Ctrl+O  Add source\nCtrl+R  Start default scan\nCtrl+S  Saved scans\nCtrl+F  Search files\nCtrl+P  Toggle preview\nCtrl+L  Toggle activity\nCtrl+Q  Quit\n\nSelection controls apply to the current page. Selections persist across pages and filters."));
         self.action("backends", |ui| {
             ui.submit(|| {
@@ -474,7 +474,7 @@ impl Live {
             );
             self.label(
                 "mode_hint",
-                "Sources are opened read-only. Use a workspace on a separate drive.",
+                "Sources are opened read-only. Images and output folders may share a drive; devices require a separate drive.",
             );
         }
         let page = self.page.borrow();
@@ -1195,7 +1195,16 @@ impl Live {
         text(
             &b,
             "notice",
-            "Existing files are never overwritten. Keep the destination outside the saved scan folder and on a different physical drive from the original source.",
+            if self
+                .view_source
+                .borrow()
+                .as_ref()
+                .is_some_and(SourceDescriptor::is_image_file)
+            {
+                "Existing files are never overwritten. The destination may share the image's drive, but must be outside the saved scan folder and must not contain the source image or its segments."
+            } else {
+                "Existing files are never overwritten. Keep the destination outside the saved scan folder and on a different physical drive from the original source."
+            },
         );
         Self::browse(&b, "browse", "destination_path", "chooser");
         obj::<gtk::Button>(&b, "confirm").set_label("Recover files");
@@ -1240,7 +1249,7 @@ impl Live {
                         let existing = engine::safety::existing_parent(&options.destination)?;
                         let free = engine::safety::free_bytes(&existing)?;
                         Ok(format!(
-                            "Separate storage verified · {} available",
+                            "Destination verified · {} available",
                             model::size(free)
                         ))
                     });
@@ -1272,7 +1281,7 @@ impl Live {
                     text(
                         &dialog,
                         "validation",
-                        "Choose an absolute destination path on a separate drive.",
+                        "Choose an absolute destination directory path.",
                     );
                     return;
                 }
@@ -2000,7 +2009,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
     ui.render_files();
     ui.refresh();
     ui.load_saved(engine::types::default_workspace());
-    ui.event("Source access is read-only. Choose a separate drive for the workspace and recovered files.");
+    ui.event("Source access is read-only. Image files and output folders may share a drive; device sources require a separate drive.");
     ui.window().present();
     let lifetime = Rc::new(RefCell::new(Some(ui.clone())));
     ui.window().connect_destroy(move |_| {

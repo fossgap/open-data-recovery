@@ -30,7 +30,7 @@ Small image/text previews and metadata can help selection. Preview extraction is
 
 ## Destination validation
 
-The destination must be on physical storage separate from the original source. It must neither be inside the saved-scan directory nor contain that directory. Workspace and destination can be sibling directories on the same non-source drive, as shown in [storage](storage.md).
+For device and mounted-folder sources, the destination must be on physical storage separate from the original source. Regular raw/dd/E01 image files may share their hosting drive with the destination. Output folders must not contain the image or any segment. The destination must neither be inside the saved-scan directory nor contain that directory. Workspace and destination can be sibling directories on the same permitted drive, as shown in [storage](storage.md).
 
 Validation checks source/storage identity, output path confinement and available bytes. Every-path recovery includes the bytes for all distinct recorded paths in the destination-space check. Existing destination files are never overwritten. Directory identities and space are checked again as recovery proceeds.
 

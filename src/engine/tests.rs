@@ -87,12 +87,12 @@ fn recovery_paths_conflicts_and_symlinks_are_confined() {
 }
 
 #[test]
-fn same_storage_is_rejected_before_creating_the_workspace() {
+fn device_sources_still_reject_same_storage_before_creating_the_workspace() {
     let root = tempfile::tempdir().unwrap();
     let image = root.path().join("source.img");
     fs::write(&image, vec![0; 8192]).unwrap();
     let destination = root.path().join("must-not-exist/nested");
-    let source = match sources::inspect(&image) {
+    let mut source = match sources::inspect(&image) {
         Ok(source) => source,
         Err(error) => {
             assert!(error.to_string().contains("ancestry"));
@@ -100,6 +100,9 @@ fn same_storage_is_rejected_before_creating_the_workspace() {
             return;
         }
     };
+    // Model device ancestry without touching a physical device. Image files
+    // have a deliberate exception, while the same ancestry for devices does not.
+    source.kind = SourceType::Block;
     assert!(safety::validate_storage(&source, &destination, 0).is_err());
     assert!(
         Store::create(

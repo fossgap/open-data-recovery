@@ -1,5 +1,6 @@
 #!/bin/sh
 # TestDisk and real GTK flow on regular disposable images only.
+# Set ODR_TEST_STORAGE=/tmp to exercise the same-drive image exception.
 set -eu
 cd "$(dirname "$0")/.."
 if [ -z "${ODR_BINARY:-}" ]; then cargo build --locked; fi

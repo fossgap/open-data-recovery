@@ -205,6 +205,20 @@ impl Live {
 
     fn partition_source_label(&self) {
         if let Some(b) = self.dialog.borrow().as_ref() {
+            text(
+                b,
+                "workspace_caption",
+                if self
+                    .partition_source
+                    .borrow()
+                    .as_ref()
+                    .is_some_and(SourceDescriptor::is_image_file)
+                {
+                    "Workspace for search reports (may share the image's drive)"
+                } else {
+                    "Workspace for search reports (separate drive for devices)"
+                },
+            );
             let caption = self
                 .partition_source
                 .borrow()

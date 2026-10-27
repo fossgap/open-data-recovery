@@ -302,7 +302,7 @@ fn disposable_testdisk_partition_discovery_and_recovery() {
     drop(image);
     let before = jobs::hash_file(&mut File::open(&disk).unwrap(), &Control::default()).unwrap();
     let root = sources::inspect(&disk).unwrap();
-    let unsafe_workspace = source_root.path().join("unsafe-workspace");
+    let unsafe_workspace = source_root.path().to_path_buf();
     assert!(
         discovery::discover(
             root.clone(),
@@ -316,7 +316,7 @@ fn disposable_testdisk_partition_discovery_and_recovery() {
         )
         .is_err()
     );
-    assert!(!unsafe_workspace.exists());
+    assert!(!unsafe_workspace.join("partition-searches").exists());
     let workspace = work.path().join("workspace");
     let mut chosen = None;
     for (table, deeper) in [

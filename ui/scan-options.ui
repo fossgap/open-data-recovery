@@ -154,7 +154,7 @@
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">Quick searches filesystem metadata. Deep searches file contents. Full runs both. Choose a workspace on a separate drive.</property>
+                        <property name="label">Quick searches filesystem metadata. Deep searches file contents. Full runs both. Image files and output folders may share a drive; device sources require a separate drive.</property>
                         <property name="xalign">0</property>
                         <property name="wrap">true</property>
                         <property name="max-width-chars">64</property>

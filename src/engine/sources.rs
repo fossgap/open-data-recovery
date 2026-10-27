@@ -208,11 +208,19 @@ pub fn inspect(path: &Path) -> Result<SourceDescriptor> {
     let mut ancestry = BTreeSet::new();
     let mut digest = Sha256::new();
     for segment in &segments {
-        if fs::symlink_metadata(segment)?.file_type().is_symlink() {
-            return fail("E01 segments may not be symbolic links.");
+        if !fs::symlink_metadata(segment)?.is_file() {
+            return fail(
+                "Image segments must be regular files, not devices, directories or symbolic links.",
+            );
         }
         ancestry.extend(safety::path_ancestry(segment)?);
-        let mut file = File::open(segment)?;
+        let mut file = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+            .open(segment)?;
+        if !file.metadata()?.is_file() {
+            return fail("An image segment was replaced by a nonregular file.");
+        }
         let size = file.metadata()?.len();
         digest.update(size.to_le_bytes());
         let mut buffer = vec![0; 65536];
@@ -296,6 +304,16 @@ pub fn inspect(path: &Path) -> Result<SourceDescriptor> {
 
 pub fn verify(source: &SourceDescriptor) -> Result<SourceDescriptor> {
     let mut current = inspect(&source.path)?;
+    let expected_kind = if source.kind == SourceType::Folder {
+        SourceType::Block
+    } else {
+        source.kind.clone()
+    };
+    if current.kind != expected_kind {
+        return fail(
+            "The source type changed. Choose the source again before scanning or recovering.",
+        );
+    }
     current.scope = source.scope.clone();
     current.kind = source.kind.clone();
     current.name = source.name.clone();
@@ -366,7 +384,15 @@ pub fn partition_source(
 pub fn open_readonly(source: &SourceDescriptor) -> Result<File> {
     let result = OpenOptions::new()
         .read(true)
-        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW)
+        .custom_flags(
+            libc::O_CLOEXEC
+                | libc::O_NOFOLLOW
+                | if source.is_image_file() {
+                    libc::O_NONBLOCK
+                } else {
+                    0
+                },
+        )
         .open(&source.path);
     let file = match result {
         Ok(file) => file,
@@ -423,6 +449,9 @@ pub fn open_readonly(source: &SourceDescriptor) -> Result<File> {
     };
     if unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) } & libc::O_ACCMODE != libc::O_RDONLY {
         return fail("Source descriptor is not read-only.");
+    }
+    if source.is_image_file() && !file.metadata()?.is_file() {
+        return fail("The source image was replaced by a nonregular file.");
     }
     Ok(file)
 }

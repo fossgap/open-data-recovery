@@ -14,12 +14,12 @@ This wiki describes the current implementation. Start here for the workflow, the
 ## Start-to-finish workflow
 
 1. **Choose the source.** Select a disk/partition from the sidebar, or add an image, unlocked mapper or mounted folder. The application opens the source read-only.
-2. **Choose the workspace.** Use storage on a different physical drive from the original source. Each scan creates its own saved-scan directory there.
+2. **Choose the workspace.** Device/folder sources require a different physical drive. Image files may share their hosting drive with output folders, provided those folders do not contain the image or its segments. Each scan creates its own saved-scan directory there.
 3. **Choose the mode and options.** The main Scan button uses the selected mode, workspace and clone checkbox with default engine options. Use its **Custom…** dropdown for filters, explicit engines and optional consolidation.
 4. **Prepare and scan.** E01 conversion, optional cloning and a custom byte-range copy happen before scanning when applicable. Engines run sequentially and save findings and any extracted contents in the workspace.
 5. **Finish consolidation, if enabled.** This option is off by default. It compares contents and publishes the final grouped list after scanning finishes.
 6. **Inspect and select results.** Search, preview and select files or groups. A listed candidate is not a guarantee that its original contents are intact.
-7. **Review recovery.** Choose a destination outside the saved-scan directory, on storage separate from the source, and choose the output options. Workspace and destination may share the same non-source drive.
+7. **Review recovery.** Choose a destination outside the saved-scan directory and set the output options. The same device/image storage rules apply; workspace and destination may share a drive. See [storage examples](storage.md).
 8. **Recover and check the files.** Recovery writes the selected copies and records outcomes in the saved scan. Keep the workspace for future use, or remove that saved-scan directory when its contents and history are no longer needed.
 
 Selecting or adding another source does not close the displayed scan. Its results, selection, search and preview remain available. **Results from…** identifies those results, while **Next scan: …** identifies a different source selected for a new scan. Recovery always uses the displayed scan. Start a new scan or explicitly open another saved scan to replace it.

@@ -71,6 +71,11 @@ impl DiscoveredPartition {
     }
 }
 impl SourceDescriptor {
+    /// Discovered ranges inherit the kind of their original input. A retained
+    /// clone of a device therefore does not turn that device into an image source.
+    pub fn is_image_file(&self) -> bool {
+        self.kind == SourceType::Image && self.scope.is_none()
+    }
     pub fn same_target(&self, other: &Self) -> bool {
         self.path == other.path
             && self.scope == other.scope
@@ -168,7 +173,7 @@ impl ScanOptions {
             return fail("A byte range must have a nonzero length.");
         }
         if self.workspace.as_os_str().is_empty() {
-            return fail("Choose a workspace on a separate drive.");
+            return fail("Choose a workspace directory.");
         }
         Ok(())
     }

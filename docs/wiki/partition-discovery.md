@@ -7,7 +7,7 @@ Use **Menu → Scan → Find lost partitions…** when a disk's partition table 
 ## Workflow
 
 1. Select the whole disk or add its raw/dd image in **Sources**.
-2. Open **Find lost partitions…** and choose a workspace on a different physical drive for the search report and TestDisk log.
+2. Open **Find lost partitions…** and choose a workspace for the search report and TestDisk log. Device sources require a different physical drive. A raw image may share its drive with the workspace; the workspace must not contain that image.
 3. Choose **Auto**, **MBR / Intel**, or **GPT**. Auto asks TestDisk to detect the table type. If the table is too damaged to identify, select the original table type explicitly.
 4. Start **Quick Search**. Try **Deeper Search** if useful partitions are missing. These names refer to partition discovery, independently of the Quick/Deep/Full file-scan modes. Deeper Search can take a long time on a large disk. **Cancel search** stops the worker before closing the dialog.
 5. Review the candidates. Each shows its filesystem hint, size and exact byte offset. **Filesystem header verified** means `blkid` recognized a filesystem at that bounded location; it does not certify file recoverability. An **Unverified candidate** may have a damaged primary header, a backup superblock, or stale metadata.
@@ -23,7 +23,7 @@ Searches save `WORKSPACE/partition-searches/SEARCH-ID/report.json` and `testdisk
 
 **Open report…** reopens a completed report, including after restarting the application. The original source must still be available and pass identity and partition-content sample checks before starting a file scan. These samples are identity checks, not full-disk integrity hashes.
 
-The subsequent file scan requires space for the selected partition range, plus its engine outputs and any optional consolidation cache. Enabling clone-first also retains the normal full-source clone before extracting the range. Recovery can use a successfully retained range after the original source is disconnected. The original disk's physical ancestry remains attached to the virtual target, so source/workspace/destination separation checks still apply.
+The subsequent file scan requires space for the selected partition range, plus its engine outputs and any optional consolidation cache. Enabling clone-first also retains the normal full-source clone before extracting the range. Recovery can use a successfully retained range after the original source is disconnected. The original source type and physical ancestry remain attached to the virtual target: device-backed partitions still require separate storage, while partitions discovered inside regular image files inherit the [image-file storage exception](storage.md).
 
 Search reports are separate from saved file scans and do not appear in **Saved Scan**. After a search finishes, an unneeded `partition-searches/SEARCH-ID` folder can be removed manually. Removing a report does not remove a saved file scan's retained range; deleting that saved scan does not remove its earlier discovery report.
 

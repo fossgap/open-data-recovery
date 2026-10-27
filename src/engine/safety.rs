@@ -195,17 +195,48 @@ pub fn validate_storage_location(source: &SourceDescriptor, target: &Path) -> Re
         return fail("The source storage ancestry could not be verified.");
     }
     let target_devices = path_ancestry(&existing)?;
-    if source
-        .ancestry
-        .iter()
-        .any(|device| target_devices.contains(device))
+    if !source.is_image_file()
+        && source
+            .ancestry
+            .iter()
+            .any(|device| target_devices.contains(device))
     {
         return fail(
             "The workspace/destination shares a physical device with the source. Choose a separate drive (another partition on the same disk is not sufficient).",
         );
     }
-    if target.starts_with(&source.path) || source.path.starts_with(target) {
-        return fail("The source and output storage must not contain each other.");
+    // An image is an allocated file, not the free space of its hosting drive.
+    // Keep every input (including E01 segments) outside output directories;
+    // backend writes remain confined and recovery creates files with O_EXCL.
+    for input in std::iter::once(&source.path).chain(source.segments.iter()) {
+        if !input.is_absolute()
+            || input
+                .components()
+                .any(|c| matches!(c, Component::ParentDir))
+        {
+            return fail("The recorded source path is invalid.");
+        }
+        if target.starts_with(input) || input.starts_with(target) {
+            return fail(
+                "The source image, its segments and output folders must not contain each other. Choose a different output folder.",
+            );
+        }
+        if source.is_image_file() {
+            match fs::symlink_metadata(input) {
+                Ok(meta) => {
+                    if !meta.is_file() || fs::canonicalize(input)? != *input {
+                        return fail(
+                            "Sharing an image's drive requires regular image files, without replaced paths, devices or symbolic links.",
+                        );
+                    }
+                }
+                // Saved scans may recover retained contents, rescan or be
+                // deleted after their original image has been disconnected.
+                // New scans still verify and open the original input first.
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error.into()),
+            }
+        }
     }
     Ok(target_devices)
 }

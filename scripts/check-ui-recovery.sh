@@ -1,5 +1,6 @@
 #!/bin/sh
 # Real production UI flow using a disposable image and separate temporary storage.
+# Set ODR_TEST_STORAGE=/tmp to exercise the same-drive image exception.
 set -eu
 cd "$(dirname "$0")/.."
 if [ -z "${ODR_BINARY:-}" ]; then cargo build --locked; fi
