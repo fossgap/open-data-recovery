@@ -1,0 +1,3719 @@
+{
+  "description": "42 actual CLI scans; 3 repeats x 7 cases x 2 prototype cache policies. Production app unchanged.",
+  "retain_all": {
+    "created_utc": "2026-10-27T13:40:41Z",
+    "commit": "2877180647b4add07b834e7843df6c222caade1c",
+    "app_binary_sha256": "17b84d86beaf48505d6ec5aa3d34796bceff1121855fb3077b0b4ee9bd55c846",
+    "prototype_sha256": "fec357c1a72f065b40f5e9e2c7c5c8267b885f8cb4940691925b87161c1673a0",
+    "platform": "Linux-6.16.8+kali-amd64-x86_64-with-glibc2.43",
+    "python": "3.14.8",
+    "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  6\nOn-line CPU(s) list:                     0-5\nVendor ID:                               GenuineIntel\nModel name:                              12th Gen Intel(R) Core(TM) i9-12900KF\nCPU family:                              6\nModel:                                   151\nThread(s) per core:                      1\nCore(s) per socket:                      1\nSocket(s):                               6\nStepping:                                2\nMicrocode version:                       0x3e\nBogoMIPS:                                6374.40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss syscall nx pdpe1gb rdtscp lm rep_good nopl xtopology cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves user_shstk avx_vnni arat vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nHypervisor vendor:                       KVM\nVirtualization type:                     full\nL1d cache:                               192 KiB (6 instances)\nL1i cache:                               192 KiB (6 instances)\nL2 cache:                                24 MiB (6 instances)\nL3 cache:                                96 MiB (6 instances)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-5\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Mitigation; Clear Register File\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n",
+    "storage": "Filesystem     Type  1K-blocks    Used Available Use% Mounted on\ntmpfs          tmpfs   6125704 2055160   4070544  34% /tmp\ntmpfs          tmpfs   6125700   45544   6080156   1% /dev/shm\n",
+    "runs_per_case": 3,
+    "fixtures": {
+      "unique": {
+        "name": "unique",
+        "image": "/tmp/odr-consolidation-source-_dkb1pnh/unique/source.img",
+        "filesystem": "ext2",
+        "deleted": true,
+        "image_bytes": 16777216,
+        "file_count": 80,
+        "unique_contents": 80,
+        "payload_bytes": 444600,
+        "source_sha256_before": "007f63d93bb052179b116819336baf3a0cc3d1f4e7da835bd1f7d87b50593bc1",
+        "extension": "bin",
+        "source_sha256_after": "007f63d93bb052179b116819336baf3a0cc3d1f4e7da835bd1f7d87b50593bc1",
+        "file_manifest_sha256": "ef8e0b68f18c15387bde1e12a7d18cb73c8032de67810e39cae8be9ebcd71751",
+        "file_sizes_bytes": [
+          4096,
+          4133,
+          4170,
+          4207,
+          4244,
+          4281,
+          4318,
+          4355,
+          4392,
+          4429,
+          4466,
+          4503,
+          4540,
+          4577,
+          4614,
+          4651,
+          4688,
+          4725,
+          4762,
+          4799,
+          4836,
+          4873,
+          4910,
+          4947,
+          4984,
+          5021,
+          5058,
+          5095,
+          5132,
+          5169,
+          5206,
+          5243,
+          5280,
+          5317,
+          5354,
+          5391,
+          5428,
+          5465,
+          5502,
+          5539,
+          5576,
+          5613,
+          5650,
+          5687,
+          5724,
+          5761,
+          5798,
+          5835,
+          5872,
+          5909,
+          5946,
+          5983,
+          6020,
+          6057,
+          6094,
+          6131,
+          6168,
+          6205,
+          6242,
+          6279,
+          6316,
+          6353,
+          6390,
+          6427,
+          6464,
+          6501,
+          6538,
+          6575,
+          6612,
+          6649,
+          6686,
+          6723,
+          6760,
+          6797,
+          6834,
+          6871,
+          6908,
+          6945,
+          6982,
+          7019
+        ],
+        "manifest_generation": "spikes/consolidation/run.py: deterministic seeds, dimensions and copy counts"
+      },
+      "small": {
+        "name": "small",
+        "image": "/tmp/odr-consolidation-source-_dkb1pnh/small/source.img",
+        "filesystem": "ext2",
+        "deleted": true,
+        "image_bytes": 67108864,
+        "file_count": 660,
+        "unique_contents": 600,
+        "payload_bytes": 4638480,
+        "source_sha256_before": "c8117502807492ada6cbdc4e30da052afec755f092fb628d642466308f7bde22",
+        "extension": "png",
+        "source_sha256_after": "c8117502807492ada6cbdc4e30da052afec755f092fb628d642466308f7bde22",
+        "file_manifest_sha256": "900c26c6338c4b64178c4bdd10e577cbd48f5bef80e1fe6b5725e0485a4a96d4",
+        "file_sizes_bytes": [
+          7028
+        ],
+        "manifest_generation": "spikes/consolidation/run.py: deterministic seeds, dimensions and copy counts"
+      },
+      "large": {
+        "name": "large",
+        "image": "/tmp/odr-consolidation-source-_dkb1pnh/large/source.img",
+        "filesystem": "fat16",
+        "deleted": true,
+        "image_bytes": 201326592,
+        "file_count": 40,
+        "unique_contents": 32,
+        "payload_bytes": 125882400,
+        "source_sha256_before": "eb9fdf36e58185c41f5b3a712382fac8e775253c0ec77fe154a14372daceb867",
+        "extension": "png",
+        "source_sha256_after": "eb9fdf36e58185c41f5b3a712382fac8e775253c0ec77fe154a14372daceb867",
+        "file_manifest_sha256": "d15daa5868f7c63e0d226db9b9cdcfc92fd4ae82e565cfd3c36720b0e7251383",
+        "file_sizes_bytes": [
+          3147060
+        ],
+        "manifest_generation": "spikes/consolidation/run.py: deterministic seeds, dimensions and copy counts"
+      },
+      "ntfs": {
+        "name": "ntfs",
+        "image": "/tmp/odr-consolidation-source-_dkb1pnh/ntfs/source.img",
+        "filesystem": "ntfs",
+        "deleted": true,
+        "image_bytes": 33554432,
+        "file_count": 30,
+        "unique_contents": 24,
+        "payload_bytes": 5908410,
+        "source_sha256_before": "0e311a48d18b2e36aade6fa4f2238e1aa9d381a99554045e263af787ae51d24a",
+        "extension": "png",
+        "source_sha256_after": "0e311a48d18b2e36aade6fa4f2238e1aa9d381a99554045e263af787ae51d24a",
+        "file_manifest_sha256": "3aa0806aff9f157d154a2da61f0500cfdebda1638b85ec0820d09d8176d557ce",
+        "file_sizes_bytes": [
+          196947
+        ],
+        "manifest_generation": "spikes/consolidation/run.py: deterministic seeds, dimensions and copy counts"
+      }
+    },
+    "results": [
+      {
+        "case": "unique-quick",
+        "run": 1,
+        "scan_seconds": 0.8919883479829878,
+        "finalization_seconds": 0.005508367961738259,
+        "total_seconds": 0.897496715944726,
+        "baseline_workspace": {
+          "logical_bytes": 74011,
+          "allocated_bytes": 90112
+        },
+        "added_workspace": {
+          "logical_bytes": 16384,
+          "allocated_bytes": 16384
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3083
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "candidates": 80,
+          "compared_bytes": 0,
+          "comparison_seconds": 0.0,
+          "duplicate_findings": 0,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 80,
+          "hash_seconds": 0.0,
+          "hashed_bytes": 0,
+          "persist_seconds": 0.000569531,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 0.002519941,
+          "unique_size_skipped": 80
+        },
+        "verification": {
+          "backends": {
+            "tsk": 80
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 80,
+          "original_paths": 80,
+          "fixture_unique_contents_found": 80,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/unique/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/unique-quick-1",
+          "--mode",
+          "quick",
+          "--extensions",
+          "bin"
+        ]
+      },
+      {
+        "case": "small-quick",
+        "run": 1,
+        "scan_seconds": 0.9058563360013068,
+        "finalization_seconds": 34.095591851044446,
+        "total_seconds": 35.00144818704575,
+        "baseline_workspace": {
+          "logical_bytes": 209247,
+          "allocated_bytes": 225280
+        },
+        "added_workspace": {
+          "logical_bytes": 4699316,
+          "allocated_bytes": 5464064
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "candidates": 657,
+          "compared_bytes": 843360,
+          "comparison_seconds": 0.031702433,
+          "duplicate_findings": 60,
+          "extracted_files": 657,
+          "extraction_seconds": 33.79387806399999,
+          "groups": 597,
+          "hash_seconds": 0.25181643700000034,
+          "hashed_bytes": 4617396,
+          "persist_seconds": 0.001852478,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 34.093651389,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657
+          },
+          "verified_findings": 657,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 597,
+          "fixture_unique_contents_missing": 3,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/small-quick-1",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "small-full",
+        "run": 1,
+        "scan_seconds": 1.0988496310310438,
+        "finalization_seconds": 34.33578711998416,
+        "total_seconds": 35.434636751015205,
+        "baseline_workspace": {
+          "logical_bytes": 67041144,
+          "allocated_bytes": 67829760
+        },
+        "added_workspace": {
+          "logical_bytes": 4715700,
+          "allocated_bytes": 5480448
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 750,
+            "logical_bytes": 61440000
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1241
+          },
+          ".png": {
+            "files": 660,
+            "logical_bytes": 4638480
+          },
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 387633
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "candidates": 1317,
+          "compared_bytes": 10078152,
+          "comparison_seconds": 0.23190231099999992,
+          "duplicate_findings": 717,
+          "extracted_files": 657,
+          "extraction_seconds": 33.8250604,
+          "groups": 600,
+          "hash_seconds": 0.2511561040000002,
+          "hashed_bytes": 9255876,
+          "persist_seconds": 0.002494815,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 34.333365275,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657,
+            "photorec": 660
+          },
+          "verified_findings": 1317,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 600,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/small-full-1",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-full",
+        "run": 1,
+        "scan_seconds": 1.0579901860328391,
+        "finalization_seconds": 2.2773326510214247,
+        "total_seconds": 3.335322837054264,
+        "baseline_workspace": {
+          "logical_bytes": 201421953,
+          "allocated_bytes": 201547776
+        },
+        "added_workspace": {
+          "logical_bytes": 125898784,
+          "allocated_bytes": 126009344
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 125882400,
+          "candidates": 80,
+          "compared_bytes": 302117760,
+          "comparison_seconds": 0.05975908,
+          "duplicate_findings": 48,
+          "extracted_files": 40,
+          "extraction_seconds": 2.052864129,
+          "groups": 32,
+          "hash_seconds": 0.158275177,
+          "hashed_bytes": 251764800,
+          "persist_seconds": 0.000615978,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 2.274612592,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 40,
+            "photorec": 40
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 40,
+          "original_paths": 40,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/large-full-1",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-deep",
+        "run": 1,
+        "scan_seconds": 0.930326598987449,
+        "finalization_seconds": 0.0984563350211829,
+        "total_seconds": 1.0287829340086319,
+        "baseline_workspace": {
+          "logical_bytes": 201405569,
+          "allocated_bytes": 201531392
+        },
+        "added_workspace": {
+          "logical_bytes": 16384,
+          "allocated_bytes": 16384
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "candidates": 40,
+          "compared_bytes": 50352960,
+          "comparison_seconds": 0.009727968,
+          "duplicate_findings": 8,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 32,
+          "hash_seconds": 0.08280453399999999,
+          "hashed_bytes": 125882400,
+          "persist_seconds": 0.000625256,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 0.09543554,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "photorec": 40
+          },
+          "verified_findings": 40,
+          "verified_named_findings": 0,
+          "original_paths": 0,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/large-deep-1",
+          "--mode",
+          "deep",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-quick",
+        "run": 1,
+        "scan_seconds": 1.42224930197699,
+        "finalization_seconds": 1.595494993031025,
+        "total_seconds": 3.017744295008015,
+        "baseline_workspace": {
+          "logical_bytes": 20458344,
+          "allocated_bytes": 20832256
+        },
+        "added_workspace": {
+          "logical_bytes": 5727847,
+          "allocated_bytes": 5836800
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".log": {
+            "files": 4,
+            "logical_bytes": 26461
+          },
+          ".png": {
+            "files": 90,
+            "logical_bytes": 17725230
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "candidates": 119,
+          "compared_bytes": 37419930,
+          "comparison_seconds": 0.04710565500000001,
+          "duplicate_findings": 95,
+          "extracted_files": 29,
+          "extraction_seconds": 1.5070097189999998,
+          "groups": 24,
+          "hash_seconds": 0.033125854,
+          "hashed_bytes": 23436693,
+          "persist_seconds": 0.000623428,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 1.591672988,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30
+          },
+          "verified_findings": 119,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/ntfs-quick-1",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-full",
+        "run": 1,
+        "scan_seconds": 1.3935918290517293,
+        "finalization_seconds": 1.6203421269892715,
+        "total_seconds": 3.013933956041001,
+        "baseline_workspace": {
+          "logical_bytes": 51456775,
+          "allocated_bytes": 51949568
+        },
+        "added_workspace": {
+          "logical_bytes": 5727847,
+          "allocated_bytes": 5836800
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".dovecot": {
+            "files": 305,
+            "logical_bytes": 24985600
+          },
+          ".log": {
+            "files": 5,
+            "logical_bytes": 27667
+          },
+          ".png": {
+            "files": 120,
+            "logical_bytes": 23633640
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 86834
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "candidates": 149,
+          "compared_bytes": 49236750,
+          "comparison_seconds": 0.04855072300000002,
+          "duplicate_findings": 125,
+          "extracted_files": 29,
+          "extraction_seconds": 1.5357271409999997,
+          "groups": 24,
+          "hash_seconds": 0.030028117000000014,
+          "hashed_bytes": 29345103,
+          "persist_seconds": 0.000664783,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 1.618337324,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30,
+            "photorec": 30
+          },
+          "verified_findings": 149,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/ntfs-full-1",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "unique-quick",
+        "run": 2,
+        "scan_seconds": 0.9286790749756619,
+        "finalization_seconds": 0.004774164000991732,
+        "total_seconds": 0.9334532389766537,
+        "baseline_workspace": {
+          "logical_bytes": 74011,
+          "allocated_bytes": 90112
+        },
+        "added_workspace": {
+          "logical_bytes": 16384,
+          "allocated_bytes": 16384
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3083
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "candidates": 80,
+          "compared_bytes": 0,
+          "comparison_seconds": 0.0,
+          "duplicate_findings": 0,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 80,
+          "hash_seconds": 0.0,
+          "hashed_bytes": 0,
+          "persist_seconds": 0.000439866,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 0.002177433,
+          "unique_size_skipped": 80
+        },
+        "verification": {
+          "backends": {
+            "tsk": 80
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 80,
+          "original_paths": 80,
+          "fixture_unique_contents_found": 80,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/unique/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/unique-quick-2",
+          "--mode",
+          "quick",
+          "--extensions",
+          "bin"
+        ]
+      },
+      {
+        "case": "small-quick",
+        "run": 2,
+        "scan_seconds": 0.9195351469679736,
+        "finalization_seconds": 34.143171520961914,
+        "total_seconds": 35.06270666792989,
+        "baseline_workspace": {
+          "logical_bytes": 209247,
+          "allocated_bytes": 225280
+        },
+        "added_workspace": {
+          "logical_bytes": 4699316,
+          "allocated_bytes": 5464064
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "candidates": 657,
+          "compared_bytes": 843360,
+          "comparison_seconds": 0.03774385299999999,
+          "duplicate_findings": 60,
+          "extracted_files": 657,
+          "extraction_seconds": 33.83578977599998,
+          "groups": 597,
+          "hash_seconds": 0.24338761199999998,
+          "hashed_bytes": 4617396,
+          "persist_seconds": 0.00409708,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 34.139980331,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657
+          },
+          "verified_findings": 657,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 597,
+          "fixture_unique_contents_missing": 3,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/small-quick-2",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "small-full",
+        "run": 2,
+        "scan_seconds": 1.0841427270206623,
+        "finalization_seconds": 34.34443892899435,
+        "total_seconds": 35.42858165601501,
+        "baseline_workspace": {
+          "logical_bytes": 67041144,
+          "allocated_bytes": 67829760
+        },
+        "added_workspace": {
+          "logical_bytes": 4715700,
+          "allocated_bytes": 5480448
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 750,
+            "logical_bytes": 61440000
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1241
+          },
+          ".png": {
+            "files": 660,
+            "logical_bytes": 4638480
+          },
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 387633
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "candidates": 1317,
+          "compared_bytes": 10078152,
+          "comparison_seconds": 0.2179063070000001,
+          "duplicate_findings": 717,
+          "extracted_files": 657,
+          "extraction_seconds": 33.82583565300003,
+          "groups": 600,
+          "hash_seconds": 0.2710382050000002,
+          "hashed_bytes": 9255876,
+          "persist_seconds": 0.00247103,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 34.340439613,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657,
+            "photorec": 660
+          },
+          "verified_findings": 1317,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 600,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/small-full-2",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-full",
+        "run": 2,
+        "scan_seconds": 1.0823362990049645,
+        "finalization_seconds": 2.32875928201247,
+        "total_seconds": 3.4110955810174346,
+        "baseline_workspace": {
+          "logical_bytes": 201421953,
+          "allocated_bytes": 201547776
+        },
+        "added_workspace": {
+          "logical_bytes": 125898784,
+          "allocated_bytes": 126009344
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 125882400,
+          "candidates": 80,
+          "compared_bytes": 302117760,
+          "comparison_seconds": 0.06709874599999999,
+          "duplicate_findings": 48,
+          "extracted_files": 40,
+          "extraction_seconds": 2.072038781,
+          "groups": 32,
+          "hash_seconds": 0.18050767400000003,
+          "hashed_bytes": 251764800,
+          "persist_seconds": 0.000647579,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 2.323466711,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 40,
+            "photorec": 40
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 40,
+          "original_paths": 40,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/large-full-2",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-deep",
+        "run": 2,
+        "scan_seconds": 0.9716179009992629,
+        "finalization_seconds": 0.09149047604296356,
+        "total_seconds": 1.0631083770422265,
+        "baseline_workspace": {
+          "logical_bytes": 201405569,
+          "allocated_bytes": 201531392
+        },
+        "added_workspace": {
+          "logical_bytes": 16384,
+          "allocated_bytes": 16384
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "candidates": 40,
+          "compared_bytes": 50352960,
+          "comparison_seconds": 0.01084688,
+          "duplicate_findings": 8,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 32,
+          "hash_seconds": 0.073823603,
+          "hashed_bytes": 125882400,
+          "persist_seconds": 0.000660276,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 0.088164363,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "photorec": 40
+          },
+          "verified_findings": 40,
+          "verified_named_findings": 0,
+          "original_paths": 0,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/large-deep-2",
+          "--mode",
+          "deep",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-quick",
+        "run": 2,
+        "scan_seconds": 1.36590855702525,
+        "finalization_seconds": 1.5889280930277891,
+        "total_seconds": 2.954836650053039,
+        "baseline_workspace": {
+          "logical_bytes": 20458344,
+          "allocated_bytes": 20832256
+        },
+        "added_workspace": {
+          "logical_bytes": 5727847,
+          "allocated_bytes": 5836800
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".log": {
+            "files": 4,
+            "logical_bytes": 26461
+          },
+          ".png": {
+            "files": 90,
+            "logical_bytes": 17725230
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "candidates": 119,
+          "compared_bytes": 37419930,
+          "comparison_seconds": 0.04626686500000002,
+          "duplicate_findings": 95,
+          "extracted_files": 29,
+          "extraction_seconds": 1.4966103579999999,
+          "groups": 24,
+          "hash_seconds": 0.036196742999999997,
+          "hashed_bytes": 23436693,
+          "persist_seconds": 0.000696649,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 1.5842208100000001,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30
+          },
+          "verified_findings": 119,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/ntfs-quick-2",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-full",
+        "run": 2,
+        "scan_seconds": 1.41769230394857,
+        "finalization_seconds": 1.5667424370185472,
+        "total_seconds": 2.9844347409671172,
+        "baseline_workspace": {
+          "logical_bytes": 51456775,
+          "allocated_bytes": 51949568
+        },
+        "added_workspace": {
+          "logical_bytes": 5727847,
+          "allocated_bytes": 5836800
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".dovecot": {
+            "files": 305,
+            "logical_bytes": 24985600
+          },
+          ".log": {
+            "files": 5,
+            "logical_bytes": 27667
+          },
+          ".png": {
+            "files": 120,
+            "logical_bytes": 23633640
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 86834
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "candidates": 149,
+          "compared_bytes": 49236750,
+          "comparison_seconds": 0.042359995999999976,
+          "duplicate_findings": 125,
+          "extracted_files": 29,
+          "extraction_seconds": 1.4875925070000002,
+          "groups": 24,
+          "hash_seconds": 0.030520318999999997,
+          "hashed_bytes": 29345103,
+          "persist_seconds": 0.000603817,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 1.564548593,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30,
+            "photorec": 30
+          },
+          "verified_findings": 149,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/ntfs-full-2",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "unique-quick",
+        "run": 3,
+        "scan_seconds": 0.9240691200247966,
+        "finalization_seconds": 0.009704627969767898,
+        "total_seconds": 0.9337737479945645,
+        "baseline_workspace": {
+          "logical_bytes": 74011,
+          "allocated_bytes": 90112
+        },
+        "added_workspace": {
+          "logical_bytes": 16384,
+          "allocated_bytes": 16384
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3083
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "candidates": 80,
+          "compared_bytes": 0,
+          "comparison_seconds": 0.0,
+          "duplicate_findings": 0,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 80,
+          "hash_seconds": 0.0,
+          "hashed_bytes": 0,
+          "persist_seconds": 0.000937025,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 0.003800293,
+          "unique_size_skipped": 80
+        },
+        "verification": {
+          "backends": {
+            "tsk": 80
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 80,
+          "original_paths": 80,
+          "fixture_unique_contents_found": 80,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/unique/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/unique-quick-3",
+          "--mode",
+          "quick",
+          "--extensions",
+          "bin"
+        ]
+      },
+      {
+        "case": "small-quick",
+        "run": 3,
+        "scan_seconds": 0.9138110399944708,
+        "finalization_seconds": 34.35845253901789,
+        "total_seconds": 35.27226357901236,
+        "baseline_workspace": {
+          "logical_bytes": 209247,
+          "allocated_bytes": 225280
+        },
+        "added_workspace": {
+          "logical_bytes": 4699316,
+          "allocated_bytes": 5464064
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "candidates": 657,
+          "compared_bytes": 843360,
+          "comparison_seconds": 0.032412530999999994,
+          "duplicate_findings": 60,
+          "extracted_files": 657,
+          "extraction_seconds": 34.045995305999995,
+          "groups": 597,
+          "hash_seconds": 0.2607233819999999,
+          "hashed_bytes": 4617396,
+          "persist_seconds": 0.001739726,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 34.356476915,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657
+          },
+          "verified_findings": 657,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 597,
+          "fixture_unique_contents_missing": 3,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/small-quick-3",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "small-full",
+        "run": 3,
+        "scan_seconds": 1.0845104519976303,
+        "finalization_seconds": 34.42944308096776,
+        "total_seconds": 35.51395353296539,
+        "baseline_workspace": {
+          "logical_bytes": 67041144,
+          "allocated_bytes": 67829760
+        },
+        "added_workspace": {
+          "logical_bytes": 4715700,
+          "allocated_bytes": 5480448
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 750,
+            "logical_bytes": 61440000
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1241
+          },
+          ".png": {
+            "files": 660,
+            "logical_bytes": 4638480
+          },
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 387633
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "candidates": 1317,
+          "compared_bytes": 10078152,
+          "comparison_seconds": 0.224998763,
+          "duplicate_findings": 717,
+          "extracted_files": 657,
+          "extraction_seconds": 33.90713191899997,
+          "groups": 600,
+          "hash_seconds": 0.2696704499999995,
+          "hashed_bytes": 9255876,
+          "persist_seconds": 0.002480497,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 34.425778171,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657,
+            "photorec": 660
+          },
+          "verified_findings": 1317,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 600,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/small-full-3",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-full",
+        "run": 3,
+        "scan_seconds": 1.0253116739913821,
+        "finalization_seconds": 2.292853995983023,
+        "total_seconds": 3.3181656699744053,
+        "baseline_workspace": {
+          "logical_bytes": 201421953,
+          "allocated_bytes": 201547776
+        },
+        "added_workspace": {
+          "logical_bytes": 125898784,
+          "allocated_bytes": 126009344
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 125882400,
+          "candidates": 80,
+          "compared_bytes": 302117760,
+          "comparison_seconds": 0.06493401500000001,
+          "duplicate_findings": 48,
+          "extracted_files": 40,
+          "extraction_seconds": 2.052852335,
+          "groups": 32,
+          "hash_seconds": 0.16796160699999993,
+          "hashed_bytes": 251764800,
+          "persist_seconds": 0.00063936,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 2.2899973989999998,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 40,
+            "photorec": 40
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 40,
+          "original_paths": 40,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/large-full-3",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-deep",
+        "run": 3,
+        "scan_seconds": 0.9685107339755632,
+        "finalization_seconds": 0.09771200799150392,
+        "total_seconds": 1.0662227419670671,
+        "baseline_workspace": {
+          "logical_bytes": 201405890,
+          "allocated_bytes": 201531392
+        },
+        "added_workspace": {
+          "logical_bytes": 16384,
+          "allocated_bytes": 16384
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1588
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "candidates": 40,
+          "compared_bytes": 50352960,
+          "comparison_seconds": 0.012601571,
+          "duplicate_findings": 8,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 32,
+          "hash_seconds": 0.077072641,
+          "hashed_bytes": 125882400,
+          "persist_seconds": 0.000586864,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 0.09337148,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "photorec": 40
+          },
+          "verified_findings": 40,
+          "verified_named_findings": 0,
+          "original_paths": 0,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/large-deep-3",
+          "--mode",
+          "deep",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-quick",
+        "run": 3,
+        "scan_seconds": 1.3241042330046184,
+        "finalization_seconds": 1.564435102045536,
+        "total_seconds": 2.8885393350501545,
+        "baseline_workspace": {
+          "logical_bytes": 20458344,
+          "allocated_bytes": 20832256
+        },
+        "added_workspace": {
+          "logical_bytes": 5727847,
+          "allocated_bytes": 5836800
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".log": {
+            "files": 4,
+            "logical_bytes": 26461
+          },
+          ".png": {
+            "files": 90,
+            "logical_bytes": 17725230
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "candidates": 119,
+          "compared_bytes": 37419930,
+          "comparison_seconds": 0.037782516000000016,
+          "duplicate_findings": 95,
+          "extracted_files": 29,
+          "extraction_seconds": 1.493077657,
+          "groups": 24,
+          "hash_seconds": 0.025701928,
+          "hashed_bytes": 23436693,
+          "persist_seconds": 0.00063113,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 1.5626361069999999,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30
+          },
+          "verified_findings": 119,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/ntfs-quick-3",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-full",
+        "run": 3,
+        "scan_seconds": 1.3939539580023848,
+        "finalization_seconds": 1.5971293809707277,
+        "total_seconds": 2.9910833389731124,
+        "baseline_workspace": {
+          "logical_bytes": 51456775,
+          "allocated_bytes": 51949568
+        },
+        "added_workspace": {
+          "logical_bytes": 5727847,
+          "allocated_bytes": 5836800
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".dovecot": {
+            "files": 305,
+            "logical_bytes": 24985600
+          },
+          ".log": {
+            "files": 5,
+            "logical_bytes": 27667
+          },
+          ".png": {
+            "files": 120,
+            "logical_bytes": 23633640
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 86834
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "candidates": 149,
+          "compared_bytes": 49236750,
+          "comparison_seconds": 0.05682867700000001,
+          "duplicate_findings": 125,
+          "extracted_files": 29,
+          "extraction_seconds": 1.5026628759999998,
+          "groups": 24,
+          "hash_seconds": 0.031044585999999992,
+          "hashed_bytes": 29345103,
+          "persist_seconds": 0.000694832,
+          "policy": "retain-all-extracted-candidates; preserve-original-artifacts",
+          "seconds": 1.5952520159999999,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30,
+            "photorec": 30
+          },
+          "verified_findings": 149,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-_dkb1pnh/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-90_cx90n/ntfs-full-3",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      }
+    ],
+    "policy": "Cache all newly extracted candidates; preserve existing artifacts; SHA-256 plus byte comparison",
+    "engines": "btrfs: btrfs-progs v7.1 [sha256:fbf4f875a82a905733e2a24bb31ef2a326e4c9753358e11ceb6978c8f8b93c18]\nbtrfs-find-root: version not reported [sha256:25ca6b13b90d5390affbf245d841baceab14e34d5ebb7353be646393c0067ead]\nbulk_extractor: bulk_extractor 2.1.1 [sha256:f134da34cf48e5850bf5954d83ed3b7c7301d1309ccb670d0cc7560cc6df43fd]\nddrescue: GNU ddrescue 1.30 [sha256:ec597c5c9d262d15c1dc8d44d49de83c8b379ce827866b890715ad88077da7da]\ndebugfs: debugfs 1.47.2 (1-Jan-2025) [sha256:deb37b9515718738f369dfe0546a50a74fdd7d5837046adac272ef6a3381ccee]\ndigler: Version:   odr-2f62fc7 [sha256:bd42468a9b32b3fd4615bc1e1db98b0dbd785270f4bc84695ee4cdcefb443b6e]\ndumpe2fs: dumpe2fs 1.47.2 (1-Jan-2025) [sha256:d5f2ecf4b1c07e77a7940cf8c92329276125de9ad505dc1815ffd84f924958c1]\newfexport: version not reported [sha256:85012ffe76e4cb18d37479d0c16530ecac3f2821299d874e1a68b4c1efe9e506]\next4magic: ext4magic  version : 0.3.2 [sha256:38ead7210604da39f589cf038444a3a46e43c34812cbae51c26adf8b6dfb97e6]\next4rescue: version not reported [sha256:43142bb3828515097c1dff2773f1e997d354506cc64a1de12ff4d3dbdff3b587]\nextundelete: extundelete version 0.2.4 [sha256:c943d48a28861396d09878c26b58b914b3fa589a19654129b03a573523c07783]\nfls: The Sleuth Kit ver 4.12.1 [sha256:2b0e77c45d3eba8d7431c7791372f6ea0b7cd754322d24f18305fd76c0da8e25]\nforemost: 1.5.7 [sha256:7ab32990bd84c7c3a1af94e8ec864f9ffa2d655c748bce0d5f3768d6e3275b30]\nicat: The Sleuth Kit ver 4.12.1 [sha256:45527b5c11d9fa1c85f3f32d3830a0d0c57f94f9545d2b5a24eb8f393bccc463]\nmagicrescue: version not reported [sha256:39f684c09646dab30de6f3a2bcbd9480be1e4bb72dd8f44c710be8f456df594f]\nmmls: The Sleuth Kit ver 4.12.1 [sha256:5c0cb045a85a4aa323a96a2a3d8c1bb806e0208748a0f171a909508773fb3e8a]\nntfsundelete: ntfsundelete v2022.10.3 (libntfs-3g) - Recover deleted files from an NTFS Volume. [sha256:49d038fcb9438f4767fb1b31fa0ca37979163e572f349c584bd073d425a16f07]\nphotorec: PhotoRec 7.2, Data Recovery Utility, February 2024 [sha256:681a31f01e5cc0f1e9d10fa81e989b206173dcaae720da54b7e75567c1ee1549]\nrecoverjpeg: recoverjpeg 2.6.3 (from the `recoverjpeg' package) [sha256:185f9817e76028bda068b8ff206e68874e94d17815da761df14a7dee3e404a51]\nrecuperabit: |_|   v1.1.6 [sha256:ffd56fedf9b0752294f8f875fc40deee28fed8a8d96c4d8ba2f96946f090f52b]\nsafecopy: Safecopy 1.7 by CorvusCorax [sha256:93305b6b52f57304708d8485ce76850081b813f9410fcb32c93a1d11e3bfad0e]\nscalpel: Scalpel version 1.60 [sha256:a655eddd4f837c718ede2c83b61ffad90132293150321385f3a66df74da35c3c]\ntestdisk: TestDisk 7.2, Data Recovery Utility, February 2024 [sha256:1d92b33ae05d8be7eb76721439f549d5b213265054dddc2d8a81bf5dafbf23bc]\ntsk_recover: The Sleuth Kit ver 4.12.1 [sha256:972c7bf532b8513d4a2121d44e9181c686c1127b0b0279ded62aa358dbf92450]\n",
+    "summary": {
+      "unique-quick": {
+        "scan_seconds": {
+          "median": 0.9240691200247966,
+          "min": 0.8919883479829878,
+          "max": 0.9286790749756619
+        },
+        "finalization_seconds": {
+          "median": 0.005508367961738259,
+          "min": 0.004774164000991732,
+          "max": 0.009704627969767898
+        },
+        "total_seconds": {
+          "median": 0.9334532389766537,
+          "min": 0.897496715944726,
+          "max": 0.9337737479945645
+        }
+      },
+      "small-quick": {
+        "scan_seconds": {
+          "median": 0.9138110399944708,
+          "min": 0.9058563360013068,
+          "max": 0.9195351469679736
+        },
+        "finalization_seconds": {
+          "median": 34.143171520961914,
+          "min": 34.095591851044446,
+          "max": 34.35845253901789
+        },
+        "total_seconds": {
+          "median": 35.06270666792989,
+          "min": 35.00144818704575,
+          "max": 35.27226357901236
+        }
+      },
+      "small-full": {
+        "scan_seconds": {
+          "median": 1.0845104519976303,
+          "min": 1.0841427270206623,
+          "max": 1.0988496310310438
+        },
+        "finalization_seconds": {
+          "median": 34.34443892899435,
+          "min": 34.33578711998416,
+          "max": 34.42944308096776
+        },
+        "total_seconds": {
+          "median": 35.434636751015205,
+          "min": 35.42858165601501,
+          "max": 35.51395353296539
+        }
+      },
+      "large-full": {
+        "scan_seconds": {
+          "median": 1.0579901860328391,
+          "min": 1.0253116739913821,
+          "max": 1.0823362990049645
+        },
+        "finalization_seconds": {
+          "median": 2.292853995983023,
+          "min": 2.2773326510214247,
+          "max": 2.32875928201247
+        },
+        "total_seconds": {
+          "median": 3.335322837054264,
+          "min": 3.3181656699744053,
+          "max": 3.4110955810174346
+        }
+      },
+      "large-deep": {
+        "scan_seconds": {
+          "median": 0.9685107339755632,
+          "min": 0.930326598987449,
+          "max": 0.9716179009992629
+        },
+        "finalization_seconds": {
+          "median": 0.09771200799150392,
+          "min": 0.09149047604296356,
+          "max": 0.0984563350211829
+        },
+        "total_seconds": {
+          "median": 1.0631083770422265,
+          "min": 1.0287829340086319,
+          "max": 1.0662227419670671
+        }
+      },
+      "ntfs-quick": {
+        "scan_seconds": {
+          "median": 1.36590855702525,
+          "min": 1.3241042330046184,
+          "max": 1.42224930197699
+        },
+        "finalization_seconds": {
+          "median": 1.5889280930277891,
+          "min": 1.564435102045536,
+          "max": 1.595494993031025
+        },
+        "total_seconds": {
+          "median": 2.954836650053039,
+          "min": 2.8885393350501545,
+          "max": 3.017744295008015
+        }
+      },
+      "ntfs-full": {
+        "scan_seconds": {
+          "median": 1.3939539580023848,
+          "min": 1.3935918290517293,
+          "max": 1.41769230394857
+        },
+        "finalization_seconds": {
+          "median": 1.5971293809707277,
+          "min": 1.5667424370185472,
+          "max": 1.6203421269892715
+        },
+        "total_seconds": {
+          "median": 2.9910833389731124,
+          "min": 2.9844347409671172,
+          "max": 3.013933956041001
+        }
+      }
+    }
+  },
+  "reuse_identical_content": {
+    "created_utc": "2026-10-27T13:46:30Z",
+    "commit": "2877180647b4add07b834e7843df6c222caade1c",
+    "app_binary_sha256": "17b84d86beaf48505d6ec5aa3d34796bceff1121855fb3077b0b4ee9bd55c846",
+    "prototype_sha256": "13c86da31cffadbcb89dab972106e6423c5ba2ceffac142812829e8d2a093ef5",
+    "platform": "Linux-6.16.8+kali-amd64-x86_64-with-glibc2.43",
+    "python": "3.14.8",
+    "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  6\nOn-line CPU(s) list:                     0-5\nVendor ID:                               GenuineIntel\nModel name:                              12th Gen Intel(R) Core(TM) i9-12900KF\nCPU family:                              6\nModel:                                   151\nThread(s) per core:                      1\nCore(s) per socket:                      1\nSocket(s):                               6\nStepping:                                2\nMicrocode version:                       0x3e\nBogoMIPS:                                6374.40\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss syscall nx pdpe1gb rdtscp lm rep_good nopl xtopology cpuid tsc_known_freq pni pclmulqdq vmx ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves user_shstk avx_vnni arat vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nHypervisor vendor:                       KVM\nVirtualization type:                     full\nL1d cache:                               192 KiB (6 instances)\nL1i cache:                               192 KiB (6 instances)\nL2 cache:                                24 MiB (6 instances)\nL3 cache:                                96 MiB (6 instances)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-5\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Mitigation; Clear Register File\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n",
+    "storage": "Filesystem     Type  1K-blocks    Used Available Use% Mounted on\ntmpfs          tmpfs   6125704 2055160   4070544  34% /tmp\ntmpfs          tmpfs   6125700   49644   6076056   1% /dev/shm\n",
+    "runs_per_case": 3,
+    "fixtures": {
+      "unique": {
+        "name": "unique",
+        "image": "/tmp/odr-consolidation-source-4454b4ao/unique/source.img",
+        "filesystem": "ext2",
+        "deleted": true,
+        "image_bytes": 16777216,
+        "file_count": 80,
+        "unique_contents": 80,
+        "payload_bytes": 444600,
+        "source_sha256_before": "b204a86314d14018b37f469fe9f6d4d03f9af9619dc9e5a835c70889edbe0c57",
+        "extension": "bin",
+        "source_sha256_after": "b204a86314d14018b37f469fe9f6d4d03f9af9619dc9e5a835c70889edbe0c57",
+        "file_manifest_sha256": "ef8e0b68f18c15387bde1e12a7d18cb73c8032de67810e39cae8be9ebcd71751",
+        "file_sizes_bytes": [
+          4096,
+          4133,
+          4170,
+          4207,
+          4244,
+          4281,
+          4318,
+          4355,
+          4392,
+          4429,
+          4466,
+          4503,
+          4540,
+          4577,
+          4614,
+          4651,
+          4688,
+          4725,
+          4762,
+          4799,
+          4836,
+          4873,
+          4910,
+          4947,
+          4984,
+          5021,
+          5058,
+          5095,
+          5132,
+          5169,
+          5206,
+          5243,
+          5280,
+          5317,
+          5354,
+          5391,
+          5428,
+          5465,
+          5502,
+          5539,
+          5576,
+          5613,
+          5650,
+          5687,
+          5724,
+          5761,
+          5798,
+          5835,
+          5872,
+          5909,
+          5946,
+          5983,
+          6020,
+          6057,
+          6094,
+          6131,
+          6168,
+          6205,
+          6242,
+          6279,
+          6316,
+          6353,
+          6390,
+          6427,
+          6464,
+          6501,
+          6538,
+          6575,
+          6612,
+          6649,
+          6686,
+          6723,
+          6760,
+          6797,
+          6834,
+          6871,
+          6908,
+          6945,
+          6982,
+          7019
+        ],
+        "manifest_generation": "spikes/consolidation/run.py: deterministic seeds, dimensions and copy counts"
+      },
+      "small": {
+        "name": "small",
+        "image": "/tmp/odr-consolidation-source-4454b4ao/small/source.img",
+        "filesystem": "ext2",
+        "deleted": true,
+        "image_bytes": 67108864,
+        "file_count": 660,
+        "unique_contents": 600,
+        "payload_bytes": 4638480,
+        "source_sha256_before": "342a7d642a636637edf9f235f7b01d704155a7295f53bce4cd880b32ccfef27b",
+        "extension": "png",
+        "source_sha256_after": "342a7d642a636637edf9f235f7b01d704155a7295f53bce4cd880b32ccfef27b",
+        "file_manifest_sha256": "900c26c6338c4b64178c4bdd10e577cbd48f5bef80e1fe6b5725e0485a4a96d4",
+        "file_sizes_bytes": [
+          7028
+        ],
+        "manifest_generation": "spikes/consolidation/run.py: deterministic seeds, dimensions and copy counts"
+      },
+      "large": {
+        "name": "large",
+        "image": "/tmp/odr-consolidation-source-4454b4ao/large/source.img",
+        "filesystem": "fat16",
+        "deleted": true,
+        "image_bytes": 201326592,
+        "file_count": 40,
+        "unique_contents": 32,
+        "payload_bytes": 125882400,
+        "source_sha256_before": "7678dcab4f667748deec0abe02c6cbe23edccc96e47ea5431c51d98430dff6df",
+        "extension": "png",
+        "source_sha256_after": "7678dcab4f667748deec0abe02c6cbe23edccc96e47ea5431c51d98430dff6df",
+        "file_manifest_sha256": "d15daa5868f7c63e0d226db9b9cdcfc92fd4ae82e565cfd3c36720b0e7251383",
+        "file_sizes_bytes": [
+          3147060
+        ],
+        "manifest_generation": "spikes/consolidation/run.py: deterministic seeds, dimensions and copy counts"
+      },
+      "ntfs": {
+        "name": "ntfs",
+        "image": "/tmp/odr-consolidation-source-4454b4ao/ntfs/source.img",
+        "filesystem": "ntfs",
+        "deleted": true,
+        "image_bytes": 33554432,
+        "file_count": 30,
+        "unique_contents": 24,
+        "payload_bytes": 5908410,
+        "source_sha256_before": "5c1825bf5e1ed837f39550d208c6d4fbb35425117df3913bd5c12a09b5d5f081",
+        "extension": "png",
+        "source_sha256_after": "5c1825bf5e1ed837f39550d208c6d4fbb35425117df3913bd5c12a09b5d5f081",
+        "file_manifest_sha256": "3aa0806aff9f157d154a2da61f0500cfdebda1638b85ec0820d09d8176d557ce",
+        "file_sizes_bytes": [
+          196947
+        ],
+        "manifest_generation": "spikes/consolidation/run.py: deterministic seeds, dimensions and copy counts"
+      }
+    },
+    "results": [
+      {
+        "case": "unique-quick",
+        "run": 1,
+        "scan_seconds": 0.898273762955796,
+        "finalization_seconds": 0.004948065965436399,
+        "total_seconds": 0.9032218289212324,
+        "baseline_workspace": {
+          "logical_bytes": 74011,
+          "allocated_bytes": 90112
+        },
+        "added_workspace": {
+          "logical_bytes": 16384,
+          "allocated_bytes": 16384
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3083
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "cache_peak_allocated_bytes": 0,
+          "cache_peak_bytes": 0,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 80,
+          "compared_bytes": 0,
+          "comparison_seconds": 0.0,
+          "duplicate_findings": 0,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 80,
+          "hash_seconds": 0.0,
+          "hashed_bytes": 0,
+          "persist_seconds": 0.000478035,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 0.002107766,
+          "unique_size_skipped": 80
+        },
+        "verification": {
+          "backends": {
+            "tsk": 80
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 80,
+          "original_paths": 80,
+          "fixture_unique_contents_found": 80,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/unique/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/unique-quick-1",
+          "--mode",
+          "quick",
+          "--extensions",
+          "bin"
+        ]
+      },
+      {
+        "case": "small-quick",
+        "run": 1,
+        "scan_seconds": 0.8557031619711779,
+        "finalization_seconds": 34.18665917799808,
+        "total_seconds": 35.04236233996926,
+        "baseline_workspace": {
+          "logical_bytes": 209247,
+          "allocated_bytes": 225280
+        },
+        "added_workspace": {
+          "logical_bytes": 4330884,
+          "allocated_bytes": 5025792
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "cache_peak_allocated_bytes": 4898816,
+          "cache_peak_bytes": 4202744,
+          "cache_retained_allocated_bytes": 4890624,
+          "cache_retained_bytes": 4195716,
+          "candidates": 657,
+          "compared_bytes": 843360,
+          "comparison_seconds": 0.031413158999999996,
+          "duplicate_findings": 60,
+          "extracted_files": 657,
+          "extraction_seconds": 33.89485265,
+          "groups": 597,
+          "hash_seconds": 0.238123826,
+          "hashed_bytes": 4617396,
+          "persist_seconds": 0.00197238,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 34.183558023,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657
+          },
+          "verified_findings": 657,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 597,
+          "fixture_unique_contents_missing": 3,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/small-quick-1",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "small-full",
+        "run": 1,
+        "scan_seconds": 1.1120960380067118,
+        "finalization_seconds": 34.32084945397219,
+        "total_seconds": 35.4329454919789,
+        "baseline_workspace": {
+          "logical_bytes": 67041144,
+          "allocated_bytes": 67829760
+        },
+        "added_workspace": {
+          "logical_bytes": 180224,
+          "allocated_bytes": 180224
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 750,
+            "logical_bytes": 61440000
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1241
+          },
+          ".png": {
+            "files": 660,
+            "logical_bytes": 4638480
+          },
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 387633
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "cache_peak_allocated_bytes": 8192,
+          "cache_peak_bytes": 7028,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 1317,
+          "compared_bytes": 10078152,
+          "comparison_seconds": 0.35493236300000014,
+          "duplicate_findings": 717,
+          "extracted_files": 657,
+          "extraction_seconds": 33.85567989000003,
+          "groups": 600,
+          "hash_seconds": 0.06905332499999996,
+          "hashed_bytes": 9255876,
+          "persist_seconds": 0.002688471,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 34.317612744,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657,
+            "photorec": 660
+          },
+          "verified_findings": 1317,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 600,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/small-full-1",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-full",
+        "run": 1,
+        "scan_seconds": 1.0855596479959786,
+        "finalization_seconds": 2.3290173080167733,
+        "total_seconds": 3.414576956012752,
+        "baseline_workspace": {
+          "logical_bytes": 201421953,
+          "allocated_bytes": 201547776
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 125882400,
+          "cache_peak_allocated_bytes": 3149824,
+          "cache_peak_bytes": 3147060,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 80,
+          "compared_bytes": 302117760,
+          "comparison_seconds": 0.07478281700000002,
+          "duplicate_findings": 48,
+          "extracted_files": 40,
+          "extraction_seconds": 2.064980576,
+          "groups": 32,
+          "hash_seconds": 0.17482949899999997,
+          "hashed_bytes": 251764800,
+          "persist_seconds": 0.000581516,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 2.326155506,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 40,
+            "photorec": 40
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 40,
+          "original_paths": 40,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/large-full-1",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-deep",
+        "run": 1,
+        "scan_seconds": 0.9578637359663844,
+        "finalization_seconds": 0.10251419502310455,
+        "total_seconds": 1.060377930989489,
+        "baseline_workspace": {
+          "logical_bytes": 201405569,
+          "allocated_bytes": 201531392
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "cache_peak_allocated_bytes": 0,
+          "cache_peak_bytes": 0,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 40,
+          "compared_bytes": 50352960,
+          "comparison_seconds": 0.009628162000000001,
+          "duplicate_findings": 8,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 32,
+          "hash_seconds": 0.084205204,
+          "hashed_bytes": 125882400,
+          "persist_seconds": 0.002648519,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 0.100037297,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "photorec": 40
+          },
+          "verified_findings": 40,
+          "verified_named_findings": 0,
+          "original_paths": 0,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/large-deep-1",
+          "--mode",
+          "deep",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-quick",
+        "run": 1,
+        "scan_seconds": 1.3236172730103135,
+        "finalization_seconds": 1.5491191699984483,
+        "total_seconds": 2.872736443008762,
+        "baseline_workspace": {
+          "logical_bytes": 20458344,
+          "allocated_bytes": 20832256
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".log": {
+            "files": 4,
+            "logical_bytes": 26461
+          },
+          ".png": {
+            "files": 90,
+            "logical_bytes": 17725230
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "cache_peak_allocated_bytes": 200704,
+          "cache_peak_bytes": 196947,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 119,
+          "compared_bytes": 37419930,
+          "comparison_seconds": 0.03625912399999998,
+          "duplicate_findings": 95,
+          "extracted_files": 29,
+          "extraction_seconds": 1.4845390319999998,
+          "groups": 24,
+          "hash_seconds": 0.018092764,
+          "hashed_bytes": 23436693,
+          "persist_seconds": 0.002819169,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 1.5456617879999999,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30
+          },
+          "verified_findings": 119,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/ntfs-quick-1",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-full",
+        "run": 1,
+        "scan_seconds": 1.3684140520053916,
+        "finalization_seconds": 1.5892090470297262,
+        "total_seconds": 2.9576230990351178,
+        "baseline_workspace": {
+          "logical_bytes": 51456775,
+          "allocated_bytes": 51949568
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".dovecot": {
+            "files": 305,
+            "logical_bytes": 24985600
+          },
+          ".log": {
+            "files": 5,
+            "logical_bytes": 27667
+          },
+          ".png": {
+            "files": 120,
+            "logical_bytes": 23633640
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 86834
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "cache_peak_allocated_bytes": 200704,
+          "cache_peak_bytes": 196947,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 149,
+          "compared_bytes": 49236750,
+          "comparison_seconds": 0.05297564899999999,
+          "duplicate_findings": 125,
+          "extracted_files": 29,
+          "extraction_seconds": 1.5014441410000003,
+          "groups": 24,
+          "hash_seconds": 0.025379937000000016,
+          "hashed_bytes": 29345103,
+          "persist_seconds": 0.000737402,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 1.584663249,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30,
+            "photorec": 30
+          },
+          "verified_findings": 149,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/ntfs-full-1",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "unique-quick",
+        "run": 2,
+        "scan_seconds": 0.9075485040084459,
+        "finalization_seconds": 0.006934645993169397,
+        "total_seconds": 0.9144831500016153,
+        "baseline_workspace": {
+          "logical_bytes": 74011,
+          "allocated_bytes": 90112
+        },
+        "added_workspace": {
+          "logical_bytes": 16384,
+          "allocated_bytes": 16384
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3083
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "cache_peak_allocated_bytes": 0,
+          "cache_peak_bytes": 0,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 80,
+          "compared_bytes": 0,
+          "comparison_seconds": 0.0,
+          "duplicate_findings": 0,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 80,
+          "hash_seconds": 0.0,
+          "hashed_bytes": 0,
+          "persist_seconds": 0.000938899,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 0.004501581,
+          "unique_size_skipped": 80
+        },
+        "verification": {
+          "backends": {
+            "tsk": 80
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 80,
+          "original_paths": 80,
+          "fixture_unique_contents_found": 80,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/unique/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/unique-quick-2",
+          "--mode",
+          "quick",
+          "--extensions",
+          "bin"
+        ]
+      },
+      {
+        "case": "small-quick",
+        "run": 2,
+        "scan_seconds": 0.9201202720287256,
+        "finalization_seconds": 34.12746034300653,
+        "total_seconds": 35.04758061503526,
+        "baseline_workspace": {
+          "logical_bytes": 209247,
+          "allocated_bytes": 225280
+        },
+        "added_workspace": {
+          "logical_bytes": 4330884,
+          "allocated_bytes": 5025792
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "cache_peak_allocated_bytes": 4898816,
+          "cache_peak_bytes": 4202744,
+          "cache_retained_allocated_bytes": 4890624,
+          "cache_retained_bytes": 4195716,
+          "candidates": 657,
+          "compared_bytes": 843360,
+          "comparison_seconds": 0.029398163000000005,
+          "duplicate_findings": 60,
+          "extracted_files": 657,
+          "extraction_seconds": 33.83247355000001,
+          "groups": 597,
+          "hash_seconds": 0.24345539400000027,
+          "hashed_bytes": 4617396,
+          "persist_seconds": 0.001795184,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 34.123926775,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657
+          },
+          "verified_findings": 657,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 597,
+          "fixture_unique_contents_missing": 3,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/small-quick-2",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "small-full",
+        "run": 2,
+        "scan_seconds": 1.097768493986223,
+        "finalization_seconds": 34.28063596901484,
+        "total_seconds": 35.37840446300106,
+        "baseline_workspace": {
+          "logical_bytes": 67041144,
+          "allocated_bytes": 67829760
+        },
+        "added_workspace": {
+          "logical_bytes": 180224,
+          "allocated_bytes": 180224
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 750,
+            "logical_bytes": 61440000
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1241
+          },
+          ".png": {
+            "files": 660,
+            "logical_bytes": 4638480
+          },
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 387633
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "cache_peak_allocated_bytes": 8192,
+          "cache_peak_bytes": 7028,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 1317,
+          "compared_bytes": 10078152,
+          "comparison_seconds": 0.36595716399999983,
+          "duplicate_findings": 717,
+          "extracted_files": 657,
+          "extraction_seconds": 33.80004089999999,
+          "groups": 600,
+          "hash_seconds": 0.06947630999999997,
+          "hashed_bytes": 9255876,
+          "persist_seconds": 0.002776786,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 34.277692368,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657,
+            "photorec": 660
+          },
+          "verified_findings": 1317,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 600,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/small-full-2",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-full",
+        "run": 2,
+        "scan_seconds": 1.0624269859981723,
+        "finalization_seconds": 2.3451531319878995,
+        "total_seconds": 3.407580117986072,
+        "baseline_workspace": {
+          "logical_bytes": 201421953,
+          "allocated_bytes": 201547776
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 125882400,
+          "cache_peak_allocated_bytes": 3149824,
+          "cache_peak_bytes": 3147060,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 80,
+          "compared_bytes": 302117760,
+          "comparison_seconds": 0.08493550899999999,
+          "duplicate_findings": 48,
+          "extracted_files": 40,
+          "extraction_seconds": 2.074721873,
+          "groups": 32,
+          "hash_seconds": 0.17177306299999998,
+          "hashed_bytes": 251764800,
+          "persist_seconds": 0.000881679,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 2.342916241,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 40,
+            "photorec": 40
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 40,
+          "original_paths": 40,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/large-full-2",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-deep",
+        "run": 2,
+        "scan_seconds": 0.9431050820276141,
+        "finalization_seconds": 0.09110383404185995,
+        "total_seconds": 1.034208916069474,
+        "baseline_workspace": {
+          "logical_bytes": 201405569,
+          "allocated_bytes": 201531392
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "cache_peak_allocated_bytes": 0,
+          "cache_peak_bytes": 0,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 40,
+          "compared_bytes": 50352960,
+          "comparison_seconds": 0.010610378,
+          "duplicate_findings": 8,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 32,
+          "hash_seconds": 0.07583854199999998,
+          "hashed_bytes": 125882400,
+          "persist_seconds": 0.000531276,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 0.089057715,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "photorec": 40
+          },
+          "verified_findings": 40,
+          "verified_named_findings": 0,
+          "original_paths": 0,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/large-deep-2",
+          "--mode",
+          "deep",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-quick",
+        "run": 2,
+        "scan_seconds": 1.3106274720048532,
+        "finalization_seconds": 1.5476633660146035,
+        "total_seconds": 2.8582908380194567,
+        "baseline_workspace": {
+          "logical_bytes": 20458344,
+          "allocated_bytes": 20832256
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".log": {
+            "files": 4,
+            "logical_bytes": 26461
+          },
+          ".png": {
+            "files": 90,
+            "logical_bytes": 17725230
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "cache_peak_allocated_bytes": 200704,
+          "cache_peak_bytes": 196947,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 119,
+          "compared_bytes": 37419930,
+          "comparison_seconds": 0.04029902299999999,
+          "duplicate_findings": 95,
+          "extracted_files": 29,
+          "extraction_seconds": 1.4796303890000002,
+          "groups": 24,
+          "hash_seconds": 0.020439162,
+          "hashed_bytes": 23436693,
+          "persist_seconds": 0.000585365,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 1.5448184390000002,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30
+          },
+          "verified_findings": 119,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/ntfs-quick-2",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-full",
+        "run": 2,
+        "scan_seconds": 1.4482471480150707,
+        "finalization_seconds": 1.5987480760086328,
+        "total_seconds": 3.0469952240237035,
+        "baseline_workspace": {
+          "logical_bytes": 51456775,
+          "allocated_bytes": 51949568
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".dovecot": {
+            "files": 305,
+            "logical_bytes": 24985600
+          },
+          ".log": {
+            "files": 5,
+            "logical_bytes": 27667
+          },
+          ".png": {
+            "files": 120,
+            "logical_bytes": 23633640
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 86834
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "cache_peak_allocated_bytes": 200704,
+          "cache_peak_bytes": 196947,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 149,
+          "compared_bytes": 49236750,
+          "comparison_seconds": 0.04868143200000002,
+          "duplicate_findings": 125,
+          "extracted_files": 29,
+          "extraction_seconds": 1.5164791039999999,
+          "groups": 24,
+          "hash_seconds": 0.022785931999999995,
+          "hashed_bytes": 29345103,
+          "persist_seconds": 0.0007065,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 1.592525321,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30,
+            "photorec": 30
+          },
+          "verified_findings": 149,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/ntfs-full-2",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "unique-quick",
+        "run": 3,
+        "scan_seconds": 0.9165455320035107,
+        "finalization_seconds": 0.003775354998651892,
+        "total_seconds": 0.9203208870021626,
+        "baseline_workspace": {
+          "logical_bytes": 74011,
+          "allocated_bytes": 90112
+        },
+        "added_workspace": {
+          "logical_bytes": 16384,
+          "allocated_bytes": 16384
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3083
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "cache_peak_allocated_bytes": 0,
+          "cache_peak_bytes": 0,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 80,
+          "compared_bytes": 0,
+          "comparison_seconds": 0.0,
+          "duplicate_findings": 0,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 80,
+          "hash_seconds": 0.0,
+          "hashed_bytes": 0,
+          "persist_seconds": 0.000446579,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 0.002197103,
+          "unique_size_skipped": 80
+        },
+        "verification": {
+          "backends": {
+            "tsk": 80
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 80,
+          "original_paths": 80,
+          "fixture_unique_contents_found": 80,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/unique/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/unique-quick-3",
+          "--mode",
+          "quick",
+          "--extensions",
+          "bin"
+        ]
+      },
+      {
+        "case": "small-quick",
+        "run": 3,
+        "scan_seconds": 0.8951598349958658,
+        "finalization_seconds": 34.053724735975266,
+        "total_seconds": 34.94888457097113,
+        "baseline_workspace": {
+          "logical_bytes": 209247,
+          "allocated_bytes": 225280
+        },
+        "added_workspace": {
+          "logical_bytes": 4330884,
+          "allocated_bytes": 5025792
+        },
+        "baseline_artifacts": {
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "cache_peak_allocated_bytes": 4898816,
+          "cache_peak_bytes": 4202744,
+          "cache_retained_allocated_bytes": 4890624,
+          "cache_retained_bytes": 4195716,
+          "candidates": 657,
+          "compared_bytes": 843360,
+          "comparison_seconds": 0.028512909999999992,
+          "duplicate_findings": 60,
+          "extracted_files": 657,
+          "extraction_seconds": 33.78712982500002,
+          "groups": 597,
+          "hash_seconds": 0.2180790660000002,
+          "hashed_bytes": 4617396,
+          "persist_seconds": 0.00297992,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 34.051777962,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657
+          },
+          "verified_findings": 657,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 597,
+          "fixture_unique_contents_missing": 3,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/small-quick-3",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "small-full",
+        "run": 3,
+        "scan_seconds": 1.0681799690355547,
+        "finalization_seconds": 34.21764264302328,
+        "total_seconds": 35.28582261205884,
+        "baseline_workspace": {
+          "logical_bytes": 67041144,
+          "allocated_bytes": 67829760
+        },
+        "added_workspace": {
+          "logical_bytes": 180224,
+          "allocated_bytes": 180224
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 750,
+            "logical_bytes": 61440000
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1241
+          },
+          ".png": {
+            "files": 660,
+            "logical_bytes": 4638480
+          },
+          ".txt": {
+            "files": 2,
+            "logical_bytes": 3155
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 387633
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 4617396,
+          "cache_peak_allocated_bytes": 8192,
+          "cache_peak_bytes": 7028,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 1317,
+          "compared_bytes": 10078152,
+          "comparison_seconds": 0.34163344799999984,
+          "duplicate_findings": 717,
+          "extracted_files": 657,
+          "extraction_seconds": 33.76072264300002,
+          "groups": 600,
+          "hash_seconds": 0.07450037100000012,
+          "hashed_bytes": 9255876,
+          "persist_seconds": 0.003132575,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 34.213980581,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 657,
+            "photorec": 660
+          },
+          "verified_findings": 1317,
+          "verified_named_findings": 657,
+          "original_paths": 657,
+          "fixture_unique_contents_found": 600,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/small/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/small-full-3",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-full",
+        "run": 3,
+        "scan_seconds": 1.0630751560092904,
+        "finalization_seconds": 2.3106938040000387,
+        "total_seconds": 3.373768960009329,
+        "baseline_workspace": {
+          "logical_bytes": 201421953,
+          "allocated_bytes": 201547776
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 125882400,
+          "cache_peak_allocated_bytes": 3149824,
+          "cache_peak_bytes": 3147060,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 80,
+          "compared_bytes": 302117760,
+          "comparison_seconds": 0.07875805400000001,
+          "duplicate_findings": 48,
+          "extracted_files": 40,
+          "extraction_seconds": 2.05373765,
+          "groups": 32,
+          "hash_seconds": 0.16372139500000002,
+          "hashed_bytes": 251764800,
+          "persist_seconds": 0.000688229,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 2.307565345,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 40,
+            "photorec": 40
+          },
+          "verified_findings": 80,
+          "verified_named_findings": 40,
+          "original_paths": 40,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/large-full-3",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "large-deep",
+        "run": 3,
+        "scan_seconds": 0.8701083619962446,
+        "finalization_seconds": 0.08704356796806678,
+        "total_seconds": 0.9571519299643114,
+        "baseline_workspace": {
+          "logical_bytes": 201405569,
+          "allocated_bytes": 201531392
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          ".dovecot": {
+            "files": 918,
+            "logical_bytes": 75202560
+          },
+          ".log": {
+            "files": 1,
+            "logical_bytes": 1267
+          },
+          ".png": {
+            "files": 40,
+            "logical_bytes": 125882400
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 248473
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 0,
+          "cache_peak_allocated_bytes": 0,
+          "cache_peak_bytes": 0,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 40,
+          "compared_bytes": 50352960,
+          "comparison_seconds": 0.010747155,
+          "duplicate_findings": 8,
+          "extracted_files": 0,
+          "extraction_seconds": 0.0,
+          "groups": 32,
+          "hash_seconds": 0.07149677599999998,
+          "hashed_bytes": 125882400,
+          "persist_seconds": 0.000559438,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 0.085201664,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "photorec": 40
+          },
+          "verified_findings": 40,
+          "verified_named_findings": 0,
+          "original_paths": 0,
+          "fixture_unique_contents_found": 32,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/large/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/large-deep-3",
+          "--mode",
+          "deep",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-quick",
+        "run": 3,
+        "scan_seconds": 1.2976599940448068,
+        "finalization_seconds": 1.5684121049707755,
+        "total_seconds": 2.8660720990155824,
+        "baseline_workspace": {
+          "logical_bytes": 20458344,
+          "allocated_bytes": 20832256
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".log": {
+            "files": 4,
+            "logical_bytes": 26461
+          },
+          ".png": {
+            "files": 90,
+            "logical_bytes": 17725230
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "cache_peak_allocated_bytes": 200704,
+          "cache_peak_bytes": 196947,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 119,
+          "compared_bytes": 37419930,
+          "comparison_seconds": 0.03806788,
+          "duplicate_findings": 95,
+          "extracted_files": 29,
+          "extraction_seconds": 1.5038324669999996,
+          "groups": 24,
+          "hash_seconds": 0.018196101999999995,
+          "hashed_bytes": 23436693,
+          "persist_seconds": 0.001126368,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 1.5648939830000002,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30
+          },
+          "verified_findings": 119,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/ntfs-quick-3",
+          "--mode",
+          "quick",
+          "--extensions",
+          "png"
+        ]
+      },
+      {
+        "case": "ntfs-full",
+        "run": 3,
+        "scan_seconds": 1.3691606619977392,
+        "finalization_seconds": 1.5588442549924366,
+        "total_seconds": 2.928004916990176,
+        "baseline_workspace": {
+          "logical_bytes": 51456775,
+          "allocated_bytes": 51949568
+        },
+        "added_workspace": {
+          "logical_bytes": 24576,
+          "allocated_bytes": 24576
+        },
+        "baseline_artifacts": {
+          "(no suffix)": {
+            "files": 15,
+            "logical_bytes": 2602780
+          },
+          ".dovecot": {
+            "files": 305,
+            "logical_bytes": 24985600
+          },
+          ".log": {
+            "files": 5,
+            "logical_bytes": 27667
+          },
+          ".png": {
+            "files": 120,
+            "logical_bytes": 23633640
+          },
+          ".save": {
+            "files": 1,
+            "logical_bytes": 227
+          },
+          ".xml": {
+            "files": 1,
+            "logical_bytes": 86834
+          }
+        },
+        "consolidation": {
+          "cache_bytes": 5711463,
+          "cache_peak_allocated_bytes": 200704,
+          "cache_peak_bytes": 196947,
+          "cache_retained_allocated_bytes": 0,
+          "cache_retained_bytes": 0,
+          "candidates": 149,
+          "compared_bytes": 49236750,
+          "comparison_seconds": 0.04324364700000002,
+          "duplicate_findings": 125,
+          "extracted_files": 29,
+          "extraction_seconds": 1.481140109,
+          "groups": 24,
+          "hash_seconds": 0.025841430000000002,
+          "hashed_bytes": 29345103,
+          "persist_seconds": 0.001694479,
+          "policy": "reuse-confirmed-identical-content; preserve-original-artifacts",
+          "seconds": 1.555560234,
+          "unique_size_skipped": 0
+        },
+        "verification": {
+          "backends": {
+            "tsk": 29,
+            "ntfsundelete": 30,
+            "recuperabit": 30,
+            "testdisk": 30,
+            "photorec": 30
+          },
+          "verified_findings": 149,
+          "verified_named_findings": 119,
+          "original_paths": 29,
+          "fixture_unique_contents_found": 24,
+          "fixture_unique_contents_missing": 0,
+          "contents_not_in_fixture": 0,
+          "false_merges": 0,
+          "missed_identical_findings": 0
+        },
+        "command": [
+          "/home/dev/NetBeansProjects/open-data-recovery/target/portable-release/open-data-recovery",
+          "--scan",
+          "/tmp/odr-consolidation-source-4454b4ao/ntfs/source.img",
+          "--workspace",
+          "/dev/shm/odr-consolidation-work-aj6m6kmv/ntfs-full-3",
+          "--mode",
+          "full",
+          "--extensions",
+          "png"
+        ]
+      }
+    ],
+    "cache_policy": "reuse",
+    "policy": "Preserve existing artifacts; SHA-256 plus byte comparison; cache policy=reuse",
+    "engines": "btrfs: btrfs-progs v7.1 [sha256:fbf4f875a82a905733e2a24bb31ef2a326e4c9753358e11ceb6978c8f8b93c18]\nbtrfs-find-root: version not reported [sha256:25ca6b13b90d5390affbf245d841baceab14e34d5ebb7353be646393c0067ead]\nbulk_extractor: bulk_extractor 2.1.1 [sha256:f134da34cf48e5850bf5954d83ed3b7c7301d1309ccb670d0cc7560cc6df43fd]\nddrescue: GNU ddrescue 1.30 [sha256:ec597c5c9d262d15c1dc8d44d49de83c8b379ce827866b890715ad88077da7da]\ndebugfs: debugfs 1.47.2 (1-Jan-2025) [sha256:deb37b9515718738f369dfe0546a50a74fdd7d5837046adac272ef6a3381ccee]\ndigler: Version:   odr-2f62fc7 [sha256:bd42468a9b32b3fd4615bc1e1db98b0dbd785270f4bc84695ee4cdcefb443b6e]\ndumpe2fs: dumpe2fs 1.47.2 (1-Jan-2025) [sha256:d5f2ecf4b1c07e77a7940cf8c92329276125de9ad505dc1815ffd84f924958c1]\newfexport: version not reported [sha256:85012ffe76e4cb18d37479d0c16530ecac3f2821299d874e1a68b4c1efe9e506]\next4magic: ext4magic  version : 0.3.2 [sha256:38ead7210604da39f589cf038444a3a46e43c34812cbae51c26adf8b6dfb97e6]\next4rescue: version not reported [sha256:43142bb3828515097c1dff2773f1e997d354506cc64a1de12ff4d3dbdff3b587]\nextundelete: extundelete version 0.2.4 [sha256:c943d48a28861396d09878c26b58b914b3fa589a19654129b03a573523c07783]\nfls: The Sleuth Kit ver 4.12.1 [sha256:2b0e77c45d3eba8d7431c7791372f6ea0b7cd754322d24f18305fd76c0da8e25]\nforemost: 1.5.7 [sha256:7ab32990bd84c7c3a1af94e8ec864f9ffa2d655c748bce0d5f3768d6e3275b30]\nicat: The Sleuth Kit ver 4.12.1 [sha256:45527b5c11d9fa1c85f3f32d3830a0d0c57f94f9545d2b5a24eb8f393bccc463]\nmagicrescue: version not reported [sha256:39f684c09646dab30de6f3a2bcbd9480be1e4bb72dd8f44c710be8f456df594f]\nmmls: The Sleuth Kit ver 4.12.1 [sha256:5c0cb045a85a4aa323a96a2a3d8c1bb806e0208748a0f171a909508773fb3e8a]\nntfsundelete: ntfsundelete v2022.10.3 (libntfs-3g) - Recover deleted files from an NTFS Volume. [sha256:49d038fcb9438f4767fb1b31fa0ca37979163e572f349c584bd073d425a16f07]\nphotorec: PhotoRec 7.2, Data Recovery Utility, February 2024 [sha256:681a31f01e5cc0f1e9d10fa81e989b206173dcaae720da54b7e75567c1ee1549]\nrecoverjpeg: recoverjpeg 2.6.3 (from the `recoverjpeg' package) [sha256:185f9817e76028bda068b8ff206e68874e94d17815da761df14a7dee3e404a51]\nrecuperabit: |_|   v1.1.6 [sha256:ffd56fedf9b0752294f8f875fc40deee28fed8a8d96c4d8ba2f96946f090f52b]\nsafecopy: Safecopy 1.7 by CorvusCorax [sha256:93305b6b52f57304708d8485ce76850081b813f9410fcb32c93a1d11e3bfad0e]\nscalpel: Scalpel version 1.60 [sha256:a655eddd4f837c718ede2c83b61ffad90132293150321385f3a66df74da35c3c]\ntestdisk: TestDisk 7.2, Data Recovery Utility, February 2024 [sha256:1d92b33ae05d8be7eb76721439f549d5b213265054dddc2d8a81bf5dafbf23bc]\ntsk_recover: The Sleuth Kit ver 4.12.1 [sha256:972c7bf532b8513d4a2121d44e9181c686c1127b0b0279ded62aa358dbf92450]\n",
+    "summary": {
+      "unique-quick": {
+        "scan_seconds": {
+          "median": 0.9075485040084459,
+          "min": 0.898273762955796,
+          "max": 0.9165455320035107
+        },
+        "finalization_seconds": {
+          "median": 0.004948065965436399,
+          "min": 0.003775354998651892,
+          "max": 0.006934645993169397
+        },
+        "total_seconds": {
+          "median": 0.9144831500016153,
+          "min": 0.9032218289212324,
+          "max": 0.9203208870021626
+        }
+      },
+      "small-quick": {
+        "scan_seconds": {
+          "median": 0.8951598349958658,
+          "min": 0.8557031619711779,
+          "max": 0.9201202720287256
+        },
+        "finalization_seconds": {
+          "median": 34.12746034300653,
+          "min": 34.053724735975266,
+          "max": 34.18665917799808
+        },
+        "total_seconds": {
+          "median": 35.04236233996926,
+          "min": 34.94888457097113,
+          "max": 35.04758061503526
+        }
+      },
+      "small-full": {
+        "scan_seconds": {
+          "median": 1.097768493986223,
+          "min": 1.0681799690355547,
+          "max": 1.1120960380067118
+        },
+        "finalization_seconds": {
+          "median": 34.28063596901484,
+          "min": 34.21764264302328,
+          "max": 34.32084945397219
+        },
+        "total_seconds": {
+          "median": 35.37840446300106,
+          "min": 35.28582261205884,
+          "max": 35.4329454919789
+        }
+      },
+      "large-full": {
+        "scan_seconds": {
+          "median": 1.0630751560092904,
+          "min": 1.0624269859981723,
+          "max": 1.0855596479959786
+        },
+        "finalization_seconds": {
+          "median": 2.3290173080167733,
+          "min": 2.3106938040000387,
+          "max": 2.3451531319878995
+        },
+        "total_seconds": {
+          "median": 3.407580117986072,
+          "min": 3.373768960009329,
+          "max": 3.414576956012752
+        }
+      },
+      "large-deep": {
+        "scan_seconds": {
+          "median": 0.9431050820276141,
+          "min": 0.8701083619962446,
+          "max": 0.9578637359663844
+        },
+        "finalization_seconds": {
+          "median": 0.09110383404185995,
+          "min": 0.08704356796806678,
+          "max": 0.10251419502310455
+        },
+        "total_seconds": {
+          "median": 1.034208916069474,
+          "min": 0.9571519299643114,
+          "max": 1.060377930989489
+        }
+      },
+      "ntfs-quick": {
+        "scan_seconds": {
+          "median": 1.3106274720048532,
+          "min": 1.2976599940448068,
+          "max": 1.3236172730103135
+        },
+        "finalization_seconds": {
+          "median": 1.5491191699984483,
+          "min": 1.5476633660146035,
+          "max": 1.5684121049707755
+        },
+        "total_seconds": {
+          "median": 2.8660720990155824,
+          "min": 2.8582908380194567,
+          "max": 2.872736443008762
+        }
+      },
+      "ntfs-full": {
+        "scan_seconds": {
+          "median": 1.3691606619977392,
+          "min": 1.3684140520053916,
+          "max": 1.4482471480150707
+        },
+        "finalization_seconds": {
+          "median": 1.5892090470297262,
+          "min": 1.5588442549924366,
+          "max": 1.5987480760086328
+        },
+        "total_seconds": {
+          "median": 2.9576230990351178,
+          "min": 2.928004916990176,
+          "max": 3.0469952240237035
+        }
+      }
+    }
+  },
+  "spike_source_sha256": {
+    "spikes/consolidation/main.rs": "c33162a2c4ec71ca40bf34030b0d3d58288a5152f1e0293e8fc1269fd137aa92",
+    "spikes/consolidation/run.py": "74bca68af528f2afc4afce8d4d18a4c2199211c6c5a802254c389b8828491d55",
+    "spikes/consolidation/Cargo.lock": "07f9fdd5fa32d19765881b7f8e564639d0ec2d223f9b1a9ab87557b3842d8854"
+  }
+}

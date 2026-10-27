@@ -10,19 +10,34 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     fs::{self, File, OpenOptions},
     io::{Read, Write},
-    os::unix::fs::OpenOptionsExt,
+    os::{fd::AsRawFd, unix::fs::OpenOptionsExt},
     path::{Path, PathBuf},
 };
 
 const READONLY: OpenFlags = OpenFlags::SQLITE_OPEN_READ_ONLY
     .union(OpenFlags::SQLITE_OPEN_NO_MUTEX)
     .union(OpenFlags::SQLITE_OPEN_NOFOLLOW);
+
+struct ScanLock(File);
+impl Drop for ScanLock {
+    fn drop(&mut self) {
+        // Unlock explicitly: a concurrently spawned child can briefly inherit
+        // this descriptor between fork and exec, before CLOEXEC closes it.
+        unsafe {
+            libc::flock(self.0.as_raw_fd(), libc::LOCK_UN);
+        }
+    }
+}
+
 pub struct Store {
     pub directory: PathBuf,
     pub manifest: Manifest,
-    connection: Connection,
+    pub(super) connection: Connection,
     projection: String,
     table: String,
+    // Released by the OS even if a scan crashes. This distinguishes a live
+    // finalizer from a saved manifest whose last state was still active.
+    _scan_lock: Option<ScanLock>,
 }
 
 impl Store {
@@ -73,8 +88,25 @@ impl Store {
               UNIQUE(backend,locator,offset_bytes,path));
             CREATE INDEX candidate_path ON candidates(path); CREATE INDEX candidate_backend ON candidates(backend);
             PRAGMA user_version=1;")?;
+        let scan_lock = if options.consolidate {
+            let file = OpenOptions::new()
+                .read(true)
+                .custom_flags(libc::O_NOFOLLOW)
+                .open(directory.join("tree.sqlite"))?;
+            if unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
+                return Err(std::io::Error::last_os_error().into());
+            }
+            // Create while empty: bounded inserts avoid a drive-sized sort at
+            // finalization, and default scans pay no additional indexing cost.
+            connection.execute_batch(
+                "CREATE INDEX candidate_size ON candidates(bytes,(artifact IS NULL),id)",
+            )?;
+            Some(ScanLock(file))
+        } else {
+            None
+        };
         let manifest = Manifest {
-            schema_version: 1,
+            schema_version: if options.consolidate { 2 } else { 1 },
             id,
             created_at: timestamp(),
             updated_at: timestamp(),
@@ -88,6 +120,7 @@ impl Store {
             errors: vec![],
             candidate_count: 0,
             complete: false,
+            consolidation: None,
         };
         let mut store = Self {
             directory,
@@ -95,6 +128,7 @@ impl Store {
             connection,
             projection: native_projection().into(),
             table: "candidates".into(),
+            _scan_lock: scan_lock,
         };
         write_json(&store.directory.join("source.json"), source)?;
         store.save()?;
@@ -109,18 +143,26 @@ impl Store {
         GuardedDir::existing(directory)?;
         let manifest: Manifest =
             read_json(&safety::confined_artifact(directory, "manifest.json")?)?;
-        if manifest.schema_version > 1 {
+        if manifest.schema_version > 2 {
             return fail("This saved scan uses a newer session format.");
         }
         let db = safety::confined_artifact(directory, "tree.sqlite")?;
         let connection = Connection::open_with_flags(db, READONLY)?;
-        let (table, projection) = legacy_projection(&connection)?;
+        let (mut table, mut projection) = legacy_projection(&connection)?;
+        if manifest.consolidation.is_some() {
+            // Only a committed index explicitly published by the manifest is
+            // visible. An interrupted attempt always reopens the raw findings.
+            table = "consolidated_candidates".into();
+            projection = consolidated_projection().into();
+            connection.prepare(&format!("SELECT {projection} FROM {table} LIMIT 0"))?;
+        }
         Ok(Self {
             directory: directory.into(),
             manifest,
             connection,
             projection,
             table,
+            _scan_lock: None,
         })
     }
     pub fn save(&mut self) -> Result<()> {
@@ -174,16 +216,69 @@ impl Store {
         }
         Ok(file)
     }
+    pub fn consolidated(&self) -> bool {
+        self.manifest.consolidation.is_some()
+    }
+
+    pub(super) fn publish_consolidation(&mut self, summary: Consolidation) -> Result<()> {
+        self.table = "consolidated_candidates".into();
+        self.projection = consolidated_projection().into();
+        self.manifest.consolidation = Some(summary);
+        self.save()
+    }
+
+    /// Bounded provenance page. Group selection remains one copy; every raw
+    /// finding, original path and engine address remains available here.
+    pub fn findings(&self, group: i64, after: i64) -> Result<Vec<Candidate>> {
+        if !self.consolidated() {
+            return Ok(vec![self.get(group)?]);
+        }
+        let mut statement = self.connection.prepare(&format!(
+            "SELECT {} FROM candidates WHERE id IN (SELECT candidate_id FROM consolidated_members WHERE group_id=?1 AND candidate_id>?2 ORDER BY candidate_id LIMIT 100) ORDER BY id",
+            native_projection()))?;
+        Ok(statement
+            .query_map(params![group, after], row_candidate)?
+            .collect::<std::result::Result<Vec<_>, _>>()?)
+    }
+
+    /// Each distinct recorded path, with the group's verified canonical content.
+    pub fn recovery_paths(&self, file: &Candidate, after: Option<&str>) -> Result<Vec<Candidate>> {
+        if !self.consolidated() {
+            return Ok(if after.is_none() {
+                vec![file.clone()]
+            } else {
+                vec![]
+            });
+        }
+        let mut statement = self.connection.prepare(
+            "SELECT p.path,c.modified FROM consolidated_paths p JOIN candidates c ON c.id=p.candidate_id WHERE p.group_id=?1 AND (?2 IS NULL OR p.path>?2) ORDER BY p.path LIMIT 100")?;
+        Ok(statement
+            .query_map(params![file.id, after], |row| {
+                let mut candidate = file.clone();
+                candidate.path = row.get(0)?;
+                candidate.modified = row.get(1)?;
+                Ok(candidate)
+            })?
+            .collect::<std::result::Result<Vec<_>, _>>()?)
+    }
     pub fn page(&self, query: &Query) -> Result<Page> {
         let filter = format!("SELECT {} FROM {}", self.projection, self.table);
         let sql_where = "instr(lower(path),lower(?1)) > 0 AND (?2='' OR (?2='image' AND lower(path) GLOB '*.*' AND lower(substr(path,instr(path,'.')+1)) IS NOT NULL AND (lower(path) LIKE '%.jpg' OR lower(path) LIKE '%.jpeg' OR lower(path) LIKE '%.png' OR lower(path) LIKE '%.gif' OR lower(path) LIKE '%.webp' OR lower(path) LIKE '%.tif' OR lower(path) LIKE '%.bmp')) OR (?2='document' AND (lower(path) LIKE '%.txt' OR lower(path) LIKE '%.md' OR lower(path) LIKE '%.pdf' OR lower(path) LIKE '%.doc%' OR lower(path) LIKE '%.xls%' OR lower(path) LIKE '%.csv')) OR (?2='other' AND lower(path) NOT LIKE '%.jpg' AND lower(path) NOT LIKE '%.jpeg' AND lower(path) NOT LIKE '%.png' AND lower(path) NOT LIKE '%.gif' AND lower(path) NOT LIKE '%.webp' AND lower(path) NOT LIKE '%.tif' AND lower(path) NOT LIKE '%.bmp' AND lower(path) NOT LIKE '%.txt' AND lower(path) NOT LIKE '%.md' AND lower(path) NOT LIKE '%.pdf' AND lower(path) NOT LIKE '%.doc%' AND lower(path) NOT LIKE '%.xls%' AND lower(path) NOT LIKE '%.csv'))";
+        let sql_where = if self.consolidated() {
+            format!(
+                "EXISTS(SELECT 1 FROM consolidated_paths p WHERE p.group_id=result.id AND ({}))",
+                sql_where.replace("path", "p.path")
+            )
+        } else {
+            sql_where.into()
+        };
         let matched = self.connection.query_row(
-            &format!("SELECT COUNT(*) FROM ({filter}) WHERE {sql_where}"),
+            &format!("SELECT COUNT(*) FROM ({filter}) result WHERE {sql_where}"),
             params![query.text, query.kind],
             |row| row.get::<_, i64>(0),
         )? as u64;
         let mut statement = self.connection.prepare(&format!(
-            "SELECT * FROM ({filter}) WHERE {sql_where} ORDER BY path,id LIMIT ?3 OFFSET ?4"
+            "SELECT * FROM ({filter}) result WHERE {sql_where} ORDER BY path,id LIMIT ?3 OFFSET ?4"
         ))?;
         let mut files = statement
             .query_map(
@@ -214,21 +309,35 @@ impl Store {
                     .unwrap_or_else(|| "unknown (legacy scan)".into());
             }
         }
-        let (selected, selected_bytes) = if let Some(selection) = selection {
-            selection.query_row(
-                "SELECT COUNT(*),COALESCE(SUM(bytes),0) FROM selected",
-                [],
-                |row| Ok((row.get::<_, i64>(0)? as u64, row.get::<_, i64>(1)? as u64)),
-            )?
+        let (selected, selected_bytes, selected_paths, selected_path_bytes) = if let Some(
+            selection,
+        ) = selection
+        {
+            let paths = if selection_has_paths(&selection)? {
+                "paths"
+            } else {
+                "1"
+            };
+            selection.query_row(&format!("SELECT COUNT(*),COALESCE(SUM(bytes),0),COALESCE(SUM({paths}),0),COALESCE(SUM(bytes*{paths}),0) FROM selected"),[],
+                |r|Ok((r.get::<_,i64>(0)? as u64,r.get::<_,i64>(1)? as u64,r.get::<_,i64>(2)? as u64,r.get::<_,i64>(3)? as u64)))?
         } else {
-            (0, 0)
+            (0, 0, 0, 0)
         };
+        let total = self.count()?;
         Ok(Page {
             files,
             matched,
-            total: self.count()?,
+            total,
             selected,
             selected_bytes,
+            selected_paths,
+            selected_path_bytes,
+            findings: self
+                .manifest
+                .consolidation
+                .as_ref()
+                .map_or(total, |c| c.findings),
+            consolidated: self.consolidated(),
         })
     }
 
@@ -241,6 +350,34 @@ impl Store {
         Ok(Some(Connection::open_with_flags(path, READONLY)?))
     }
     pub fn select(&self, ids: &[i64], selected: bool) -> Result<()> {
+        let _selection_lock = if self.manifest.options.consolidate
+            && matches!(
+                self.manifest.state.as_str(),
+                "preparing" | "scanning" | "consolidating"
+            ) {
+            let file = File::open(safety::confined_artifact(&self.directory, "tree.sqlite")?)?;
+            if unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_SH | libc::LOCK_NB) } != 0 {
+                let error = std::io::Error::last_os_error();
+                if error.kind() != std::io::ErrorKind::WouldBlock {
+                    return Err(error.into());
+                }
+                return fail(
+                    "Wait for the scan and final consolidation to finish before selecting files.",
+                );
+            }
+            let current: Manifest = read_json(&safety::confined_artifact(
+                &self.directory,
+                "manifest.json",
+            )?)?;
+            if current.consolidation.is_some() && !self.consolidated() {
+                return fail(
+                    "The scan finished consolidating. Reload its results before selecting files.",
+                );
+            }
+            Some(file)
+        } else {
+            None
+        };
         // Selection is separate from the candidate tree; legacy trees are never migrated or rewritten.
         GuardedDir::existing(&self.directory)?
             .revalidate(&super::jobs::session_source(self)?, 0)?;
@@ -252,15 +389,20 @@ impl Store {
                 | OpenFlags::SQLITE_OPEN_NOFOLLOW,
         )?;
         selection.execute_batch(
-            "CREATE TABLE IF NOT EXISTS selected(id INTEGER PRIMARY KEY,bytes INTEGER NOT NULL)",
+            "CREATE TABLE IF NOT EXISTS selected(id INTEGER PRIMARY KEY,bytes INTEGER NOT NULL,paths INTEGER NOT NULL DEFAULT 1)",
         )?;
+        if !selection_has_paths(&selection)? {
+            selection.execute_batch(
+                "ALTER TABLE selected ADD COLUMN paths INTEGER NOT NULL DEFAULT 1",
+            )?;
+        }
         let transaction = selection.transaction()?;
         for &id in ids {
             if selected {
                 let file = self.get(id)?;
                 transaction.execute(
-                    "INSERT OR IGNORE INTO selected VALUES(?1,?2)",
-                    params![id, file.bytes as i64],
+                    "INSERT OR IGNORE INTO selected(id,bytes,paths) VALUES(?1,?2,?3)",
+                    params![id, file.bytes as i64, file.paths as i64],
                 )?;
             } else {
                 transaction.execute("DELETE FROM selected WHERE id=?1", [id])?;
@@ -300,6 +442,15 @@ impl Store {
             .revalidate(&super::jobs::session_source(self)?, 0)?;
         self.log("recovery", record)
     }
+}
+
+fn selection_has_paths(connection: &Connection) -> Result<bool> {
+    Ok(connection
+        .prepare("PRAGMA table_info(selected)")?
+        .query_map([], |r| r.get::<_, String>(1))?
+        .collect::<std::result::Result<Vec<_>, _>>()?
+        .iter()
+        .any(|name| name == "paths"))
 }
 
 pub fn list(root: &Path) -> Result<Vec<SavedScan>> {
@@ -348,10 +499,13 @@ pub fn write_json(path: &Path, value: &impl Serialize) -> Result<()> {
     result
 }
 
-fn native_projection() -> &'static str {
-    "id,path,bytes,modified,backend,backend_version,locator,offset_bytes,length_bytes,artifact,carved,deleted"
+pub(super) fn native_projection() -> &'static str {
+    "id,path,bytes,modified,backend,backend_version,locator,offset_bytes,length_bytes,artifact,carved,deleted,1 AS findings,1 AS paths,NULL AS sha256,NULL AS consolidation_error"
 }
-fn row_candidate(row: &rusqlite::Row<'_>) -> rusqlite::Result<Candidate> {
+fn consolidated_projection() -> &'static str {
+    "id,path,bytes,modified,backend,backend_version,locator,offset_bytes,length_bytes,artifact,carved,deleted,findings,paths,sha256,consolidation_error"
+}
+pub(super) fn row_candidate(row: &rusqlite::Row<'_>) -> rusqlite::Result<Candidate> {
     Ok(Candidate {
         id: row.get(0)?,
         path: row.get(1)?,
@@ -366,6 +520,10 @@ fn row_candidate(row: &rusqlite::Row<'_>) -> rusqlite::Result<Candidate> {
         carved: row.get(10)?,
         deleted: row.get(11)?,
         selected: false,
+        findings: row.get::<_, i64>(12)?.max(1) as u64,
+        paths: row.get::<_, i64>(13)?.max(1) as u64,
+        sha256: row.get(14)?,
+        consolidation_error: row.get(15)?,
     })
 }
 fn legacy_projection(connection: &Connection) -> Result<(String, String)> {
@@ -402,6 +560,10 @@ fn legacy_projection(connection: &Connection) -> Result<(String, String)> {
             choose("artifact", "", "NULL"),
             choose("carved", "", "0"),
             choose("deleted", "", "1"),
+            "1 AS findings".into(),
+            "1 AS paths".into(),
+            "NULL AS sha256".into(),
+            "NULL AS consolidation_error".into(),
         ]
         .join(",");
         return Ok((table.into(), projection));

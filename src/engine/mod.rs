@@ -1,4 +1,7 @@
 pub mod adapters;
+pub mod consolidation;
+#[cfg(test)]
+mod consolidation_tests;
 pub mod jobs;
 pub mod process;
 pub mod safety;

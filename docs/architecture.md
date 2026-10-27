@@ -12,6 +12,7 @@
 | `process.rs` | Shell-free arguments, read-only input FD, Landlock write isolation, process-group pause/cancel/timeout, bounded diagnostic output |
 | `adapters.rs` | Scanner/Recoverer traits, tool adapters, TSK body-file parsing, partition ranges and retained-artifact import |
 | `jobs.rs` | Scan preparation, E01 export, clone/range retention, worker orchestration, recovery, preview and audit hashes |
+| `consolidation.rs` | Optional final content grouping, bounded comparison/extraction, verified artifact reuse and atomic publication |
 | `store.rs` | SQLite candidates and selection, JSON manifests, legacy projections, logs and recorded-version comparison |
 
 ## Source protection
@@ -31,6 +32,18 @@ Quick uses metadata adapters; Deep uses signature/content extraction; Full perfo
 Whole-disk TSK scans use mmls partition ranges. Compound NTFS addresses are strings, never truncated to integer inode numbers. Candidate offsets and lengths are in bytes relative to the session scan input; a custom range's source offset is recorded in the manifest. Extension and size filtering is exact at result import, even when a backend groups several extensions into one file family.
 
 Recovery reads either retained artifacts or verified source/clone metadata addresses. Directory-relative file creation never follows destination symlinks and never overwrites existing files. Completed bytes receive a SHA-256 record; optional verification rereads the output. A mismatch with the candidate's recorded length is reported as an error. Failures preserve an explicit partial-output path in `events.log`.
+
+### Final consolidation
+
+`ScanOptions.consolidate` defaults to false, including for deserialized older options. Enabled scans enter `consolidating` after their engine plan finishes. A size index is created while the candidate table is empty, only for enabled scans. The finalizer uses size buckets and keyset pages of at most 128 findings, processes existing artifacts before lazy TSK addresses, hashes full contents and byte-compares hash matches. It retains only new unique extractions; original artifacts remain intact. Content and displayed-path preference are independent: TSK metadata names take precedence over other metadata and carved names.
+
+Groups, member IDs and distinct recorded paths are written in one SQLite transaction. Raw candidate rows remain unchanged. A complete grouping transaction is committed before the atomic manifest update exposes the `consolidated_candidates` view. Cache files and directories are synced first. Cancelled/fatal attempts roll back grouping and clean only their own new cache; incomplete manifests reopen the raw table. Findings that cannot be read completely for comparison become separate unverified groups and make the attempt partial. Unique-size singletons require no content read. Canonical file identity, length and modification/change times are checked before publication; recovery checks the recorded content hash again.
+
+An advisory scan lock blocks selecting raw IDs while an enabled scan is running. The operating system releases it when the scan process exits, so a stale active state in an interrupted manifest does not prevent recovery of the raw findings. Selection from a stale raw view is rejected after a completed grouping is published; callers must reload the final groups.
+
+Enabled sessions use manifest format 2; format 0/1 scans still load without candidate-tree migration. The SQLite view provides preferred names and canonical content to normal paging, preview and selection. Search matches every recorded path. Provenance and alternate-path recovery use bounded pages. Group selection restores one copy; `RecoveryOptions.restore_all_paths` expands to distinct recorded paths and includes their full byte count in destination validation. Original findings stay queryable through the UI and `--findings`.
+
+Short extraction jobs use a Linux PID descriptor to wake the supervisor immediately when a child exits, while pause/cancel/timeout and free-space supervision retain their existing intervals. If PID descriptors are unavailable, the previous polling behavior is used. This avoids the spike's fixed 50 ms wait per short extraction without removing the Landlock sandbox or read-only source descriptors. See the [Linux pidfd documentation](https://man7.org/linux/man-pages/man2/pidfd_open.2.html).
 
 ## Persistence
 

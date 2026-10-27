@@ -108,6 +108,14 @@
             <property name="orientation">vertical</property>
             <property name="spacing">10</property>
             <child>
+              <object class="GtkCheckButton" id="all_paths">
+                <property name="label">Recover every recorded path</property>
+                <property name="active">false</property>
+                <property name="visible">false</property>
+                <property name="tooltip-text">Normally one copy is recovered per consolidated group. Enable to restore each distinct recorded path, including alternate names from other engines. This writes more copies and needs additional destination space.</property>
+              </object>
+            </child>
+            <child>
               <object class="GtkCheckButton" id="preserve_tree">
                 <property name="label">Preserve folder structure</property>
                 <property name="active">true</property>

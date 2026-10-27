@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <object class="GtkWindow" id="dialog">
+    <property name="title">Consolidated findings</property>
+    <property name="modal">true</property>
+    <property name="default-width">680</property>
+    <property name="default-height">440</property>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">12</property>
+        <property name="margin-top">16</property>
+        <property name="margin-bottom">16</property>
+        <property name="margin-start">16</property>
+        <property name="margin-end">16</property>
+        <child><object class="GtkLabel" id="summary">
+          <property name="xalign">0</property>
+          <property name="wrap">true</property>
+          <property name="max-width-chars">80</property>
+        </object></child>
+        <child><object class="GtkScrolledWindow">
+          <property name="vexpand">true</property>
+          <property name="hscrollbar-policy">never</property>
+          <property name="child"><object class="GtkTextView" id="body">
+            <property name="editable">false</property>
+            <property name="cursor-visible">false</property>
+            <property name="wrap-mode">word-char</property>
+            <property name="left-margin">8</property>
+            <property name="right-margin">8</property>
+            <property name="top-margin">8</property>
+            <property name="bottom-margin">8</property>
+          </object></property>
+        </object></child>
+        <child><object class="GtkBox">
+          <property name="spacing">8</property>
+          <child><object class="GtkButton" id="first"><property name="label">First page</property></object></child>
+          <child><object class="GtkButton" id="next"><property name="label">Next 100 findings</property></object></child>
+          <child><object class="GtkLabel"><property name="hexpand">true</property></object></child>
+          <child><object class="GtkButton" id="close"><property name="label">Close</property></object></child>
+        </object></child>
+      </object>
+    </property>
+  </object>
+</interface>

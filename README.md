@@ -38,7 +38,7 @@ cargo run --locked -- --sources    # Read-only device discovery as JSON
 ## Recover files
 
 1. Select a disk or partition in the disk layout sidebar, or use **File → Add source** for a raw/dd image, E01 image, unlocked mapper, or mounted local folder. Mounted filesystems remain mounted. Their contents can still change while other applications use them.
-2. Choose **Quick**, **Deep**, or **Full**. **Scan** starts with that mode's defaults. Its dropdown offers **Custom…** for extensions, workspace, engine selection, clone engine/retries, size filters, a byte range, timeout, PhotoRec settings, and an alternate btrfs tree root.
+2. Choose **Quick**, **Deep**, or **Full**. **Scan** starts with that mode's defaults. Its dropdown offers **Custom…** for extensions, workspace, optional final consolidation, engine selection, clone engine/retries, size filters, a byte range, timeout, PhotoRec settings, and an alternate btrfs tree root.
 3. Choose a workspace on a **different physical drive from the original source**. The default is `$XDG_DATA_HOME/open-data-recovery/snapshots`, falling back to `~/.local/share/open-data-recovery/snapshots`; it is rejected if unsafe. Another partition of the source disk is not sufficient. Unknown network, overlay, or virtual shared-filesystem ancestry is rejected. No scan storage is initialized before this check.
 4. Scans run in the background. Pause/resume controls the process group; cancel retains partial results. Status stays outside the full-height progress bar. Only a percentage appears inside it; engines without measurable progress use an indeterminate bar.
 5. Search and filter the SQLite results. Lists contain at most 250 candidates per page. File, folder, and select-all controls apply to the current page; selections persist across pages, filters, and application restarts. Preview supports small images/text and metadata; a preview is not a guarantee of recovery.
@@ -49,6 +49,18 @@ cargo run --locked -- --sources    # Read-only device discovery as JSON
 The screenshots use explicitly labeled demo data. Production dialogs use real paths and validation.
 
 **Menu → Scan → Saved Scan** opens a dedicated dialog. Choose a workspace, inspect recorded source identity, state, results and engine versions, open an attempt, compare attempts, or scan again into a new session. Retained clones can be reopened and rescanned without the original source. Restarting creates a new attempt; it does not edit the old candidate tree or resume an interrupted third-party process at its internal checkpoint.
+
+### Optional final consolidation
+
+**Custom… → Scan → Consolidate identical files when the scan finishes** is off by default. After the selected engines finish, it groups only files whose complete contents match by SHA-256 **and byte-for-byte comparison**. Names, sizes and source offsets alone never establish equivalence. The complete grouped list is published atomically; it stays stable when the scan is reopened or files are recovered.
+
+Each group preserves every finding and recorded path. Click its **N findings…** button to inspect names, engines and addresses. Searching an alternate path still finds the group. Selecting a group recovers one copy using a preferred metadata name. In **Review recovery**, **Recover every recorded path** restores each distinct recorded path, including alternate engine names; the destination-space check includes those extra copies.
+
+Consolidation can substantially extend a scan and need extra workspace. Existing identical artifacts are reused. TSK findings with potentially matching lengths require extraction; unique new contents are retained for later recovery, while confirmed duplicate temporary copies are removed. Original engine artifacts are kept. A length that appears only once needs no content comparison. The option's tooltip explains these costs.
+
+See the [measured consolidation costs and validation](docs/consolidation-implementation.md) for the production off/on comparison on disposable images.
+
+Cancellation, insufficient space or a changed canonical artifact leaves the original ungrouped findings available. A finding that cannot be read completely for comparison stays separate with a **Not verified** detail; the scan reports partial verification instead of silently calling it complete. A saved group's content hash is checked again during recovery, including when optional output rereading is disabled.
 
 | Shortcut | Action |
 | --- | --- |
@@ -72,7 +84,9 @@ The screenshots use explicitly labeled demo data. Production dialogs use real pa
 | Clone-first | GNU ddrescue with map, or safecopy with bad-block report |
 | E01 | ewf-tools metadata inspection and export to a retained raw image |
 
-Automatic Quick scanning uses TSK where applicable, btrfs restore for btrfs, and available journal/MFT alternatives on ext3/4 and NTFS. Full runs metadata and content carving. Automatic carving prefers PhotoRec, then Scalpel, then Foremost. A custom engine choice runs that adapter. Extension and size filters apply to imported results; carvers may inspect and temporarily extract other file families.
+Automatic Quick scanning runs the applicable metadata engines sequentially: TSK where applicable, btrfs restore for btrfs, and available journal/MFT alternatives on ext3/4 and NTFS. Deep runs one carver; Full runs the metadata plan followed by one carver. Automatic carving prefers PhotoRec, then Scalpel, then Foremost. An explicit custom engine choice selects that adapter. Without consolidation, findings from different engines remain separate. Extension and size filters apply to imported results; carvers may inspect and retain other file families.
+
+TSK normally records metadata and source locations without extracting contents. Other metadata engines can already save recovered files during Quick scanning. PhotoRec saves carved contents during Deep scanning. Workspace use therefore depends on the selected engines and recovered contents as well as the scan mode.
 
 The supported scope is **ext2/3/4, btrfs, FAT12/16/32, exFAT and NTFS**. **XFS is best-effort carving; APFS/HFS are read-only carving only.** ZFS and locked encrypted volumes are rejected. Select an already-unlocked mapper for encrypted media. A mounted folder limits Quick metadata results to its filesystem path; carving requires selecting the containing filesystem, because raw signatures cannot establish folder ownership.
 
@@ -84,6 +98,8 @@ Install additional tools using your distribution packages. Package names differ;
 
 Each attempt contains `manifest.json`, `source.json`, `tree.sqlite`, `events.log`, and `artifacts/`. Selection is stored separately in `selection.sqlite`. Clone-first retains `clone/clone.img` and its map/report. E01 and custom ranges retain their normalized input images. Backend stdout and recovered artifacts stay with the scan. Recovery log entries contain output paths, byte counts, errors, hashes, and verification state.
 
+Consolidated scans additionally retain group membership, distinct paths and verified content references in `tree.sqlite`, and any new unique content in `artifacts/consolidation/`. The manifest records grouping counts, verification failures, retained cache bytes and elapsed consolidation time. Older unconsolidated scans retain their existing behavior; loading them does not migrate their candidate trees.
+
 The source fingerprint records drive identity and size, partition UUID/offset, filesystem UUID, and sampled image content. The image sample is an identity check, not a full-image integrity digest. Comparisons use the engine versions and executable hashes recorded with each attempt. Supported legacy tables are read without schema migrations. NTFS compound metadata addresses and partition byte ranges remain intact.
 
 ```sh
@@ -92,9 +108,15 @@ open-data-recovery --scan /media/evidence/disk.img \
 
 open-data-recovery --list /media/recovery/scans/SESSION
 
+# Optional grouping after scanning; defaults remain unchanged without this flag.
+open-data-recovery --scan /media/evidence/disk.img \
+  --workspace /media/recovery/scans --mode full --consolidate
+open-data-recovery --findings /media/recovery/scans/SESSION --id GROUP_ID
+
 # Recover the persisted selection; use --ids 1,2 or explicit --all to select files.
 open-data-recovery --recover /media/recovery/scans/SESSION \
   --destination /media/recovery/restored
+# Add --all-paths to recover every recorded path for selected consolidated groups.
 ```
 
 ## Build, test, and package
@@ -104,6 +126,8 @@ cargo test --locked
 sh scripts/check.sh          # GtkBuilder validation + demo and production GTK smoke checks
 sh scripts/check-engines.sh  # Real tools on disposable images; /tmp and /dev/shm must be separate
 sh scripts/check-ui-recovery.sh # Full GTK recovery flow on a disposable image
+ODR_CONSOLIDATE=1 sh scripts/check-ui-recovery.sh # Group details and every-path recovery
+python3 scripts/check-consolidation.py --runs 3 --output target/consolidation-check
 sh scripts/capture-preview.sh
 
 # Optional isolated GTK 4.8 development environment

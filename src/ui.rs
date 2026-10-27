@@ -1077,6 +1077,10 @@ impl Ui {
 
     fn custom_scan(self: &Rc<Self>) {
         let b = self.show_dialog(include_str!("../ui/scan-options.ui"));
+        object::<gtk::CheckButton>(&b, "consolidate").set_sensitive(false);
+        object::<gtk::CheckButton>(&b, "consolidate").set_tooltip_text(Some(
+            "Content consolidation is available for real scans; this demo uses sample data.",
+        ));
         object::<gtk::DropDown>(&b, "mode")
             .set_selected(self.widget::<gtk::DropDown>("scan_mode").selected());
         object::<gtk::Entry>(&b, "workspace").set_text("/demo/recovery-workspace");

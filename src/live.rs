@@ -21,7 +21,8 @@ use std::{
 
 type Task = Box<dyn FnOnce() -> Message + Send>;
 enum Message {
-    RecoveryValidation(u64, String, engine::Result<String>),
+    RecoveryValidation(u64, String, bool, engine::Result<String>),
+    Findings(u64, i64, engine::Result<Vec<Candidate>>),
     Sources(engine::Result<Vec<SourceDescriptor>>),
     Added(u64, engine::Result<SourceDescriptor>),
     Page(u64, engine::Result<Page>),
@@ -35,6 +36,7 @@ pub struct Live {
     builder: gtk::Builder,
     dialog: RefCell<Option<gtk::Builder>>,
     dialog_generation: Cell<u64>,
+    finding_cursor: Cell<i64>,
     sources: RefCell<Vec<SourceDescriptor>>,
     selected: Cell<Option<usize>>,
     source_rows: RefCell<Vec<usize>>,
@@ -709,9 +711,43 @@ impl Live {
                     }
                 });
                 let row: gtk::ListBoxRow = obj(&b, "row");
+                let findings: gtk::Button = obj(&b, "findings");
+                findings.set_visible(
+                    page.consolidated && (file.findings > 1 || file.consolidation_error.is_some()),
+                );
+                findings.set_label(&if file.consolidation_error.is_some() {
+                    "Not verified".into()
+                } else {
+                    format!("{} findings…", file.findings)
+                });
+                let weak = Rc::downgrade(self);
+                let group = file.clone();
+                findings.connect_clicked(move |_| {
+                    if let Some(ui) = weak.upgrade() {
+                        ui.show_findings(group.clone());
+                    }
+                });
+                if page.consolidated {
+                    check.set_tooltip_text(Some("Select this group; recover one copy by default"));
+                }
                 row.set_tooltip_text(Some(&format!(
-                    "{}\n{} · {}",
-                    file.path, file.backend, file.backend_version
+                    "{}\n{} · {}{}",
+                    file.path,
+                    file.backend,
+                    file.backend_version,
+                    if page.consolidated {
+                        format!(
+                            "\n{} findings · {} recorded paths{}",
+                            file.findings,
+                            file.paths,
+                            file.consolidation_error
+                                .as_ref()
+                                .map(|e| format!("\nNot verified: {e}"))
+                                .unwrap_or_default()
+                        )
+                    } else {
+                        String::new()
+                    }
                 )));
                 list.append(&row);
                 self.files.borrow_mut().push(Some(file.id));
@@ -727,10 +763,17 @@ impl Live {
         self.label("result_count", &page.total.to_string());
         self.label(
             "file_summary",
-            &format!(
-                "{} matching · {} total · Results and selections are saved automatically",
-                page.matched, page.total
-            ),
+            &if page.consolidated {
+                format!(
+                    "{} matching groups · {} groups from {} findings · Saved automatically",
+                    page.matched, page.total, page.findings
+                )
+            } else {
+                format!(
+                    "{} matching · {} total · Results and selections are saved automatically",
+                    page.matched, page.total
+                )
+            },
         );
         let offset = self.query.borrow().offset;
         self.widget::<gtk::Box>("pagination")
@@ -791,12 +834,49 @@ impl Live {
         );
         self.label("preview_path", &file.path);
         self.label("preview_text", "Loading preview…");
-        self.label("preview_metadata",&format!("Size                 {}\nModified         {}\nEngine             {}\nAddress           {}\nByte range       {} + {}\nIntegrity          Not verified",model::size(file.bytes),date(file.modified),file.backend,file.locator,file.offset_bytes,file.length_bytes));
+        self.label("preview_metadata",&format!("Size                 {}\nModified         {}\nEngine             {}\nAddress           {}\nByte range       {} + {}\nFindings           {} · {} recorded paths\nContent            {}\nRecovery integrity  Not verified",model::size(file.bytes),date(file.modified),file.backend,file.locator,file.offset_bytes,file.length_bytes,file.findings,file.paths,
+            if file.sha256.is_some() { "Verified for consolidation" } else { "Not compared" }));
         self.widget::<gtk::Image>("preview_icon")
             .set_icon_name(Some(file_icon(&file.path)));
         let generation = self.preview_generation.get() + 1;
         self.preview_generation.set(generation);
         self.submit(move || Message::Preview(generation, jobs::preview(&dir, id)));
+    }
+    fn show_findings(self: &Rc<Self>, group: Candidate) {
+        let b = self.show(include_str!("../ui/findings.ui"));
+        text(&b,"summary",&format!("{}\n{} findings · {} recorded paths\n{}",group.path,group.findings,group.paths,
+            group.consolidation_error.as_ref().map(|e|format!("Kept separate: {e}")).unwrap_or_else(||
+                "Contents were verified as identical. Recovery saves one copy by default; enable Recover every recorded path to restore all names.".into())));
+        for (button, first) in [("first", true), ("next", false)] {
+            let weak = Rc::downgrade(self);
+            let id = group.id;
+            obj::<gtk::Button>(&b, button).connect_clicked(move |_| {
+                if let Some(ui) = weak.upgrade() {
+                    ui.load_findings(id, if first { 0 } else { ui.finding_cursor.get() });
+                }
+            });
+        }
+        self.load_findings(group.id, 0);
+    }
+    fn load_findings(&self, id: i64, after: i64) {
+        let Some(directory) = self.directory.borrow().clone() else {
+            return;
+        };
+        if let Some(b) = self.dialog.borrow().as_ref() {
+            obj::<gtk::TextView>(b, "body")
+                .buffer()
+                .set_text("Loading findings…");
+            obj::<gtk::Button>(b, "next").set_sensitive(false);
+            obj::<gtk::Button>(b, "first").set_sensitive(false);
+        }
+        let generation = self.dialog_generation.get();
+        self.submit(move || {
+            Message::Findings(
+                generation,
+                after,
+                Store::open(&directory).and_then(|s| s.findings(id, after)),
+            )
+        });
     }
     fn event(&self, message: &str) {
         let b = gtk::Builder::from_string(include_str!("../ui/event-row.ui"));
@@ -947,6 +1027,7 @@ impl Live {
         obj::<gtk::Entry>(&b, "workspace").set_text(&options.workspace.to_string_lossy());
         obj::<gtk::CheckButton>(&b, "clone")
             .set_active(self.widget::<gtk::CheckButton>("clone_first").is_active());
+        obj::<gtk::CheckButton>(&b, "consolidate").set_active(options.consolidate);
         Self::browse(&b, "browse", "workspace", "chooser");
         let weak = Rc::downgrade(self);
         let dialog = b.downgrade();
@@ -1002,17 +1083,31 @@ impl Live {
         let b = self.show(include_str!("../ui/recovery.ui"));
         obj::<gtk::DropDown>(&b, "destination").set_visible(false);
         obj::<gtk::Window>(&b, "dialog").set_default_size(590, 680);
-        let page = self.page.borrow();
+        let page = self.page.borrow().clone();
+        obj::<gtk::CheckButton>(&b, "all_paths").set_visible(page.consolidated);
         text(
             &b,
             "summary",
             &format!(
-                "{} selected files · {}\nEach output path, error, and SHA-256 is recorded with this scan.",
+                "{} selected {} · {}\n{}Each output path, error, and SHA-256 is recorded with this scan.",
                 page.selected,
-                model::size(page.selected_bytes)
+                if page.consolidated { "groups" } else { "files" },
+                model::size(page.selected_bytes),
+                if page.consolidated {
+                    "One copy per group. "
+                } else {
+                    ""
+                }
             ),
         );
-        drop(page);
+        let dialog = b.downgrade();
+        obj::<gtk::CheckButton>(&b,"all_paths").connect_toggled(move |button| {
+            if let Some(b)=dialog.upgrade() {
+                text(&b,"summary",&if button.is_active() { format!("{} recorded paths · {}\nEach distinct recorded path will receive a copy.",page.selected_paths,model::size(page.selected_path_bytes)) }
+                    else { format!("{} selected groups · {}\nOne copy per group; all findings remain saved.",page.selected,model::size(page.selected_bytes)) });
+                obj::<gtk::Entry>(&b,"destination_path").emit_by_name::<()>("changed",&[]);
+            }
+        });
         text(
             &b,
             "notice",
@@ -1036,6 +1131,7 @@ impl Live {
                 "Checking destination identity and free space…",
             );
             let generation = ui.dialog_generation.get();
+            let all_paths = checked(&b, "all_paths");
             let weak = Rc::downgrade(&ui);
             let session = session.clone();
             let dialog = b.downgrade();
@@ -1045,6 +1141,7 @@ impl Live {
                 };
                 if generation != ui.dialog_generation.get()
                     || value(&b, "destination_path") != entered
+                    || checked(&b, "all_paths") != all_paths
                 {
                     return;
                 }
@@ -1052,6 +1149,7 @@ impl Live {
                     let result = Store::open(&session).and_then(|store| {
                         let options = RecoveryOptions {
                             destination: PathBuf::from(&entered),
+                            restore_all_paths: all_paths,
                             ..Default::default()
                         };
                         jobs::validate_recovery(&store, &options)?;
@@ -1062,7 +1160,7 @@ impl Live {
                             model::size(free)
                         ))
                     });
-                    Message::RecoveryValidation(generation, entered, result)
+                    Message::RecoveryValidation(generation, entered, all_paths, result)
                 });
             });
         });
@@ -1084,6 +1182,7 @@ impl Live {
                     preserve_timestamps: checked(&dialog, "timestamps"),
                     verify_after_write: checked(&dialog, "verify"),
                     continue_on_error: checked(&dialog, "continue_errors"),
+                    restore_all_paths: checked(&dialog, "all_paths"),
                 };
                 if !options.destination.is_absolute() {
                     text(
@@ -1287,11 +1386,35 @@ impl Live {
         }
         while let Ok(message) = self.messages.try_recv() {
             match message {
-                Message::RecoveryValidation(generation, path, result) => {
+                Message::Findings(generation, after, result) => {
+                    if generation == self.dialog_generation.get() {
+                        if let Some(b) = self.dialog.borrow().as_ref() {
+                            let mut next = false;
+                            let body = match result {
+                                Ok(files) => {
+                                    self.finding_cursor
+                                        .set(files.last().map_or(after, |f| f.id));
+                                    next = files.len() == 100;
+                                    if files.is_empty() {
+                                        "No more findings.".into()
+                                    } else {
+                                        files.iter().map(|f|format!("{}\n{} · {} · {}\nAddress: {} · Range: {} + {}\n",f.path,f.backend,f.backend_version,model::size(f.bytes),f.locator,f.offset_bytes,f.length_bytes)).collect::<Vec<_>>().join("\n")
+                                    }
+                                }
+                                Err(error) => error.to_string(),
+                            };
+                            obj::<gtk::TextView>(b, "body").buffer().set_text(&body);
+                            obj::<gtk::Button>(b, "next").set_sensitive(next);
+                            obj::<gtk::Button>(b, "first").set_sensitive(after > 0);
+                        }
+                    }
+                }
+                Message::RecoveryValidation(generation, path, all_paths, result) => {
                     if generation == self.dialog_generation.get() {
                         if let Some(b) = self.dialog.borrow().as_ref() {
                             if b.object::<gtk::Entry>("destination_path")
                                 .is_some_and(|entry| entry.text().trim() == path)
+                                && checked(b, "all_paths") == all_paths
                             {
                                 obj::<gtk::Button>(b, "confirm").set_sensitive(result.is_ok());
                                 text(
@@ -1478,9 +1601,14 @@ impl Live {
                                     &b,
                                     "detail",
                                     &format!(
-                                        "{} · {} files · {}",
+                                        "{} · {} {} · {}",
                                         scan.manifest.state,
                                         scan.manifest.candidate_count,
+                                        if scan.manifest.consolidation.is_some() {
+                                            "groups"
+                                        } else {
+                                            "files"
+                                        },
                                         date(scan.manifest.updated_at as i64)
                                     ),
                                 );
@@ -1534,6 +1662,7 @@ fn scan_options(b: &gtk::Builder) -> engine::Result<ScanOptions> {
         workspace: PathBuf::from(value(b, "workspace")),
         extensions: engine::types::normalize_extensions(&value(b, "extensions"))?,
         include_existing: checked(b, "existing"),
+        consolidate: checked(b, "consolidate"),
         clone_first: checked(b, "clone"),
         clone_backend: choice(b, "clone_engine"),
         retry_passes: retries as u32,
@@ -1573,6 +1702,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         builder: gtk::Builder::from_string(include_str!("../ui/window.ui")),
         dialog: RefCell::new(None),
         dialog_generation: Cell::new(0),
+        finding_cursor: Cell::new(0),
         sources: RefCell::new(vec![]),
         selected: Cell::new(None),
         source_rows: RefCell::new(vec![]),
@@ -1640,6 +1770,8 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         ) {
             let session = PathBuf::from(session);
             let destination = PathBuf::from(destination);
+            let inspect_consolidation = std::env::var_os("ODR_SMOKE_CONSOLIDATION").is_some();
+            let all_paths = std::env::var_os("ODR_SMOKE_ALL_PATHS").is_some();
             ui.open(session.clone());
             let weak = Rc::downgrade(&ui);
             let mut step = 0;
@@ -1658,12 +1790,41 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
                     0 if ui.directory.borrow().as_ref() == Some(&session)
                         && !ui.page.borrow().files.is_empty() =>
                     {
+                        if inspect_consolidation {
+                            let group = ui
+                                .page
+                                .borrow()
+                                .files
+                                .iter()
+                                .find(|f| f.findings > 1)
+                                .cloned()
+                                .expect("consolidated group");
+                            assert!(ui.page.borrow().consolidated);
+                            ui.show_findings(group);
+                            step = 10;
+                            return glib::ControlFlow::Continue;
+                        }
                         ui.widget::<gtk::CheckButton>("select_all").set_active(true);
                         step = 1;
+                    }
+                    10 => {
+                        let b = ui.dialog.borrow().clone().unwrap();
+                        let buffer = obj::<gtk::TextView>(&b, "body").buffer();
+                        let body = buffer.text(&buffer.start_iter(), &buffer.end_iter(), false);
+                        if body.contains("Address:") {
+                            assert!(body.contains("recovered.txt") && body.contains("alias.txt"));
+                            obj::<gtk::Window>(&b, "dialog").close();
+                            ui.widget::<gtk::CheckButton>("select_all").set_active(true);
+                            step = 1;
+                        }
                     }
                     1 if ui.page.borrow().selected > 0 => {
                         ui.recovery();
                         let b = ui.dialog.borrow().clone().unwrap();
+                        if all_paths {
+                            assert!(obj::<gtk::CheckButton>(&b, "all_paths").is_visible());
+                            obj::<gtk::CheckButton>(&b, "all_paths").set_active(true);
+                        }
                         obj::<gtk::Entry>(&b, "destination_path")
                             .set_text(&destination.to_string_lossy());
                         step = 2;
@@ -1702,6 +1863,9 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
                 ui.custom_scan();
                 let b = ui.dialog.borrow().clone().unwrap();
                 assert!(scan_options(&b).is_ok());
+                assert!(!scan_options(&b).unwrap().consolidate);
+                obj::<gtk::CheckButton>(&b, "consolidate").set_active(true);
+                assert!(scan_options(&b).unwrap().consolidate);
                 assert!(
                     obj::<gtk::MenuButton>(&ui.builder, "scan_dropdown")
                         .menu_model()

@@ -293,6 +293,9 @@ fn scan_attempt(
                 store.manifest.errors.push(error.to_string());
             }
         }
+        if store.manifest.options.consolidate {
+            super::consolidation::run(&mut store, &input, control, notify)?;
+        }
         Ok(())
     })();
     let cancelled = matches!(result, Err(Error::Cancelled));
@@ -514,7 +517,15 @@ pub fn validate_recovery(store: &Store, options: &RecoveryOptions) -> Result<()>
     if page.selected == 0 {
         return fail("Select at least one file for recovery.");
     }
-    safety::validate_storage(&source, &options.destination, page.selected_bytes)?;
+    safety::validate_storage(
+        &source,
+        &options.destination,
+        if options.restore_all_paths {
+            page.selected_path_bytes
+        } else {
+            page.selected_bytes
+        },
+    )?;
     GuardedDir::existing(&store.directory)?.revalidate(&source, 0)?;
     // Keep all writes out of retained input files and the session's artifact tree.
     if options.destination.starts_with(&store.directory)
@@ -538,7 +549,20 @@ pub fn recover(
         limit: 1,
         ..Default::default()
     })?;
-    let output = GuardedDir::create(&source, &options.destination, selected.selected_bytes)?;
+    let output_count = if options.restore_all_paths {
+        selected.selected_paths
+    } else {
+        selected.selected
+    };
+    let output = GuardedDir::create(
+        &source,
+        &options.destination,
+        if options.restore_all_paths {
+            selected.selected_path_bytes
+        } else {
+            selected.selected_bytes
+        },
+    )?;
     let jobdir = store.directory.join("artifacts").join(format!(
         "recovery-{}-{}",
         timestamp(),
@@ -552,107 +576,138 @@ pub fn recover(
         if candidates.is_empty() {
             break;
         }
-        for candidate in candidates {
-            control.checkpoint()?;
-            after = candidate.id;
-            output.revalidate(&source, candidate.bytes)?;
-            let mut record = RecoveryRecord {
-                candidate_id: candidate.id,
-                original_path: candidate.path.clone(),
-                output_path: None,
-                bytes: 0,
-                sha256: None,
-                verified: false,
-                error: None,
-                timestamp: timestamp(),
-            };
-            let result = (|| -> Result<bool> {
-                let Some((mut file, path)) =
-                    output.create_file(&candidate.path, options.preserve_tree, options.conflict)?
-                else {
-                    return Ok(false);
-                };
-                record.output_path = Some(path); // Partial files remain auditable on failure/cancellation.
-                if let Some(artifact) = &candidate.artifact {
-                    let mut original =
-                        File::open(safety::confined_artifact(&store.directory, artifact)?)?;
-                    let mut buffer = vec![0; 1024 * 1024];
-                    loop {
-                        control.checkpoint()?;
-                        let count = original.read(&mut buffer)?;
-                        if count == 0 {
-                            break;
-                        }
-                        file.write_all(&buffer[..count])?;
-                        record.bytes += count as u64;
-                    }
+        for group in candidates {
+            after = group.id;
+            let mut after_path: Option<String> = None;
+            loop {
+                let files = if options.restore_all_paths {
+                    store.recovery_paths(&group, after_path.as_deref())?
+                } else if after_path.is_none() {
+                    vec![group.clone()]
                 } else {
-                    if input.is_none() {
-                        input = Some(input_for(&store)?);
-                    }
-                    Adapter(candidate.backend.clone()).recover(
-                        input.as_ref().unwrap(),
-                        &candidate,
-                        &file,
-                        &jobdir,
-                        source.sector_size,
-                        control,
-                    )?;
+                    vec![]
+                };
+                if files.is_empty() {
+                    break;
                 }
-                file.sync_all()?;
-                record.bytes = file.metadata()?.len();
-                if record.bytes != candidate.bytes {
-                    return fail(format!(
-                        "Recovered length {} differs from recorded length {}.",
-                        record.bytes, candidate.bytes
-                    ));
-                }
-                let digest = hash_file(&mut file, control)?;
-                record.sha256 = Some(digest.clone());
-                if options.verify_after_write {
-                    let mut reread = File::open(record.output_path.as_ref().unwrap())?;
-                    if hash_file(&mut reread, control)? != digest {
-                        return fail(
-                            "SHA-256 verification failed after writing the recovered file.",
-                        );
-                    }
-                    record.verified = true;
-                }
-                if options.preserve_timestamps && candidate.modified > 0 {
-                    file.set_times(std::fs::FileTimes::new().set_modified(
-                        std::time::UNIX_EPOCH
-                            + std::time::Duration::from_secs(candidate.modified as u64),
-                    ))?;
-                }
-                Ok(true)
-            })();
-            match &result {
-                Ok(true) => successful += 1,
-                Ok(false) => {
-                    skipped += 1;
-                    record.error = Some("Skipped: a destination filename already exists.".into());
-                }
-                Err(error) => {
-                    failed += 1;
-                    record.error = Some(error.to_string());
-                    if let Some(path) = &record.output_path {
-                        if let Ok(meta) = fs::metadata(path) {
-                            record.bytes = meta.len();
+                for candidate in files {
+                    after_path = Some(candidate.path.clone());
+                    control.checkpoint()?;
+                    output.revalidate(&source, candidate.bytes)?;
+                    let mut record = RecoveryRecord {
+                        candidate_id: candidate.id,
+                        original_path: candidate.path.clone(),
+                        output_path: None,
+                        bytes: 0,
+                        sha256: None,
+                        verified: false,
+                        error: None,
+                        timestamp: timestamp(),
+                    };
+                    let result = (|| -> Result<bool> {
+                        let Some((mut file, path)) = output.create_file(
+                            &candidate.path,
+                            options.preserve_tree,
+                            options.conflict,
+                        )?
+                        else {
+                            return Ok(false);
+                        };
+                        record.output_path = Some(path); // Partial files remain auditable on failure/cancellation.
+                        if let Some(artifact) = &candidate.artifact {
+                            let mut original =
+                                File::open(safety::confined_artifact(&store.directory, artifact)?)?;
+                            let mut buffer = vec![0; 1024 * 1024];
+                            loop {
+                                control.checkpoint()?;
+                                let count = original.read(&mut buffer)?;
+                                if count == 0 {
+                                    break;
+                                }
+                                file.write_all(&buffer[..count])?;
+                                record.bytes += count as u64;
+                            }
+                        } else {
+                            if input.is_none() {
+                                input = Some(input_for(&store)?);
+                            }
+                            Adapter(candidate.backend.clone()).recover(
+                                input.as_ref().unwrap(),
+                                &candidate,
+                                &file,
+                                &jobdir,
+                                source.sector_size,
+                                control,
+                            )?;
+                        }
+                        file.sync_all()?;
+                        record.bytes = file.metadata()?.len();
+                        if record.bytes != candidate.bytes {
+                            return fail(format!(
+                                "Recovered length {} differs from recorded length {}.",
+                                record.bytes, candidate.bytes
+                            ));
+                        }
+                        let digest = hash_file(&mut file, control)?;
+                        record.sha256 = Some(digest.clone());
+                        if candidate
+                            .sha256
+                            .as_ref()
+                            .is_some_and(|expected| expected != &digest)
+                        {
+                            return fail(
+                                "The saved content no longer matches the consolidated group. The group was left unchanged.",
+                            );
+                        }
+                        if options.verify_after_write {
+                            let mut reread = File::open(record.output_path.as_ref().unwrap())?;
+                            if hash_file(&mut reread, control)? != digest {
+                                return fail(
+                                    "SHA-256 verification failed after writing the recovered file.",
+                                );
+                            }
+                            record.verified = true;
+                        }
+                        if options.preserve_timestamps && candidate.modified > 0 {
+                            file.set_times(std::fs::FileTimes::new().set_modified(
+                                std::time::UNIX_EPOCH
+                                    + std::time::Duration::from_secs(candidate.modified as u64),
+                            ))?;
+                        }
+                        Ok(true)
+                    })();
+                    match &result {
+                        Ok(true) => successful += 1,
+                        Ok(false) => {
+                            skipped += 1;
+                            record.error =
+                                Some("Skipped: a destination filename already exists.".into());
+                        }
+                        Err(error) => {
+                            failed += 1;
+                            record.error = Some(error.to_string());
+                            if let Some(path) = &record.output_path {
+                                if let Ok(meta) = fs::metadata(path) {
+                                    record.bytes = meta.len();
+                                }
+                            }
                         }
                     }
-                }
-            }
-            store.record_recovery(&record)?;
-            notify(Event::Stage {
-                text: format!(
-                    "Recovering · {successful} saved · {failed} failed · {skipped} skipped"
-                ),
-                fraction: Some((successful + failed + skipped) as f64 / selected.selected as f64),
-            });
-            if let Err(error) = result {
-                notify(Event::Message(format!("{}: {error}", candidate.path)));
-                if matches!(error, Error::Cancelled) || !options.continue_on_error {
-                    return Err(error);
+                    store.record_recovery(&record)?;
+                    notify(Event::Stage {
+                        text: format!(
+                            "Recovering · {successful} saved · {failed} failed · {skipped} skipped"
+                        ),
+                        fraction: Some(
+                            (successful + failed + skipped) as f64 / output_count.max(1) as f64,
+                        ),
+                    });
+                    if let Err(error) = result {
+                        notify(Event::Message(format!("{}: {error}", candidate.path)));
+                        if matches!(error, Error::Cancelled) || !options.continue_on_error {
+                            return Err(error);
+                        }
+                    }
                 }
             }
         }

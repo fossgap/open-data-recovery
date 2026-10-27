@@ -4,7 +4,7 @@ use std::{
     fs::{File, OpenOptions},
     io::{BufRead, BufReader, Read, Write},
     os::{
-        fd::{AsRawFd, FromRawFd},
+        fd::{AsRawFd, FromRawFd, OwnedFd},
         unix::{fs::OpenOptionsExt, process::CommandExt},
     },
     path::{Path, PathBuf},
@@ -255,6 +255,13 @@ pub fn run(
         ))
     })?;
     let pid = child.id() as i32;
+    // Wake as soon as a short extraction exits, while keeping the existing
+    // 50 ms pause/cancel supervision interval. The child is reaped below, so
+    // its PID cannot be recycled before the supervisor finishes signalling it.
+    let exit_fd = unsafe {
+        let fd = libc::syscall(libc::SYS_pidfd_open, pid, 0) as i32;
+        (fd >= 0).then(|| OwnedFd::from_raw_fd(fd))
+    };
     if let Some(script) = spec.stdin {
         if script.len() > 65536 {
             unsafe {
@@ -334,7 +341,20 @@ pub fn run(
                     let _ = tx.send(Ok((status, cancel, low_space)));
                     break;
                 }
-                Ok(None) => thread::sleep(Duration::from_millis(50)),
+                Ok(None) => {
+                    if let Some(fd) = &exit_fd {
+                        let mut event = libc::pollfd {
+                            fd: fd.as_raw_fd(),
+                            events: libc::POLLIN,
+                            revents: 0,
+                        };
+                        if unsafe { libc::poll(&mut event, 1, 50) } < 0 {
+                            thread::sleep(Duration::from_millis(50));
+                        }
+                    } else {
+                        thread::sleep(Duration::from_millis(50));
+                    }
+                }
                 Err(error) => {
                     unsafe {
                         libc::kill(-pid, libc::SIGCONT);

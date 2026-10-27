@@ -60,6 +60,7 @@ pub struct ScanOptions {
     pub workspace: PathBuf,
     pub extensions: Vec<String>,
     pub include_existing: bool,
+    pub consolidate: bool,
     pub clone_first: bool,
     pub clone_backend: String,
     pub retry_passes: u32,
@@ -81,6 +82,7 @@ impl Default for ScanOptions {
             workspace: default_workspace(),
             extensions: vec![],
             include_existing: false,
+            consolidate: false,
             clone_first: false,
             clone_backend: "ddrescue".into(),
             retry_passes: 0,
@@ -166,6 +168,8 @@ pub struct RecoveryOptions {
     pub preserve_timestamps: bool,
     pub verify_after_write: bool,
     pub continue_on_error: bool,
+    /// Restore every distinct recorded path instead of one copy per content group.
+    pub restore_all_paths: bool,
 }
 impl Default for RecoveryOptions {
     fn default() -> Self {
@@ -176,6 +180,7 @@ impl Default for RecoveryOptions {
             preserve_timestamps: true,
             verify_after_write: true,
             continue_on_error: true,
+            restore_all_paths: false,
         }
     }
 }
@@ -195,6 +200,28 @@ pub struct Candidate {
     pub carved: bool,
     pub selected: bool,
     pub deleted: bool,
+    #[serde(default = "one")]
+    pub findings: u64,
+    #[serde(default = "one")]
+    pub paths: u64,
+    #[serde(default)]
+    pub sha256: Option<String>,
+    #[serde(default)]
+    pub consolidation_error: Option<String>,
+}
+
+fn one() -> u64 {
+    1
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct Consolidation {
+    pub findings: u64,
+    pub groups: u64,
+    pub unverified: u64,
+    pub cached_bytes: u64,
+    pub duration_millis: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -213,6 +240,9 @@ pub struct Manifest {
     pub errors: Vec<String>,
     pub candidate_count: u64,
     pub complete: bool,
+    /// Present only after the complete grouping transaction has been committed.
+    #[serde(default)]
+    pub consolidation: Option<Consolidation>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -229,6 +259,10 @@ pub struct Page {
     pub total: u64,
     pub selected: u64,
     pub selected_bytes: u64,
+    pub selected_paths: u64,
+    pub selected_path_bytes: u64,
+    pub findings: u64,
+    pub consolidated: bool,
 }
 #[derive(Clone, Debug)]
 pub struct SavedScan {

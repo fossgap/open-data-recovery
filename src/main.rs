@@ -19,13 +19,14 @@ fn cli(args: &[String]) -> engine::Result<()> {
                 "--metadata",
                 "--carver",
             ],
-            &["--clone", "--include-existing"],
+            &["--clone", "--include-existing", "--consolidate"],
         ),
         "--recover" => (
             &["--recover", "--destination", "--ids"],
-            &["--all", "--flat", "--skip"],
+            &["--all", "--flat", "--skip", "--all-paths"],
         ),
         "--list" => (&["--list"], &[]),
+        "--findings" => (&["--findings", "--id"], &[]),
         "--sources" | "--backends" => (&[], &[args[0].as_str()]),
         _ => return engine::fail("Unknown command. Use --help for usage."),
     };
@@ -125,6 +126,28 @@ fn cli(args: &[String]) -> engine::Result<()> {
         }
         return Ok(());
     }
+    if args[0] == "--findings" {
+        let store = Store::open(&PathBuf::from(argument(args, "--findings")?))?;
+        let id = argument(args, "--id")?
+            .parse::<i64>()
+            .map_err(|_| engine::Error::Message("--id must be a group ID from --list.".into()))?;
+        store.get(id)?;
+        let mut after = 0;
+        loop {
+            let files = store.findings(id, after)?;
+            if files.is_empty() {
+                break;
+            }
+            for file in files {
+                after = file.id;
+                println!("{}", serde_json::to_string(&file)?);
+            }
+            if !store.consolidated() {
+                break;
+            }
+        }
+        return Ok(());
+    }
     if args[0] == "--scan" {
         let source = engine::sources::inspect(&PathBuf::from(argument(args, "--scan")?))?;
         let mut options = ScanOptions {
@@ -150,6 +173,7 @@ fn cli(args: &[String]) -> engine::Result<()> {
         }
         options.clone_first = args.contains(&"--clone".into());
         options.include_existing = args.contains(&"--include-existing".into());
+        options.consolidate = args.contains(&"--consolidate".into());
         let dir = engine::jobs::scan(
             source,
             options,
@@ -196,6 +220,7 @@ fn cli(args: &[String]) -> engine::Result<()> {
         let options = RecoveryOptions {
             destination: PathBuf::from(argument(args, "--destination")?),
             preserve_tree: !args.contains(&"--flat".into()),
+            restore_all_paths: args.contains(&"--all-paths".into()),
             conflict: if args.contains(&"--skip".into()) {
                 Conflict::Skip
             } else {
@@ -221,7 +246,7 @@ fn main() -> gtk::glib::ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args.iter().any(|a| a == "--help" || a == "-h") {
         println!(
-            "Open Data Recovery\n\nUsage:\n  open-data-recovery                         Native GTK workspace\n  open-data-recovery --demo                  Safe fixture demonstration\n  open-data-recovery --sources | --backends\n  open-data-recovery --scan SOURCE --workspace DIRECTORY [--mode quick|deep|full]\n      [--extensions jpg,pdf] [--metadata ENGINE] [--carver ENGINE] [--clone] [--include-existing]\n  open-data-recovery --list SESSION\n  open-data-recovery --recover SESSION --destination DIRECTORY [--ids 1,2 | --all] [--flat] [--skip]\n  open-data-recovery --smoke-test | --live-smoke-test\n\nSources are read-only. Workspace and recovery destination must be on a separate physical drive.\nRecovery uses the persisted selection unless --ids or --all is supplied."
+            "Open Data Recovery\n\nUsage:\n  open-data-recovery                         Native GTK workspace\n  open-data-recovery --demo                  Safe fixture demonstration\n  open-data-recovery --sources | --backends\n  open-data-recovery --scan SOURCE --workspace DIRECTORY [--mode quick|deep|full]\n      [--extensions jpg,pdf] [--metadata ENGINE] [--carver ENGINE] [--clone] [--include-existing] [--consolidate]\n  open-data-recovery --list SESSION\n  open-data-recovery --findings SESSION --id GROUP_ID\n  open-data-recovery --recover SESSION --destination DIRECTORY [--ids 1,2 | --all] [--flat] [--skip] [--all-paths]\n  open-data-recovery --smoke-test | --live-smoke-test\n\nSources are read-only. Workspace and recovery destination must be on a separate physical drive.\nConsolidation is off by default; --consolidate compares contents after scanning.\nRecovery uses the persisted selection unless --ids or --all is supplied.\nConsolidated groups recover one copy each; --all-paths restores every recorded path."
         );
         return gtk::glib::ExitCode::SUCCESS;
     }

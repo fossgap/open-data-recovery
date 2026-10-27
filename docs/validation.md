@@ -24,3 +24,13 @@ Reproduce with `scripts/check.sh`, `scripts/check-engines.sh`, and `scripts/chec
 The prior implementation was checkpointed in commit `74fbf52` before these UI changes. All 13 unit tests passed again in the GTK 4.8 release build. GtkBuilder validation and existing demo/production smoke checks passed with native GTK styling, including dark and high-contrast checks. All three Custom Scan tabs were visually checked at 600 × 480; scrollable tab contents accommodate larger fonts without the earlier sizing warning.
 
 Debian, RPM, Arch and AppImage application packages were rebuilt and their checksums refreshed. The final AppImage passed both UI smoke checks and the complete disposable-image recovery workflow with verified output. The earlier four engine integration results remain applicable to the unchanged recovery engine code.
+
+## Optional final consolidation — 2026-10-27
+
+The GTK 4.8 release build passes **24 unit tests**; all **five real-engine integration tests** were run separately and passed. New checks cover exact grouping, retained provenance, alias searches, distinct-path recovery and space accounting, content tampering, bounded member paging, insufficient cache capacity, cancellation and interrupted-scan selection. The real consolidation test restores both deleted ext2 paths after removing the original source image.
+
+The final release passed **42 off/on scans** across seven ext2, FAT16 and NTFS cases, with three repetitions per case. Independent content checks found no false merges, missed identical findings or lost paths. Source image hashes were unchanged. The complete timing/storage table, method, limitations and raw data are in [consolidation implementation validation](consolidation-implementation.md). These timings use separate RAM-backed filesystems and do not forecast HDD/SSD performance.
+
+GtkBuilder validation, demo/production smoke checks and the real GTK consolidation workflow passed. The workflow opens a saved grouped scan, inspects its findings, selects the group, validates a separate destination, enables every-path recovery and verifies both resulting files. Both the portable release and the rebuilt AppImage passed this workflow. The new checkbox defaults off, and the Custom Scan dialog was visually checked at 600 × 480 with default GTK styling.
+
+Debian, RPM, Arch and AppImage application packages were rebuilt in `dist/`; the optional engine packages are unchanged. Native package binaries were extracted and compared with the tested portable release, whose SHA-256 is recorded in the benchmark JSON. `dist/SHA256SUMS` covers all seven application/engine packages. Packages were not installed on the host or published.

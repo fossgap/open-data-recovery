@@ -190,6 +190,7 @@ fn legacy_session(root: &Path, version: &str) -> Store {
         errors: vec![],
         candidate_count: 1,
         complete: true,
+        consolidation: None,
     };
     store::write_json(&root.join("manifest.json"), &manifest).unwrap();
     Store::open(root).unwrap()

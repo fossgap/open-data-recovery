@@ -274,6 +274,21 @@ impl GuardedDir {
     }
     pub fn revalidate(&self, source: &SourceDescriptor, required: u64) -> Result<()> {
         validate_storage(source, &self.path, required)?;
+        self.check_space(required)
+    }
+    /// Cheap checks between writes after ancestry has been validated. Output
+    /// creation stays anchored to the directory FD and its original device.
+    pub fn check_space(&self, required: u64) -> Result<()> {
+        self.check_identity()?;
+        if free_bytes(&self.path)? < required.saturating_add(8 * 1024 * 1024) {
+            return fail("Insufficient workspace space, including the 8 MiB reserve.");
+        }
+        Ok(())
+    }
+    pub fn check_identity(&self) -> Result<()> {
+        if existing_parent(&self.path)? != self.path {
+            return fail("The approved directory is no longer available.");
+        }
         let metadata = fs::symlink_metadata(&self.path)?;
         if !metadata.is_dir() || metadata.dev() != self.device || metadata.ino() != self.inode {
             return fail("The approved directory was replaced or remounted.");
