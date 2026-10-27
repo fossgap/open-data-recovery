@@ -98,3 +98,16 @@ The release-preparation checkpoint is `d1fb4c5`. Test and release workflows use 
 All eight screenshots were replaced with captures of the production application. The capture script creates a disposable ext2 image containing deleted documents and PNG illustrations, scans it with TSK, opens the real saved catalogue, previews extracted content, validates a recovery destination, and captures the production dialogs in light/dark GTK themes. The progress capture pauses a real Full scan after its metadata findings appear and PhotoRec starts. The source image's complete hash is unchanged afterward. No in-memory demonstration catalogue or user files are used.
 
 See [CI and releases](ci-release.md) for workflow triggers, package artifacts, version validation and publication. A manual release-workflow run from `main` builds artifacts without creating a GitHub Release; publication requires a matching version tag.
+
+## Restored consolidation spike — 2026-10-27
+
+The six files in `spikes/consolidation/`, the original report and its measurements
+are restored to version control. Their contents match the versions immediately
+before the release-preparation cleanup. The development guide links to both the
+historical experiment and the independent production benchmark.
+
+`CARGO_TARGET_DIR=target/consolidation-spike-restore-check cargo check --manifest-path spikes/consolidation/Cargo.toml --locked --offline`
+passes against the current process runner. Python syntax, measurement JSON and
+local documentation links also pass validation. Generated binaries and Python
+caches remain ignored; the Docker build still excludes the experimental files.
+The historical timing experiments were not rerun.

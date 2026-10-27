@@ -57,7 +57,7 @@ and storage tests. Its generation instructions are in [the fixture notes](../tes
 
 ## Consolidation measurements
 
-The production benchmark is independent of local prototypes:
+The production benchmark is independent of the experimental spike:
 
 ```sh
 python3 scripts/check-consolidation.py --runs 3 \
@@ -68,8 +68,12 @@ python3 scripts/check-consolidation.py --runs 3 \
 The output directory must be new. Use Python 3.11 or newer. Fixture helpers live in
 `scripts/consolidation_fixtures.py`; dependencies and methodology are documented
 in [consolidation validation](consolidation-implementation.md). Historical
-production measurements remain in `docs/benchmarks/`. Local spike code and its
-prototype reports are ignored and are not required to build or test.
+measurements remain in `docs/benchmarks/`.
+
+The original experiment is tracked in [spikes/consolidation](../spikes/consolidation/README.md),
+along with its [report and measurements](consolidation-spike.md). It documents the
+tradeoffs assessed before implementation and is separate from application builds,
+tests and release packages. Generated spike binaries and caches remain ignored.
 
 ## Documentation and screenshots
 

@@ -3,8 +3,3 @@
 /.cache/
 *.log
 __pycache__/
-
-# Local prototypes and historical spike measurements.
-/spikes/
-/docs/consolidation-spike.md
-/docs/benchmarks/consolidation-2026-10-27.json
