@@ -10,10 +10,6 @@
           <attribute name="action">win.add-source</attribute>
         </item>
         <item>
-          <attribute name="label">Saved scan details</attribute>
-          <attribute name="action">win.save</attribute>
-        </item>
-        <item>
           <attribute name="label">Review recovery…</attribute>
           <attribute name="action">win.recover</attribute>
         </item>

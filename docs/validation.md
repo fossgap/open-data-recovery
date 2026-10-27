@@ -44,3 +44,9 @@ GtkBuilder validation and demo/production smoke checks passed. The extended prod
 The final rebuilt AppImage passed the consolidated source-switching, recovery and deletion workflow. Saved Scans and the deletion confirmation were visually checked with native GTK styling. Debian, RPM, Arch and AppImage packages were rebuilt; native package binaries match the tested portable release, and all seven package checksums in `dist/SHA256SUMS` were refreshed and verified. Native packages were not installed on the host, and no physical recovery sources or user snapshots were used in these tests.
 
 Reproduce the management workflow with `ODR_MANAGE_SCANS=1 scripts/check-ui-recovery.sh`; add `ODR_CONSOLIDATE=1` for grouped results. For the packaged application, also set `APPIMAGE_EXTRACT_AND_RUN=1 ODR_BINARY=dist/OpenDataRecovery-x86_64.AppImage`.
+
+## File menu and recovery destination row — 2026-10-27
+
+The preceding implementation was committed as `7ca36a6`. The File menu's Saved scan details entry was removed, and the recovery destination field and Browse destination button now share one row. The recovery dialog was visually checked at its existing 590 × 680 size with native GTK styling.
+
+All 29 unit tests, GtkBuilder validation and demo/production smoke checks passed. Rebuilt Debian, RPM and Arch package binaries match the portable release; the rebuilt AppImage passed the consolidated recovery and saved-scan management workflow. All seven package checksums were refreshed and verified. The five broader engine integration cases were not rerun for these layout-only changes.

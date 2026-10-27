@@ -76,17 +76,22 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="destination_path">
-                    <property name="text" />
-                    <property name="hexpand">true</property>
-                    <property name="placeholder-text">/media/recovery/restored</property>
+                  <object class="GtkBox">
+                    <property name="spacing">8</property>
+                    <child>
+                      <object class="GtkEntry" id="destination_path">
+                        <property name="text" />
+                        <property name="hexpand">true</property>
+                        <property name="placeholder-text">/media/recovery/restored</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="browse">
+                        <property name="label">Browse destination…</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="browse">
-                <property name="label">Browse destination…</property>
               </object>
             </child>
             <child>
