@@ -1,0 +1,1053 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<interface>
+  <requires lib="gtk" version="4.8" />
+  <menu id="menubar">
+    <submenu>
+      <attribute name="label">_File</attribute>
+      <section>
+        <item>
+          <attribute name="label">Add source…</attribute>
+          <attribute name="action">win.add-source</attribute>
+        </item>
+        <item>
+          <attribute name="label">Saved scan details</attribute>
+          <attribute name="action">win.save</attribute>
+        </item>
+        <item>
+          <attribute name="label">Review recovery…</attribute>
+          <attribute name="action">win.recover</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label">Quit</attribute>
+          <attribute name="action">app.quit</attribute>
+        </item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label">_Scan</attribute>
+      <section>
+        <item>
+          <attribute name="label">Start scan</attribute>
+          <attribute name="action">win.start</attribute>
+        </item>
+        <item>
+          <attribute name="label">Pause / resume</attribute>
+          <attribute name="action">win.pause</attribute>
+        </item>
+        <item>
+          <attribute name="label">Cancel scan</attribute>
+          <attribute name="action">win.cancel</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label">Custom scan…</attribute>
+          <attribute name="action">win.custom-scan</attribute>
+        </item>
+        <item>
+          <attribute name="label">Saved Scan…</attribute>
+          <attribute name="action">win.saved-scans</attribute>
+        </item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label">_View</attribute>
+      <section>
+        <item>
+          <attribute name="label">File preview</attribute>
+          <attribute name="action">win.preview</attribute>
+        </item>
+        <item>
+          <attribute name="label">Event log</attribute>
+          <attribute name="action">win.events</attribute>
+        </item>
+        <item>
+          <attribute name="label">Search files</attribute>
+          <attribute name="action">win.search</attribute>
+        </item>
+        <item>
+          <attribute name="label">Refresh sources</attribute>
+          <attribute name="action">win.reset</attribute>
+        </item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label">_Help</attribute>
+      <section>
+        <item>
+          <attribute name="label">About Open Data Recovery</attribute>
+          <attribute name="action">win.about</attribute>
+        </item>
+        <item>
+          <attribute name="label">Keyboard shortcuts</attribute>
+          <attribute name="action">win.shortcuts</attribute>
+        </item>
+        <item>
+          <attribute name="label">Backend availability</attribute>
+          <attribute name="action">win.backends</attribute>
+        </item>
+      </section>
+    </submenu>
+  </menu>
+  <object class="GtkStringList" id="scan_modes">
+    <items>
+      <item>Quick scan</item>
+      <item>Deep scan</item>
+      <item>Full scan</item>
+    </items>
+  </object>
+  <object class="GtkApplicationWindow" id="window">
+    <property name="title">Open Data Recovery — Design Preview</property>
+    <property name="default-width">1380</property>
+    <property name="default-height">920</property>
+    <property name="width-request">1060</property>
+    <property name="height-request">700</property>
+    <style>
+      <class name="recovery-window" />
+    </style>
+    <property name="titlebar">
+      <object class="GtkHeaderBar">
+        <style>
+          <class name="app-header" />
+        </style>
+        <property name="title-widget">
+          <object class="GtkBox">
+            <property name="spacing">10</property>
+            <child>
+              <object class="GtkImage">
+                <property name="icon-name">drive-harddisk-symbolic</property>
+                <style>
+                  <class name="brand-icon" />
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Open Data Recovery</property>
+                <style>
+                  <class name="app-title" />
+                </style>
+              </object>
+            </child>
+          </object>
+        </property>
+        <child type="start">
+          <object class="GtkLabel" id="app_badge">
+            <property name="label">DESIGN PREVIEW</property>
+            <property name="valign">center</property>
+            <style>
+              <class name="preview-badge" />
+            </style>
+          </object>
+        </child>
+        <child type="end">
+          <object class="GtkButton">
+            <property name="icon-name">help-about-symbolic</property>
+            <property name="action-name">win.about</property>
+            <property name="tooltip-text">About this prototype</property>
+            <style>
+              <class name="flat" />
+            </style>
+          </object>
+        </child>
+      </object>
+    </property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkPopoverMenuBar">
+            <property name="menu-model">menubar</property>
+            <style>
+              <class name="menubar" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="demo_banner">
+            <property name="spacing">10</property>
+            <style>
+              <class name="demo-strip" />
+            </style>
+            <child>
+              <object class="GtkImage">
+                <property name="icon-name">dialog-information-symbolic</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Interactive prototype</property>
+                <style>
+                  <class name="strong" />
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Sample sources and files. No disks are accessed or files recovered.</property>
+                <property name="xalign">0</property>
+                <property name="hexpand">true</property>
+                <property name="ellipsize">end</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="label">Reset demo</property>
+                <property name="action-name">win.reset</property>
+                <style>
+                  <class name="flat" />
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkPaned" id="workspace_split">
+            <property name="orientation">horizontal</property>
+            <property name="position">300</property>
+            <property name="shrink-start-child">false</property>
+            <property name="shrink-end-child">false</property>
+            <property name="resize-start-child">false</property>
+            <property name="vexpand">true</property>
+            <property name="start-child">
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="width-request">260</property>
+                <style>
+                  <class name="sidebar" />
+                </style>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">8</property>
+                    <style>
+                      <class name="sidebar-heading" />
+                    </style>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">DISKS &amp; PARTITIONS</property>
+                        <property name="xalign">0</property>
+                        <property name="hexpand">true</property>
+                        <style>
+                          <class name="eyebrow" />
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="add_source">
+                        <property name="icon-name">list-add-symbolic</property>
+                        <property name="action-name">win.add-source</property>
+                        <property name="tooltip-text">Add a sample disk image or mounted folder</property>
+                        <style>
+                          <class name="flat" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="vexpand">true</property>
+                    <property name="min-content-height">140</property>
+                    <property name="child">
+                      <object class="GtkListBox" id="sources">
+                        <property name="selection-mode">single</property>
+                        <property name="activate-on-single-click">false</property>
+                        <style>
+                          <class name="source-list" />
+                        </style>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparator">
+                    <style>
+                      <class name="sidebar-divider" />
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">8</property>
+                    <style>
+                      <class name="sidebar-heading" />
+                    </style>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">SAVED SCANS</property>
+                        <property name="xalign">0</property>
+                        <property name="hexpand">true</property>
+                        <style>
+                          <class name="eyebrow" />
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="save_snapshot">
+                        <property name="icon-name">document-save-symbolic</property>
+                        <property name="action-name">win.save</property>
+                        <property name="tooltip-text">Save a snapshot in memory for this demo session</property>
+                        <style>
+                          <class name="flat" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="height-request">110</property>
+                    <property name="child">
+                      <object class="GtkListBox" id="snapshots">
+                        <property name="selection-mode">none</property>
+                        <property name="activate-on-single-click">true</property>
+                        <style>
+                          <class name="source-list" />
+                        </style>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="snapshot_notice">
+                    <property name="label">Demo snapshots stay in memory.</property>
+                    <property name="xalign">0</property>
+                    <property name="wrap">true</property>
+                    <style>
+                      <class name="sidebar-footnote" />
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">10</property>
+                    <style>
+                      <class name="source-protection" />
+                    </style>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">security-high-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">4</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Your source stays untouched</property>
+                            <property name="xalign">0</property>
+                            <style>
+                              <class name="strong" />
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Recover to a separate drive.</property>
+                            <property name="xalign">0</property>
+                            <style>
+                              <class name="subtle" />
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+            <property name="end-child">
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">16</property>
+                    <style>
+                      <class name="source-heading" />
+                    </style>
+                    <child>
+                      <object class="GtkImage" id="source_icon">
+                        <property name="icon-name">drive-harddisk-usb-symbolic</property>
+                        <property name="pixel-size">26</property>
+                        <style>
+                          <class name="source-hero-icon" />
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">5</property>
+                        <property name="hexpand">true</property>
+                        <child>
+                          <object class="GtkLabel" id="source_title">
+                            <property name="label">Archive SSD</property>
+                            <property name="xalign">0</property>
+                            <style>
+                              <class name="title" />
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="source_detail">
+                            <property name="xalign">0</property>
+                            <property name="ellipsize">middle</property>
+                            <style>
+                              <class name="muted" />
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="source_state">
+                        <property name="label">Read-only source</property>
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="safe-badge" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox" id="scan_toolbar">
+                    <property name="spacing">8</property>
+                    <style>
+                      <class name="scan-toolbar" />
+                    </style>
+                    <child>
+                      <object class="GtkDropDown" id="scan_mode">
+                        <property name="model">scan_modes</property>
+                        <property name="selected">2</property>
+                        <property name="tooltip-text">Choose metadata recovery, file carving, or both</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="clone_first">
+                        <property name="label">Clone first</property>
+                        <property name="tooltip-text">Simulate making a read-only source image before scanning</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparator">
+                        <property name="orientation">vertical</property>
+                        <property name="margin-start">4</property>
+                        <property name="margin-end">4</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="orientation">horizontal</property>
+                        <property name="spacing">0</property>
+                        <style>
+                          <class name="linked" />
+                        </style>
+                        <child>
+                          <object class="GtkButton" id="start">
+                            <property name="label">Scan again</property>
+                            <property name="action-name">win.start</property>
+                            <style>
+                              <class name="primary" />
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuButton" id="scan_dropdown">
+                            <property name="icon-name">pan-down-symbolic</property>
+                            <property name="menu-model">scan_menu</property>
+                            <property name="tooltip-text">Default or custom scan options</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="pause">
+                        <property name="label">Pause</property>
+                        <property name="action-name">win.pause</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="cancel">
+                        <property name="icon-name">process-stop-symbolic</property>
+                        <property name="action-name">win.cancel</property>
+                        <property name="tooltip-text">Cancel scan and keep partial results</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="hexpand">true</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="label">Save scan</property>
+                        <property name="action-name">win.save</property>
+                        <property name="tooltip-text">Save an in-memory demo snapshot</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="mode_hint">
+                    <property name="xalign">0</property>
+                    <property name="wrap">true</property>
+                    <style>
+                      <class name="mode-hint" />
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkPaned" id="events_split">
+                    <property name="orientation">vertical</property>
+                    <property name="position">430</property>
+                    <property name="vexpand">true</property>
+                    <property name="shrink-start-child">false</property>
+                    <property name="shrink-end-child">false</property>
+                    <property name="resize-end-child">false</property>
+                    <property name="start-child">
+                      <object class="GtkPaned" id="preview_split">
+                        <property name="orientation">horizontal</property>
+                        <property name="position">730</property>
+                        <property name="shrink-start-child">false</property>
+                        <property name="shrink-end-child">false</property>
+                        <property name="resize-end-child">false</property>
+                        <property name="start-child">
+                          <object class="GtkBox">
+                            <property name="orientation">vertical</property>
+                            <property name="width-request">440</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="spacing">8</property>
+                                <style>
+                                  <class name="results-heading" />
+                                </style>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label">Recoverable files</property>
+                                    <property name="xalign">0</property>
+                                    <style>
+                                      <class name="section-title" />
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="result_count">
+                                    <property name="label">14</property>
+                                    <style>
+                                      <class name="count-badge" />
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="hexpand">true</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkSearchEntry" id="search">
+                                    <property name="placeholder-text">Search files…</property>
+                                    <property name="width-request">180</property>
+                                    <property name="tooltip-text">Filter by file name or folder (Ctrl+F)</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="spacing">6</property>
+                                <style>
+                                  <class name="filter-bar" />
+                                </style>
+                                <child>
+                                  <object class="GtkToggleButton" id="filter_all">
+                                    <property name="label">All files</property>
+                                    <property name="active">true</property>
+                                    <style>
+                                      <class name="filter" />
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkToggleButton" id="filter_images">
+                                    <property name="label">Images</property>
+                                    <property name="group">filter_all</property>
+                                    <style>
+                                      <class name="filter" />
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkToggleButton" id="filter_documents">
+                                    <property name="label">Documents</property>
+                                    <property name="group">filter_all</property>
+                                    <style>
+                                      <class name="filter" />
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkToggleButton" id="filter_other">
+                                    <property name="label">Other</property>
+                                    <property name="group">filter_all</property>
+                                    <style>
+                                      <class name="filter" />
+                                    </style>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="spacing">10</property>
+                                <style>
+                                  <class name="table-header" />
+                                </style>
+                                <child>
+                                  <object class="GtkCheckButton" id="select_all">
+                                    <property name="tooltip-text">Select all files matching the current filter, including collapsed folders</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label">Name</property>
+                                    <property name="xalign">0</property>
+                                    <property name="hexpand">true</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label">Size</property>
+                                    <property name="xalign">1</property>
+                                    <property name="width-request">78</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label">Discovery</property>
+                                    <property name="xalign">0</property>
+                                    <property name="width-request">100</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkScrolledWindow">
+                                <property name="vexpand">true</property>
+                                <property name="hscrollbar-policy">never</property>
+                                <property name="min-content-height">50</property>
+                                <property name="child">
+                                  <object class="GtkBox">
+                                    <property name="orientation">vertical</property>
+                                    <child>
+                                      <object class="GtkListBox" id="files">
+                                        <property name="selection-mode">single</property>
+                                        <property name="activate-on-single-click">false</property>
+                                        <style>
+                                          <class name="file-list" />
+                                        </style>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox" id="empty_state">
+                                        <property name="orientation">vertical</property>
+                                        <property name="spacing">12</property>
+                                        <property name="margin-top">35</property>
+                                        <property name="margin-bottom">35</property>
+                                        <child>
+                                          <object class="GtkImage">
+                                            <property name="icon-name">system-search-symbolic</property>
+                                            <property name="pixel-size">34</property>
+                                            <style>
+                                              <class name="muted" />
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkLabel" id="empty_title">
+                                            <style>
+                                              <class name="section-title" />
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkLabel" id="empty_detail">
+                                            <property name="wrap">true</property>
+                                            <property name="justify">center</property>
+                                            <style>
+                                              <class name="muted" />
+                                            </style>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkBox" id="pagination">
+                                <property name="visible">false</property>
+                                <property name="spacing">8</property>
+                                <property name="margin-start">14</property>
+                                <property name="margin-end">14</property>
+                                <child>
+                                  <object class="GtkButton" id="previous_page">
+                                    <property name="label">Previous</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="page_info">
+                                    <property name="hexpand">true</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="next_page">
+                                    <property name="label">Next</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="file_summary">
+                                <property name="xalign">0</property>
+                                <property name="ellipsize">end</property>
+                                <style>
+                                  <class name="file-summary" />
+                                </style>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                        <property name="end-child">
+                          <object class="GtkBox" id="preview_panel">
+                            <property name="orientation">vertical</property>
+                            <property name="width-request">260</property>
+                            <style>
+                              <class name="preview-panel" />
+                            </style>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="spacing">8</property>
+                                <style>
+                                  <class name="preview-heading" />
+                                </style>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="label">File preview</property>
+                                    <property name="hexpand">true</property>
+                                    <property name="xalign">0</property>
+                                    <style>
+                                      <class name="section-title" />
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkButton">
+                                    <property name="icon-name">window-close-symbolic</property>
+                                    <property name="action-name">win.preview</property>
+                                    <property name="tooltip-text">Hide preview (Ctrl+P)</property>
+                                    <style>
+                                      <class name="flat" />
+                                    </style>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkScrolledWindow">
+                                <property name="vexpand">true</property>
+                                <property name="hscrollbar-policy">never</property>
+                                <property name="child">
+                                  <object class="GtkBox">
+                                    <property name="orientation">vertical</property>
+                                    <property name="spacing">10</property>
+                                    <style>
+                                      <class name="preview-content" />
+                                    </style>
+                                    <child>
+                                      <object class="GtkImage" id="preview_icon">
+                                        <property name="icon-name">x-office-document-symbolic</property>
+                                        <property name="pixel-size">32</property>
+                                        <property name="halign">start</property>
+                                        <style>
+                                          <class name="document-icon" />
+                                        </style>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel" id="preview_name">
+                                        <property name="label">Choose a file</property>
+                                        <property name="xalign">0</property>
+                                        <property name="wrap">true</property>
+                                        <property name="selectable">true</property>
+                                        <style>
+                                          <class name="preview-name" />
+                                        </style>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel" id="preview_path">
+                                        <property name="xalign">0</property>
+                                        <property name="wrap">true</property>
+                                        <property name="selectable">true</property>
+                                        <style>
+                                          <class name="muted" />
+                                        </style>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkPicture" id="preview_picture">
+                                        <property name="visible">false</property>
+                                        <property name="height-request">150</property>
+                                        <property name="can-shrink">true</property>
+                                        <property name="content-fit">contain</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel" id="preview_text">
+                                        <property name="label">Select a candidate to inspect its contents and metadata.</property>
+                                        <property name="xalign">0</property>
+                                        <property name="yalign">0</property>
+                                        <property name="wrap">true</property>
+                                        <property name="selectable">true</property>
+                                        <style>
+                                          <class name="text-preview" />
+                                        </style>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSeparator" />
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel" id="preview_metadata">
+                                        <property name="xalign">0</property>
+                                        <property name="wrap">true</property>
+                                        <property name="selectable">true</property>
+                                        <style>
+                                          <class name="metadata" />
+                                        </style>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel" id="preview_note">
+                                        <property name="label">A preview is not a guarantee of recovery.</property>
+                                        <property name="xalign">0</property>
+                                        <property name="wrap">true</property>
+                                        <style>
+                                          <class name="preview-note" />
+                                        </style>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </property>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                    <property name="end-child">
+                      <object class="GtkBox" id="events_panel">
+                        <property name="orientation">vertical</property>
+                        <style>
+                          <class name="events-panel" />
+                        </style>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="spacing">10</property>
+                            <style>
+                              <class name="events-heading" />
+                            </style>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="icon-name">view-list-symbolic</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Activity</property>
+                                <style>
+                                  <class name="section-title" />
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="event_count">
+                                <style>
+                                  <class name="muted" />
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="hexpand">true</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="clear_events">
+                                <property name="label">Clear</property>
+                                <style>
+                                  <class name="flat" />
+                                </style>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow" id="event_scroll">
+                            <property name="vexpand">true</property>
+                            <property name="min-content-height">35</property>
+                            <property name="hscrollbar-policy">never</property>
+                            <property name="child">
+                              <object class="GtkListBox" id="events">
+                                <property name="selection-mode">none</property>
+                                <style>
+                                  <class name="event-list" />
+                                </style>
+                              </object>
+                            </property>
+                          </object>
+                        </child>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox">
+                    <property name="spacing">14</property>
+                    <style>
+                      <class name="recovery-bar" />
+                    </style>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">4</property>
+                        <property name="hexpand">true</property>
+                        <child>
+                          <object class="GtkLabel" id="selection_summary">
+                            <property name="label">No files selected</property>
+                            <property name="xalign">0</property>
+                            <style>
+                              <class name="strong" />
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Choose files, then review the recovery destination.</property>
+                            <property name="xalign">0</property>
+                            <property name="ellipsize">end</property>
+                            <style>
+                              <class name="muted" />
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="recover">
+                        <property name="label">Review recovery…</property>
+                        <property name="action-name">win.recover</property>
+                        <style>
+                          <class name="primary" />
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="statusbar">
+            <property name="spacing">0</property>
+            <style>
+              <class name="statusbar" />
+            </style>
+            <child>
+              <object class="GtkBox" id="status_content">
+                <property name="spacing">10</property>
+                <property name="hexpand">true</property>
+                <property name="margin-start">16</property>
+                <property name="margin-end">16</property>
+                <child>
+                  <object class="GtkImage" id="status_icon">
+                    <property name="icon-name">object-select-symbolic</property>
+                    <property name="pixel-size">14</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="status_text">
+                    <property name="label">Scan complete</property>
+                    <property name="xalign">0</property>
+                    <property name="hexpand">true</property>
+                    <property name="ellipsize">end</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkOverlay" id="status_progress">
+                <property name="hexpand">false</property>
+                <property name="child">
+                  <object class="GtkProgressBar" id="progress">
+                    <property name="fraction">1</property>
+                    <property name="height-request">34</property>
+                    <property name="hexpand">true</property>
+                    <property name="valign">fill</property>
+                    <style>
+                      <class name="scan-progress" />
+                    </style>
+                  </object>
+                </property>
+                <child type="overlay">
+                  <object class="GtkLabel" id="progress_text">
+                    <property name="label">100%</property>
+                    <property name="width-request">42</property>
+                    <property name="xalign">0.5</property>
+                    <style>
+                      <class name="strong" />
+                      <class name="numeric" />
+                      <class name="progress-content" />
+                    </style>
+                    <property name="can-target">false</property>
+                  </object>
+                </child>
+                <property name="width-request">220</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="demo_indicator">
+                <property name="label">DEMO · NO DISK ACCESS</property>
+                <property name="margin-start">16</property>
+                <property name="margin-end">16</property>
+                <style>
+                  <class name="status-demo" />
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <menu id="scan_menu">
+    <section>
+      <item>
+        <attribute name="label">Default · start scan</attribute>
+        <attribute name="action">win.start</attribute>
+      </item>
+      <item>
+        <attribute name="label">Custom…</attribute>
+        <attribute name="action">win.custom-scan</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>

@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<interface>
+  <object class="GtkListBoxRow" id="row">
+    <style>
+      <class name="source-row" />
+      <class name="partition-row" />
+    </style>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="spacing">9</property>
+        <child>
+          <object class="GtkBox" id="marker">
+            <property name="width-request">3</property>
+            <style>
+              <class name="partition-marker" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">3</property>
+            <property name="hexpand">true</property>
+            <child>
+              <object class="GtkBox">
+                <property name="spacing">6</property>
+                <child>
+                  <object class="GtkLabel" id="name">
+                    <property name="xalign">0</property>
+                    <property name="hexpand">true</property>
+                    <property name="ellipsize">end</property>
+                    <style>
+                      <class name="partition-name" />
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="capacity">
+                    <property name="xalign">1</property>
+                    <style>
+                      <class name="source-capacity" />
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="detail">
+                <property name="xalign">0</property>
+                <property name="ellipsize">end</property>
+                <style>
+                  <class name="source-detail" />
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+</interface>

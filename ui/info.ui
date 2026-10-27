@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<interface>
+  <object class="GtkWindow" id="dialog">
+    <property name="modal">true</property>
+    <property name="resizable">false</property>
+    <property name="default-width">500</property>
+    <style>
+      <class name="recovery-window" />
+    </style>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">18</property>
+        <style>
+          <class name="dialog-content" />
+        </style>
+        <child>
+          <object class="GtkLabel" id="title">
+            <property name="xalign">0</property>
+            <style>
+              <class name="dialog-title" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="hscrollbar-policy">never</property>
+            <property name="propagate-natural-height">true</property>
+            <property name="min-content-height">100</property>
+            <property name="max-content-height">450</property>
+            <property name="child">
+              <object class="GtkLabel" id="body">
+                <property name="xalign">0</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">58</property>
+                <property name="selectable">true</property>
+                <style>
+                  <class name="dialog-copy" />
+                </style>
+                <property name="max-width-chars">75</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="close">
+            <property name="label">Got it</property>
+            <property name="halign">end</property>
+            <style>
+              <class name="primary" />
+            </style>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+</interface>

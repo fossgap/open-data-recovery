@@ -1,0 +1,19 @@
+# Build from a checkout containing Cargo.lock. Optional engines may be in the AUR.
+pkgname=open-data-recovery
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Native Linux recovery with read-only sources and persistent scans'
+arch=('x86_64' 'aarch64')
+license=('LicenseRef-Unspecified')
+depends=('gtk4' 'glib2' 'util-linux' 'udisks2' 'polkit' 'sleuthkit' 'testdisk' 'ddrescue')
+makedepends=('rust' 'pkgconf')
+optdepends=('ext4magic' 'extundelete' 'ntfs-3g' 'btrfs-progs' 'e2fsprogs' 'libewf' 'scalpel' 'foremost' 'safecopy' 'magicrescue' 'recoverjpeg' 'bulk_extractor' 'open-data-recovery-engines')
+build() { cd "$startdir/.."; cargo build --release --locked; }
+check() { cd "$startdir/.."; cargo test --locked; }
+package() {
+    cd "$startdir/.."
+    install -Dm755 target/release/open-data-recovery "$pkgdir/usr/bin/open-data-recovery"
+    install -Dm644 packaging/org.opendatarecovery.App.desktop "$pkgdir/usr/share/applications/org.opendatarecovery.App.desktop"
+    install -Dm644 packaging/org.opendatarecovery.App.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/org.opendatarecovery.App.svg"
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}

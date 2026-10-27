@@ -1,0 +1,25 @@
+[package]
+name = "open-data-recovery"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Native Linux data recovery with read-only sources and persistent scan sessions"
+publish = false
+
+[dependencies]
+gtk = { package = "gtk4", version = "=0.10.3", features = ["v4_8"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+rusqlite = { version = "0.40.2", features = ["bundled"] }
+sha2 = "0.10.9"
+libc = "0.2.189"
+thiserror = "2.0.21"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[profile.dev]
+debug = 0
+
+[profile.test]
+debug = 0

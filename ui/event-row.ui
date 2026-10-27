@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<interface>
+  <object class="GtkListBoxRow" id="row">
+    <property name="activatable">false</property>
+    <style>
+      <class name="event-row" />
+    </style>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="spacing">12</property>
+        <child>
+          <object class="GtkLabel" id="time">
+            <property name="width-request">64</property>
+            <style>
+              <class name="muted" />
+              <class name="numeric" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkImage" id="icon">
+            <property name="icon-name">dialog-information-symbolic</property>
+            <property name="pixel-size">14</property>
+            <style>
+              <class name="event-icon" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="message">
+            <property name="xalign">0</property>
+            <property name="hexpand">true</property>
+            <property name="ellipsize">end</property>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+</interface>

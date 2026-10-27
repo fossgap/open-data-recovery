@@ -1,0 +1,10 @@
+target
+.git
+.agents
+.aws
+.codex
+docs/screenshots
+*.png
+!image.png
+*.log
+dist

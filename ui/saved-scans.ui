@@ -1,0 +1,138 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<interface>
+  <object class="GtkWindow" id="dialog">
+    <property name="title">Saved scans</property>
+    <property name="modal">true</property>
+    <property name="default-width">740</property>
+    <property name="default-height">600</property>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">10</property>
+        <property name="margin-top">22</property>
+        <property name="margin-bottom">22</property>
+        <property name="margin-start">22</property>
+        <property name="margin-end">22</property>
+        <child>
+          <object class="GtkLabel" id="heading">
+            <property name="label">Saved scans</property>
+            <property name="xalign">0</property>
+            <property name="wrap">true</property>
+            <style>
+              <class name="dialog-title" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">10</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Workspace</property>
+                <property name="xalign">0</property>
+                <property name="wrap">true</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="workspace">
+                <property name="text" />
+                <property name="hexpand">true</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">horizontal</property>
+            <property name="spacing">10</property>
+            <child>
+              <object class="GtkButton" id="browse">
+                <property name="label">Browse…</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="refresh">
+                <property name="label">Refresh</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="vexpand">true</property>
+            <property name="min-content-height">180</property>
+            <property name="hscrollbar-policy">never</property>
+            <property name="child">
+              <object class="GtkListBox" id="scans">
+                <property name="selection-mode">single</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="hscrollbar-policy">never</property>
+            <property name="propagate-natural-height">true</property>
+            <property name="min-content-height">100</property>
+            <property name="max-content-height">180</property>
+            <property name="child">
+              <object class="GtkLabel" id="details">
+                <property name="label">Choose a scan to inspect its source, state, and recorded engine versions.</property>
+                <property name="xalign">0</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">75</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="validation">
+            <property name="label" />
+            <property name="xalign">0</property>
+            <property name="wrap">true</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">horizontal</property>
+            <property name="spacing">10</property>
+            <property name="halign">end</property>
+            <child>
+              <object class="GtkButton" id="close">
+                <property name="label">Close</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="compare">
+                <property name="label">Compare</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="resume">
+                <property name="label">Scan again</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="confirm">
+                <property name="label">Open scan</property>
+                <style>
+                  <class name="primary" />
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+    <style>
+      <class name="recovery-window" />
+    </style>
+  </object>
+  <object class="GtkFileChooserNative" id="chooser">
+    <property name="title">Choose a folder</property>
+    <property name="action">select-folder</property>
+    <property name="accept-label">Choose</property>
+    <property name="cancel-label">Cancel</property>
+  </object>
+</interface>

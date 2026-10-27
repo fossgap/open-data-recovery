@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+appdir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+export PATH="$appdir/usr/bin:$appdir/usr/sbin:$PATH"
+export LD_LIBRARY_PATH="$appdir/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export XDG_DATA_DIRS="$appdir/usr/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+export GSETTINGS_SCHEMA_DIR="$appdir/usr/share/glib-2.0/schemas"
+export GTK_EXE_PREFIX="$appdir/usr"
+export GTK_DATA_PREFIX="$appdir/usr"
+export GIO_MODULE_DIR="$appdir/usr/lib/gio/modules"
+export GIO_EXTRA_MODULES="$appdir/usr/lib/gio/modules"
+export GDK_PIXBUF_MODULE_FILE="$appdir/usr/lib/loaders.cache"
+export ODR_APPIMAGE=1
+exec "$appdir/usr/bin/open-data-recovery" "$@"

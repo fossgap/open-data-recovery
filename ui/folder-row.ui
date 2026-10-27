@@ -1,0 +1,55 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<interface>
+  <object class="GtkListBoxRow" id="row">
+    <property name="selectable">false</property>
+    <style>
+      <class name="folder-row" />
+    </style>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="spacing">8</property>
+        <child>
+          <object class="GtkCheckButton" id="check">
+            <property name="tooltip-text">Select matching files in this folder</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="expand">
+            <property name="icon-name">pan-down-symbolic</property>
+            <property name="tooltip-text">Expand or collapse folder</property>
+            <style>
+              <class name="flat" />
+              <class name="expander" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkImage">
+            <property name="icon-name">folder-symbolic</property>
+            <property name="pixel-size">18</property>
+            <style>
+              <class name="folder-icon" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="name">
+            <property name="xalign">0</property>
+            <style>
+              <class name="strong" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="count">
+            <property name="hexpand">true</property>
+            <property name="xalign">0</property>
+            <style>
+              <class name="muted" />
+            </style>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+</interface>

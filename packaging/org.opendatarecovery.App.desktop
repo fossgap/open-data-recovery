@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Open Data Recovery
+Comment=Find lost files and recover them to a separate drive
+Exec=open-data-recovery
+Icon=org.opendatarecovery.App
+Terminal=false
+Categories=System;Utility;
+Keywords=recovery;undelete;disk;forensics;
+StartupNotify=true

@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<interface>
+  <object class="GtkStringList" id="source_types">
+    <items>
+      <item>Raw / dd disk image</item>
+      <item>E01 evidence image</item>
+      <item>Mounted local folder</item>
+      <item>Unlocked mapper</item>
+      <item>XFS volume (carving only)</item>
+      <item>HFS+ image (carving only)</item>
+    </items>
+  </object>
+  <object class="GtkWindow" id="dialog">
+    <property name="title">Add sample source</property>
+    <property name="modal">true</property>
+    <property name="resizable">false</property>
+    <property name="default-width">470</property>
+    <style>
+      <class name="recovery-window" />
+    </style>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">18</property>
+        <style>
+          <class name="dialog-content" />
+        </style>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Where should we look?</property>
+            <property name="xalign">0</property>
+            <style>
+              <class name="dialog-title" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">Add a sample source to explore the scan workflow.</property>
+            <property name="xalign">0</property>
+            <style>
+              <class name="dialog-copy" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">8</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Source type</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="strong" />
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkDropDown" id="kind">
+                <property name="model">source_types</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">8</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label">Source name</property>
+                <property name="xalign">0</property>
+                <style>
+                  <class name="strong" />
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="name">
+                <property name="text">My disk image</property>
+                <property name="max-length">64</property>
+                <property name="activates-default">true</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel">
+            <property name="label">All sources in this preview are fictional. Device discovery, image selection, and permission prompts belong to the full implementation.</property>
+            <property name="xalign">0</property>
+            <property name="wrap">true</property>
+            <property name="max-width-chars">52</property>
+            <style>
+              <class name="dialog-warning" />
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="spacing">10</property>
+            <property name="halign">end</property>
+            <child>
+              <object class="GtkButton" id="close">
+                <property name="label">Cancel</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="confirm">
+                <property name="label">Add sample source</property>
+                <style>
+                  <class name="primary" />
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+</interface>

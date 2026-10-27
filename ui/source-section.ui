@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<interface>
+  <object class="GtkListBoxRow" id="row">
+    <property name="selectable">false</property>
+    <property name="activatable">false</property>
+    <style>
+      <class name="source-section" />
+    </style>
+    <property name="child">
+      <object class="GtkLabel">
+        <property name="label">IMAGES &amp; OTHER SOURCES</property>
+        <property name="xalign">0</property>
+        <style>
+          <class name="eyebrow" />
+        </style>
+      </object>
+    </property>
+  </object>
+</interface>
