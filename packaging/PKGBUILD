@@ -15,7 +15,7 @@ package() {
     cd "$startdir/.."
     install -Dm755 target/release/open-data-recovery "$pkgdir/usr/bin/open-data-recovery"
     install -Dm644 packaging/org.opendatarecovery.App.desktop "$pkgdir/usr/share/applications/org.opendatarecovery.App.desktop"
-    install -Dm644 packaging/org.opendatarecovery.App.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/org.opendatarecovery.App.svg"
+    install -Dm644 packaging/org.opendatarecovery.App.png "$pkgdir/usr/share/icons/org.opendatarecovery.App.png"
     install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

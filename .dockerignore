@@ -6,6 +6,7 @@ target
 docs/screenshots
 *.png
 !tests/fixtures/*.png
+!packaging/org.opendatarecovery.App.png
 *.log
 dist
 spikes

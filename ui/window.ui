@@ -10,7 +10,7 @@
           <attribute name="action">win.add-source</attribute>
         </item>
         <item>
-          <attribute name="label">Review recovery…</attribute>
+          <attribute name="label">Recover…</attribute>
           <attribute name="action">win.recover</attribute>
         </item>
       </section>
@@ -269,10 +269,10 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkButton" id="save_snapshot">
-                        <property name="icon-name">document-save-symbolic</property>
-                        <property name="action-name">win.save</property>
-                        <property name="tooltip-text">Save a snapshot in memory for this demo session</property>
+                      <object class="GtkButton" id="open_saved_scans">
+                        <property name="icon-name">document-open-recent-symbolic</property>
+                        <property name="action-name">win.saved-scans</property>
+                        <property name="tooltip-text">Open saved scans</property>
                         <style>
                           <class name="flat" />
                         </style>
@@ -319,7 +319,7 @@
                     </style>
                     <child>
                       <object class="GtkImage" id="source_icon">
-                        <property name="icon-name">drive-harddisk-usb-symbolic</property>
+                        <property name="visible">false</property>
                         <property name="pixel-size">26</property>
                         <style>
                           <class name="source-hero-icon" />
@@ -354,7 +354,8 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkBox" id="source_protection">
+                        <property name="visible">false</property>
                         <property name="spacing">6</property>
                         <property name="valign">center</property>
                         <property name="tooltip-text">Source protection: read-only access</property>
@@ -928,7 +929,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="recover">
-                        <property name="label">Review recovery…</property>
+                        <property name="label">Recover</property>
                         <property name="action-name">win.recover</property>
                         <style>
                           <class name="suggested-action" />

@@ -1,9 +1,9 @@
 use gtk::{gdk, prelude::*};
 
-/// Use the same scalable artwork in source builds and installed packages.
+/// Use the same artwork in source builds and installed packages.
 pub fn set_brand_icon(builder: &gtk::Builder) {
     let bytes =
-        gtk::glib::Bytes::from_static(include_bytes!("../packaging/org.opendatarecovery.App.svg"));
+        gtk::glib::Bytes::from_static(include_bytes!("../packaging/org.opendatarecovery.App.png"));
     let icon = gtk::gio::BytesIcon::new(&bytes);
     builder
         .object::<gtk::Image>("brand_icon")

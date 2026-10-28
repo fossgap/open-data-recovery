@@ -397,6 +397,7 @@ impl Ui {
             for child in children {
                 let source = &state.sources[child];
                 let builder = gtk::Builder::from_string(PARTITION_ROW);
+                object::<gtk::Image>(&builder, "icon").set_icon_name(Some(source.icon));
                 object::<gtk::Label>(&builder, "name").set_text(&source.name);
                 object::<gtk::Label>(&builder, "capacity").set_text(source.capacity);
                 object::<gtk::Label>(&builder, "detail").set_text(&if source.kind
@@ -541,6 +542,9 @@ impl Ui {
         );
         self.widget::<gtk::Image>("source_icon")
             .set_icon_name(Some(source.icon));
+        self.widget::<gtk::Image>("source_icon").set_visible(true);
+        self.widget::<gtk::Box>("source_protection")
+            .set_visible(true);
         self.label(
             "source_state",
             if source.mounted {

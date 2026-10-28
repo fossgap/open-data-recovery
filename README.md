@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="packaging/org.opendatarecovery.App.svg" width="128" height="128" alt="Open Data Recovery icon: a blue storage drive with a teal recovery arrow">
+  <img src="packaging/org.opendatarecovery.App.png" width="128" height="128" alt="Open Data Recovery Recall logo: a charcoal D with a red recovery arrow">
 </p>
 
 <h1 align="center">Open Data Recovery</h1>
@@ -84,7 +84,7 @@ Optional `open-data-recovery-engines` packages provide pinned RecuperaBit, Digle
 1. Select a disk or partition, or use **File → Add source** for an image or mounted folder.
 2. Choose **Quick**, **Deep** or **Full**. Click **Scan** for the defaults, or its dropdown → **Custom…** for workspace and engine options.
 3. Review the results, filter or preview candidates, and select the files to restore.
-4. Open **Review recovery**, choose the destination and recovery options, then recover the selected files.
+4. Click **Recover**, choose the destination and recovery options in the review dialog, then recover the selected files.
 5. Use **Scan → Saved Scan** to reopen, compare, scan again or delete saved attempts. For missing partitions, start with **Scan → Find lost partitions…**.
 
 Device and mounted-folder sources require workspace and destination storage on a different physical drive. Regular image files may share their hosting drive, provided neither output folder contains the image or any of its segments. The recovery destination must also be outside the saved scan folder.

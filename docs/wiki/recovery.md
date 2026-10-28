@@ -21,7 +21,7 @@ This means that recovering already-extracted files is chiefly a controlled copy 
 1. Open the finished scan or use **Menu → Scan → Saved Scan** to reopen one.
 2. Search, filter and preview results. Lists are paged; the page's select-all and folder controls apply to the displayed page. Selections persist across pages, filters and application restarts, so a hidden selected file is still selected.
 3. For consolidated results, inspect **N findings…** to see alternate paths and engine records. Selecting a group selects one recovery copy by default.
-4. Open **Review recovery**, choose a destination, review the selection count and storage amount, and adjust the options below.
+4. Click **Recover** to open the review dialog, choose a destination, review the selection count and storage amount, and adjust the options below.
 5. Start recovery once destination validation succeeds. Review the saved, failed and skipped counts and inspect the resulting files.
 
 Changing or adding a source in the sidebar leaves the current scan and its selections open. The result area identifies their source with **Results from…**; **Next scan: …** marks a different selected target. Review recovery also identifies the open scan's source. Selecting another source does not redirect recovery to it.

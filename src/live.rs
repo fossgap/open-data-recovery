@@ -117,6 +117,14 @@ fn date(seconds: i64) -> String {
         .map(|s| s.to_string())
         .unwrap_or_else(|_| "Unknown".into())
 }
+fn source_icon(source: &SourceDescriptor) -> &'static str {
+    match source.kind {
+        SourceType::Block => "drive-harddisk-symbolic",
+        SourceType::Image => "drive-optical-symbolic",
+        SourceType::Folder => "folder-symbolic",
+    }
+}
+
 fn file_icon(path: &str) -> &'static str {
     match Path::new(path)
         .extension()
@@ -255,11 +263,12 @@ impl Live {
         let weak = Rc::downgrade(self);
         self.widget::<gtk::ListBox>("sources")
             .connect_row_selected(move |_, row| {
-                if let (Some(ui), Some(row)) = (weak.upgrade(), row) {
+                if let Some(ui) = weak.upgrade() {
                     if ui.rendering.get() || ui.busy() {
                         return;
                     }
-                    let selected = ui.source_rows.borrow().get(row.index() as usize).copied();
+                    let selected = row
+                        .and_then(|row| ui.source_rows.borrow().get(row.index() as usize).copied());
                     ui.selected.set(selected);
                     ui.render_sources();
                     ui.controls();
@@ -376,6 +385,10 @@ impl Live {
         let busy = self.busy();
         let sources = self.sources.borrow();
         let source = self.selected.get().and_then(|id| sources.get(id));
+        self.widget::<gtk::Box>("source_protection")
+            .set_visible(source.is_some());
+        self.widget::<gtk::Image>("source_icon")
+            .set_visible(source.is_some());
         for name in ["start", "custom-scan"] {
             self.enable(name, !busy && source.is_some());
         }
@@ -406,6 +419,8 @@ impl Live {
         self.widget::<gtk::CheckButton>("select_all")
             .set_sensitive(!busy && !self.page.borrow().files.is_empty());
         if let Some(source) = source {
+            self.widget::<gtk::Image>("source_icon")
+                .set_icon_name(Some(source_icon(source)));
             let different = self
                 .view_source
                 .borrow()
@@ -577,11 +592,7 @@ impl Live {
                 label.set_text(&model::size(source.target_size()));
             }
             if let Some(icon) = b.object::<gtk::Image>("icon") {
-                icon.set_icon_name(Some(if source.kind == SourceType::Image {
-                    "drive-optical-symbolic"
-                } else {
-                    "drive-harddisk-symbolic"
-                }));
+                icon.set_icon_name(Some(source_icon(source)));
             }
             let row: gtk::ListBoxRow = obj(&b, "row");
             if disk {
@@ -2003,8 +2014,6 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         .set_visible(false);
     ui.widget::<gtk::Button>("add_source")
         .set_tooltip_text(Some("Add an image, device or mounted folder"));
-    ui.widget::<gtk::Button>("save_snapshot")
-        .set_tooltip_text(Some("Browse saved scans"));
     ui.connect(app);
     ui.render_files();
     ui.refresh();
@@ -2060,6 +2069,13 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
                     0 if ui.directory.borrow().as_ref() == Some(&session)
                         && !ui.page.borrow().files.is_empty() =>
                     {
+                        assert!(ui.widget::<gtk::Box>("source_protection").is_visible());
+                        assert_eq!(
+                            ui.widget::<gtk::Image>("source_icon")
+                                .icon_name()
+                                .as_deref(),
+                            Some("drive-optical-symbolic")
+                        );
                         if other_source.is_some() && !checked_reopen {
                             // A pending old-page refresh must neither cancel an
                             // explicit open nor overwrite its new result view.
@@ -2278,6 +2294,18 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         let weak = Rc::downgrade(&ui);
         glib::timeout_add_local_once(Duration::from_millis(700), move || {
             if let Some(ui) = weak.upgrade() {
+                let selected = ui.selected.get();
+                ui.widget::<gtk::ListBox>("sources").unselect_all();
+                assert!(ui.selected.get().is_none());
+                assert!(!ui.widget::<gtk::Box>("source_protection").is_visible());
+                assert!(!ui.widget::<gtk::Image>("source_icon").is_visible());
+                ui.selected.set(selected);
+                ui.render_sources();
+                ui.controls();
+                assert_eq!(
+                    ui.widget::<gtk::Box>("source_protection").is_visible(),
+                    selected.is_some()
+                );
                 ui.custom_scan();
                 let b = ui.dialog.borrow().clone().unwrap();
                 assert!(scan_options(&b).is_ok());
@@ -2289,7 +2317,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
                         .menu_model()
                         .is_some()
                 );
-                ui.saved_scans();
+                ui.widget::<gtk::Button>("open_saved_scans").emit_clicked();
                 assert!(
                     ui.dialog
                         .borrow()

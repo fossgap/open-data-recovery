@@ -13,7 +13,7 @@ trap 'rm -rf "$stage"' EXIT HUP INT TERM
 chmod 755 "$stage"
 install -Dm755 "$binary" "$stage/usr/bin/open-data-recovery"
 install -Dm644 packaging/org.opendatarecovery.App.desktop "$stage/usr/share/applications/org.opendatarecovery.App.desktop"
-install -Dm644 packaging/org.opendatarecovery.App.svg "$stage/usr/share/icons/hicolor/scalable/apps/org.opendatarecovery.App.svg"
+install -Dm644 packaging/org.opendatarecovery.App.png "$stage/usr/share/icons/org.opendatarecovery.App.png"
 install -Dm644 README.md "$stage/usr/share/doc/open-data-recovery/README.md"
 install -Dm644 LICENSE "$stage/usr/share/licenses/open-data-recovery/LICENSE"
 case "$format" in
@@ -59,7 +59,7 @@ tar -xzf %{SOURCE0} -C %{buildroot}
 %files
 /usr/bin/open-data-recovery
 /usr/share/applications/org.opendatarecovery.App.desktop
-/usr/share/icons/hicolor/scalable/apps/org.opendatarecovery.App.svg
+/usr/share/icons/org.opendatarecovery.App.png
 /usr/share/doc/open-data-recovery/README.md
 %license /usr/share/licenses/open-data-recovery/LICENSE
 EOF
@@ -108,7 +108,7 @@ appdir)
     mv "$stage" "$destination"
     install -m755 packaging/AppRun "$destination/AppRun"
     cp packaging/org.opendatarecovery.App.desktop "$destination/"
-    cp packaging/org.opendatarecovery.App.svg "$destination/"
+    cp packaging/org.opendatarecovery.App.png "$destination/"
     mkdir -p "$destination/usr/lib" "$destination/usr/share/glib-2.0"
     # Bundle runtime libraries, retaining the host's libc/loader for compatibility.
     ldd "$binary" | awk '/=> \// {print $3}' | while IFS= read -r library; do
