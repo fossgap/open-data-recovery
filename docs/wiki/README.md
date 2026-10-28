@@ -52,4 +52,4 @@ The optional clone is inside the workspace. When available, it can supply the so
 
 **Metadata-based scanning does not always mean metadata-only storage.** Some metadata engines already extract file contents. Recovery of retained contents creates another copy at the destination; the workspace copy remains.
 
-For measured results and implementation details, see [consolidation costs](../consolidation-implementation.md), [validation](../validation.md), [architecture](../architecture.md), and [packaging](../packaging.md).
+For implementation and release details, see [consolidation costs](consolidation.md#time-and-storage-costs), [development and validation](../development.md), [CI and releases](../ci-release.md), and [packaging](../packaging.md).

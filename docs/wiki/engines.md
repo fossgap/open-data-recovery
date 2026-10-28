@@ -57,6 +57,6 @@ These are supporting operations, not additional competing file-recovery engines.
 
 Diagnostics run when applicable and installed, including before a Deep scan on those filesystems. Their presence does not mean that Deep ran a metadata recovery sequence.
 
-Current behavior is defined by the [adapter implementations](../../src/engine/adapters.rs), [scan orchestration](../../src/engine/jobs.rs) and [source inspection](../../src/engine/sources.rs). The [validation record](../validation.md) describes tested fixtures; an implemented adapter does not guarantee success on every damaged filesystem.
+Current behavior is defined by the [adapter implementations](../../src/engine/adapters.rs), [scan orchestration](../../src/engine/jobs.rs) and [source inspection](../../src/engine/sources.rs). The [development guide](../development.md) explains disposable-image checks; an implemented adapter does not guarantee success on every damaged filesystem.
 
 Engine-specific options, applicability, extraction-filter fallback and imaging resume are detailed in [advanced scan controls](scan-modes.md#advanced-engine-controls).

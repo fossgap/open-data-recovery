@@ -103,7 +103,7 @@ Count all enabled preparation steps. For example, E01 conversion followed by clo
 
 If the workspace retains **10 GB** of file contents and you recover all of them, the two locations together need approximately **20 GB**, excluding retained input images and other overhead. A hypothetical additional **500 GB allocated clone** makes that approximately **520 GB**. Recovering only 2 GB from that 10 GB cache instead gives approximately 12 GB before the clone and overhead.
 
-These are arithmetic examples, not scan-size predictions. Several engines may retain multiple copies, and extension filters limit the catalogue without necessarily preventing engines from saving other file types. Restoring every recorded path from a group also writes more destination copies. The application checks available space, but cannot predict every engine's eventual output size before scanning. [Measured consolidation costs](../consolidation-implementation.md) show actual off/on differences on the documented fixtures.
+These are arithmetic examples, not scan-size predictions. Several engines may retain multiple copies, and extension filters limit the catalogue without necessarily preventing engines from saving other file types. Restoring every recorded path from a group also writes more destination copies. The application checks available space, but cannot predict every engine's eventual output size before scanning. See [consolidation costs](consolidation.md#time-and-storage-costs) for the additional content reads and retained artifacts involved.
 
 ## Reopening and cleanup
 

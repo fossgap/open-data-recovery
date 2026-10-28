@@ -45,7 +45,8 @@ Existing verified artifacts are reused first. New unique extractions stay in `ar
 
 Consolidation may reduce destination space when one copy per group is recovered, while increasing workspace space for content comparisons. Restoring every recorded path writes the additional copies again. Unique-size TSK findings remain metadata-only unless another operation extracts them; enabling this option does not guarantee that the entire source can be disconnected afterward.
 
-See the [production timing/storage measurements](../consolidation-implementation.md) for all seven fixture cases and the raw results. Those measurements use RAM-backed filesystems and are not HDD/SSD estimates.
+Consolidation regression checks use disposable images. Their timings depend on
+the fixture and storage; RAM-backed test timings are not HDD/SSD estimates.
 
 ## Cancellation and verification failures
 
