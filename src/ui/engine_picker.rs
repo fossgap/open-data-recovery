@@ -81,6 +81,13 @@ fn sync(b: &gtk::Builder, id: &str, changing: &Cell<bool>) {
     changing.set(false);
 }
 pub fn setup(b: &gtk::Builder, id: &'static str, names: &[&str], multiple: bool) {
+    let button: gtk::MenuButton = object(b, id);
+    let anchor = button.downgrade();
+    button.popover().unwrap().connect_show(move |popup| {
+        if let Some(button) = anchor.upgrade() {
+            popup.set_width_request(button.width());
+        }
+    });
     let selection = StringList::new(&[names[0]]);
     b.expose_object(&format!("{id}_selection"), &selection);
     let list: gtk::Box = object(b, &format!("{id}_choices"));

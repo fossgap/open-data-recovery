@@ -123,13 +123,25 @@ See [CI and releases](docs/ci-release.md) for automated builds and tagged public
 
 ## Powered by
 
-- [Sleuth Kit](https://github.com/sleuthkit/sleuthkit) [![GitHub stars](https://img.shields.io/github/stars/sleuthkit/sleuthkit?style=social)](https://github.com/sleuthkit/sleuthkit) — filesystem metadata discovery and extraction
-- [TestDisk / PhotoRec](https://github.com/cgsecurity/testdisk) [![GitHub stars](https://img.shields.io/github/stars/cgsecurity/testdisk?style=social)](https://github.com/cgsecurity/testdisk) — lost-partition discovery, NTFS undelete and file carving
-- [GTK](https://github.com/GNOME/gtk) [![GitHub stars](https://img.shields.io/github/stars/GNOME/gtk?style=social)](https://github.com/GNOME/gtk) — native Linux interface; official GitHub mirror
-- [gtk-rs](https://github.com/gtk-rs/gtk4-rs) [![GitHub stars](https://img.shields.io/github/stars/gtk-rs/gtk4-rs?style=social)](https://github.com/gtk-rs/gtk4-rs) — Rust bindings for GTK4
-- [SQLite](https://github.com/sqlite/sqlite) [![GitHub stars](https://img.shields.io/github/stars/sqlite/sqlite?style=social)](https://github.com/sqlite/sqlite) — persistent scan catalogues and selections
+ODR integrates these outstanding recovery, carving, imaging and forensic tools:
 
-Source cloning uses [GNU ddrescue](https://www.gnu.org/software/ddrescue/) with a retained recovery map. See the [complete engine guide](docs/wiki/engines.md) for additional backends and their roles.
+- [Sleuth Kit](https://github.com/sleuthkit/sleuthkit) [![Sleuth Kit stars](https://img.shields.io/github/stars/sleuthkit/sleuthkit?style=social)](https://github.com/sleuthkit/sleuthkit) — Filesystem metadata discovery and extraction with `fls`, `icat` and `tsk_recover`
+- [TestDisk / PhotoRec](https://github.com/cgsecurity/testdisk) [![TestDisk / PhotoRec stars](https://img.shields.io/github/stars/cgsecurity/testdisk?style=social)](https://github.com/cgsecurity/testdisk) — Lost-partition discovery, NTFS undelete and signature-based file carving
+- [ntfsundelete (NTFS-3G)](https://github.com/tuxera/ntfs-3g) [![NTFS-3G stars](https://img.shields.io/github/stars/tuxera/ntfs-3g?style=social)](https://github.com/tuxera/ntfs-3g) — NTFS record listing and targeted undelete
+- [Digler](https://github.com/ostafen/digler) [![Digler stars](https://img.shields.io/github/stars/ostafen/digler?style=social)](https://github.com/ostafen/digler) — Content scanning and file extraction
+- [bulk_extractor](https://github.com/simsong/bulk_extractor) [![bulk_extractor stars](https://img.shields.io/github/stars/simsong/bulk_extractor?style=social)](https://github.com/simsong/bulk_extractor) — Forensic feature extraction and reports
+- [btrfs-progs](https://github.com/kdave/btrfs-progs) [![btrfs-progs stars](https://img.shields.io/github/stars/kdave/btrfs-progs?style=social)](https://github.com/kdave/btrfs-progs) — Btrfs tree-based extraction with `btrfs restore`
+- [Scalpel](https://github.com/sleuthkit/scalpel) [![Scalpel stars](https://img.shields.io/github/stars/sleuthkit/scalpel?style=social)](https://github.com/sleuthkit/scalpel) — Signature-based file carving
+- [RecuperaBit](https://github.com/Lazza/RecuperaBit) [![RecuperaBit stars](https://img.shields.io/github/stars/Lazza/RecuperaBit?style=social)](https://github.com/Lazza/RecuperaBit) — NTFS reconstruction and file extraction
+- [recoverjpeg](https://github.com/samueltardieu/recoverjpeg) [![recoverjpeg stars](https://img.shields.io/github/stars/samueltardieu/recoverjpeg?style=social)](https://github.com/samueltardieu/recoverjpeg) — JPEG-focused extraction
+- [Magic Rescue](https://github.com/jbj/magicrescue) [![Magic Rescue stars](https://img.shields.io/github/stars/jbj/magicrescue?style=social)](https://github.com/jbj/magicrescue) — Recipe-based file extraction
+- [ext4rescue](https://github.com/epi/ext4rescue) [![ext4rescue stars](https://img.shields.io/github/stars/epi/ext4rescue?style=social)](https://github.com/epi/ext4rescue) — ext4 recovery from a ddrescue clone and map
+- [GNU ddrescue](https://www.gnu.org/software/ddrescue/) — Resumable source imaging with a retained recovery map
+- [safecopy](https://safecopy.sourceforge.net/) — Alternative source imaging with a bad-block report
+- [ext4magic](https://sourceforge.net/projects/ext4magic/) — ext3/ext4 journal-based recovery
+- [extundelete](https://extundelete.sourceforge.net/) — ext3/ext4 journal-based undelete
+- [Foremost](https://foremost.sourceforge.net/) — Signature-based file carving
+
 
 ## License
 

@@ -271,6 +271,11 @@
                         </property>
                         <property name="popover">
                           <object class="GtkPopover">
+                            <property name="has-arrow">false</property>
+                            <property name="halign">start</property>
+                            <style>
+                              <class name="menu" />
+                            </style>
                             <property name="child">
                               <object class="GtkScrolledWindow">
                                 <property name="hscrollbar-policy">never</property>
@@ -333,6 +338,11 @@
                         </property>
                         <property name="popover">
                           <object class="GtkPopover">
+                            <property name="has-arrow">false</property>
+                            <property name="halign">start</property>
+                            <style>
+                              <class name="menu" />
+                            </style>
                             <property name="child">
                               <object class="GtkScrolledWindow">
                                 <property name="hscrollbar-policy">never</property>
@@ -394,6 +404,11 @@
                         </property>
                         <property name="popover">
                           <object class="GtkPopover">
+                            <property name="has-arrow">false</property>
+                            <property name="halign">start</property>
+                            <style>
+                              <class name="menu" />
+                            </style>
                             <property name="child">
                               <object class="GtkScrolledWindow">
                                 <property name="hscrollbar-policy">never</property>
