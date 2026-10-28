@@ -1,0 +1,9 @@
+/target/
+/dist/
+/.cache/
+*.log
+__pycache__/
+tests/fixtures/README.md 
+spikes/ 
+scripts/*.py 
+docs/
