@@ -1,3 +1,5 @@
+pub(crate) mod engine_picker;
+
 use crate::model::{self, Filter, Kind, Phase, ScanMode, Session, Snapshot, Source, SourceKind};
 use gtk::{gio, glib, prelude::*};
 use std::{
@@ -1099,15 +1101,12 @@ impl Ui {
         object::<gtk::Button>(&b, "browse").set_visible(false);
         object::<gtk::Label>(&b, "validation")
             .set_text("Demo settings only. No devices are opened or files written.");
-        let dialog = b.downgrade();
-        object::<gtk::Button>(&b, "back").connect_clicked(move |_| {
-            if let Some(b) = dialog.upgrade() {
-                object::<gtk::Notebook>(&b, "options_tabs").set_visible(true);
-                object::<gtk::Box>(&b, "plan_view").set_visible(false);
-                object::<gtk::Button>(&b, "back").set_visible(false);
-                object::<gtk::Button>(&b, "confirm").set_label("Next");
-            }
-        });
+        engine_picker::setup_scan(&b);
+        object::<gtk::Label>(&b, "engine_context")
+            .set_text("Fixture scan · no external engines run.");
+        for id in ["metadata", "carver", "clone_engine"] {
+            object::<gtk::MenuButton>(&b, id).set_sensitive(false);
+        }
         let weak = Rc::downgrade(self);
         let dialog = b.downgrade();
         object::<gtk::Button>(&b, "confirm").connect_clicked(move |_| {
@@ -1116,16 +1115,6 @@ impl Ui {
                     &object::<gtk::Entry>(&b, "extensions").text(),
                 ) {
                     object::<gtk::Label>(&b, "validation").set_text(&error.to_string());
-                    return;
-                }
-                if object::<gtk::Notebook>(&b, "options_tabs").is_visible() {
-                    object::<gtk::Notebook>(&b, "options_tabs").set_visible(false);
-                    object::<gtk::Box>(&b, "plan_view").set_visible(true);
-                    object::<gtk::Button>(&b, "back").set_visible(true);
-                    object::<gtk::Label>(&b, "plan_summary").set_text(
-                        "Fixture-only scan. No source devices or recovery engines will run.",
-                    );
-                    object::<gtk::Button>(&b, "confirm").set_label("Start scan");
                     return;
                 }
                 ui.widget::<gtk::DropDown>("scan_mode")

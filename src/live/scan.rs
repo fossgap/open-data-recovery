@@ -1,4 +1,5 @@
 use super::*;
+use crate::ui::engine_picker;
 
 fn set_choice(b: &gtk::Builder, id: &str, value: &str) {
     let drop: gtk::DropDown = obj(b, id);
@@ -73,12 +74,7 @@ pub(super) fn read_imaging(b: &gtk::Builder) -> engine::Result<DdrescueOptions> 
 }
 pub(super) fn read(b: &gtk::Builder, o: &mut ScanOptions) -> engine::Result<()> {
     o.capture_metadata = active(b, "capture_metadata") && checked(b, "capture_metadata");
-    o.metadata_sequence = enabled_value(b, "metadata_sequence")
-        .split(',')
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .map(str::to_owned)
-        .collect();
+    o.metadata_sequence = metadata_selection(b);
     if active(b, "photorec_options") {
         o.photorec = PhotoRecOptions {
             families: enabled_value(b, "photo_families")
@@ -159,11 +155,16 @@ fn fill_imaging(b: &gtk::Builder, o: &ScanOptions) {
     put_optional(b, "dd_errors", o.ddrescue.max_read_errors);
 }
 fn fill(b: &gtk::Builder, o: &ScanOptions) {
+    let metadata = if !o.metadata_sequence.is_empty() {
+        o.metadata_sequence.clone()
+    } else {
+        vec![o.metadata_backend.clone()]
+    };
+    engine_picker::set_selected(b, "metadata", &metadata);
+    engine_picker::set_selected(b, "carver", std::slice::from_ref(&o.carver));
+    engine_picker::set_selected(b, "clone_engine", std::slice::from_ref(&o.clone_backend));
     for (id, v) in [
-        ("metadata", o.metadata_backend.as_str()),
-        ("carver", &o.carver),
-        ("clone_engine", &o.clone_backend),
-        ("ext_kind", &o.ext.target_kind),
+        ("ext_kind", o.ext.target_kind.as_str()),
         ("filesystem", &o.interpretation.filesystem),
     ] {
         set_choice(b, id, v);
@@ -177,7 +178,6 @@ fn fill(b: &gtk::Builder, o: &ScanOptions) {
     );
     for (id, v) in [
         ("extensions", o.extensions.join(", ")),
-        ("metadata_sequence", o.metadata_sequence.join(", ")),
         ("ext_target", o.ext.target.clone()),
         (
             "ext_journal",
@@ -251,38 +251,156 @@ fn fill(b: &gtk::Builder, o: &ScanOptions) {
     put(b, "photo_families", o.photorec.families.join(", "));
     fill_imaging(b, o);
 }
+fn metadata_selection(b: &gtk::Builder) -> Vec<String> {
+    if mode(obj::<gtk::DropDown>(b, "mode").selected()) == Mode::Deep {
+        return vec![];
+    }
+    engine_picker::selected(b, "metadata")
+        .into_iter()
+        .filter(|name| name != "auto")
+        .collect()
+}
+fn unavailable_selection(b: &gtk::Builder) -> Option<String> {
+    ["metadata", "carver", "clone_engine"]
+        .into_iter()
+        .find_map(|id| {
+            active(b, id)
+                .then(|| engine_picker::unavailable(b, id))
+                .flatten()
+        })
+}
+fn refresh_engine_availability(
+    b: &gtk::Builder,
+    source: Option<&SourceDescriptor>,
+    versions: Option<&BTreeMap<String, String>>,
+) {
+    let mut o = ScanOptions {
+        mode: Mode::Quick,
+        ..Default::default()
+    };
+    o.interpretation.filesystem = choice(b, "filesystem");
+    let fs = source
+        .map(|s| engine::options::filesystem(s, &o).to_ascii_lowercase())
+        .unwrap_or_default();
+    for (id, names) in [
+        ("metadata", adapters::METADATA),
+        ("carver", adapters::CARVERS),
+        ("clone_engine", &["ddrescue", "safecopy"][..]),
+    ] {
+        for &name in names {
+            let reason = (|| -> Option<String> {
+                let Some(versions) = versions else {
+                    return Some("Checking installed engines…".into());
+                };
+                let Some(source) = source else {
+                    return Some("Select a source first.".into());
+                };
+                if name == "auto" {
+                    return if id == "metadata" {
+                        let mut interpreted = source.clone();
+                        interpreted.filesystem = fs.clone();
+                        adapters::metadata_engine(&interpreted, &o, versions)
+                            .err()
+                            .map(|e| e.to_string())
+                    } else {
+                        adapters::carving_engine(&o, versions)
+                            .err()
+                            .map(|e| e.to_string())
+                    };
+                }
+                let program = if name == "tsk" { "fls" } else { name };
+                if !versions.contains_key(program)
+                    || name == "tsk" && !versions.contains_key("icat")
+                {
+                    return Some("Not installed. See Help → Backend availability.".into());
+                }
+                if id == "metadata" {
+                    if source.scope.is_some() && name != "tsk" {
+                        return Some("Folder-scoped scanning uses TSK.".into());
+                    }
+                    let applicable = match name {
+                        "ext4magic" | "extundelete" | "ext4rescue" => {
+                            matches!(fs.as_str(), "ext3" | "ext4")
+                        }
+                        "ntfsundelete" | "recuperabit" | "testdisk" => fs == "ntfs",
+                        "btrfs" => fs == "btrfs",
+                        _ => !matches!(
+                            fs.as_str(),
+                            "btrfs"
+                                | "xfs"
+                                | "apfs"
+                                | "hfs"
+                                | "hfsplus"
+                                | "zfs"
+                                | "zfs_member"
+                                | "crypto_luks"
+                                | "bitlocker"
+                        ),
+                    };
+                    if !applicable {
+                        return Some(
+                            "Unavailable for the selected filesystem interpretation.".into(),
+                        );
+                    }
+                    if name == "ext4rescue"
+                        && (!checked(b, "clone")
+                            || engine_picker::single(b, "clone_engine") != "ddrescue"
+                            || value(b, "offset").parse::<u64>().unwrap_or(0) != 0
+                            || !value(b, "length").is_empty()
+                            || source.partition.is_some())
+                    {
+                        return Some(
+                            "Requires clone-first with ddrescue and a complete filesystem source."
+                                .into(),
+                        );
+                    }
+                }
+                if id == "carver" && source.scope.is_some() {
+                    return Some(
+                        "Content carving requires a filesystem source, not a folder.".into(),
+                    );
+                }
+                None
+            })();
+            engine_picker::availability(b, id, name, reason.as_deref());
+        }
+    }
+}
 pub(super) fn context(ui: &Live, b: &gtk::Builder) {
     let source = ui
         .selected
         .get()
         .and_then(|i| ui.sources.borrow().get(i).cloned());
     let versions = ui.custom_versions.borrow();
+    refresh_engine_availability(b, source.as_ref(), versions.as_ref());
     let mode = mode(obj::<gtk::DropDown>(b, "mode").selected());
+    let interpreted = choice(b, "filesystem");
+    let metadata_supported = source.as_ref().is_none_or(|source| {
+        let fs = if interpreted == "auto" {
+            source.filesystem.as_str()
+        } else {
+            &interpreted
+        };
+        !matches!(
+            fs.to_ascii_lowercase().as_str(),
+            "xfs" | "apfs" | "hfs" | "hfsplus"
+        )
+    });
     let mut metadata = vec![];
     let mut carver = None;
     if let (Some(source), Some(versions)) = (&source, versions.as_ref()) {
         let mut o = ScanOptions {
             mode,
-            metadata_backend: choice(b, "metadata"),
-            carver: choice(b, "carver"),
+            metadata_sequence: metadata_selection(b),
+            carver: engine_picker::single(b, "carver"),
             ..Default::default()
         };
         o.interpretation.filesystem = choice(b, "filesystem");
-        if o.metadata_backend == "auto" {
-            o.metadata_sequence = value(b, "metadata_sequence")
-                .split(',')
-                .map(str::trim)
-                .filter(|s| !s.is_empty())
-                .map(str::to_owned)
-                .collect();
-        }
         if let Ok(plan) = engine::plan::resolve(source, &o, versions) {
             metadata = plan.metadata;
             carver = plan.carver;
         } else {
-            if mode != Mode::Deep && o.metadata_backend != "auto" {
-                metadata.push(o.metadata_backend.clone());
-            }
+            metadata = o.metadata_sequence.clone();
             if mode != Mode::Quick {
                 carver = adapters::carving_engine(&o, versions).ok();
             }
@@ -293,16 +411,12 @@ pub(super) fn context(ui: &Live, b: &gtk::Builder) {
         ("photorec_options", carver.as_deref() == Some("photorec")),
         (
             "ddrescue_options",
-            checked(b, "clone") && choice(b, "clone_engine") == "ddrescue",
+            checked(b, "clone") && engine_picker::single(b, "clone_engine") == "ddrescue",
         ),
         ("ext_options", has("ext4magic") || has("extundelete")),
         ("btrfs_options", has("btrfs")),
         ("ntfs_options", has("ntfsundelete")),
-        ("metadata", mode != Mode::Deep),
-        (
-            "metadata_sequence",
-            mode != Mode::Deep && choice(b, "metadata") == "auto",
-        ),
+        ("metadata", mode != Mode::Deep && metadata_supported),
         ("carver", mode != Mode::Quick),
         ("clone_engine", checked(b, "clone")),
         ("directory_inode", has("tsk")),
@@ -327,7 +441,7 @@ pub(super) fn context(ui: &Live, b: &gtk::Builder) {
             ][..],
         ),
         (
-            checked(b, "clone") && choice(b, "clone_engine") == "ddrescue",
+            checked(b, "clone") && engine_picker::single(b, "clone_engine") == "ddrescue",
             &[
                 "retries",
                 "dd_direct",
@@ -378,7 +492,7 @@ pub(super) fn context(ui: &Live, b: &gtk::Builder) {
         b,
         "engine_context",
         &format!(
-            "Metadata: {}\nCarver: {}\nDisabled controls do not apply to this engine/mode combination.",
+            "Metadata: {}\nCarver: {}",
             if metadata.is_empty() {
                 "none / unavailable".into()
             } else {
@@ -387,12 +501,16 @@ pub(super) fn context(ui: &Live, b: &gtk::Builder) {
             carver.unwrap_or("none / unavailable".into())
         ),
     );
-    obj::<gtk::Button>(b, "confirm").set_sensitive(source.is_some() && versions.is_some());
+    let unavailable = unavailable_selection(b);
+    text(b, "validation", unavailable.as_deref().unwrap_or(""));
+    obj::<gtk::Button>(b, "confirm")
+        .set_sensitive(source.is_some() && versions.is_some() && unavailable.is_none());
 }
 impl Live {
     pub(super) fn custom_scan_dialog(self: &Rc<Self>) {
         let b = self.show(include_str!("../../ui/scan-options.ui"));
         self.custom_versions.replace(None);
+        engine_picker::setup_scan(&b);
         let options = self.options.borrow().clone();
         fill(&b, &options);
         obj::<gtk::DropDown>(&b, "mode")
@@ -414,14 +532,7 @@ impl Live {
             }
         }
         Self::browse(&b, "browse", "workspace", "chooser");
-        for id in [
-            "mode",
-            "metadata",
-            "carver",
-            "clone_engine",
-            "filesystem",
-            "ext_kind",
-        ] {
+        for id in ["mode", "filesystem", "ext_kind"] {
             let weak = Rc::downgrade(self);
             let dialog = b.downgrade();
             obj::<gtk::DropDown>(&b, id).connect_selected_notify(move |_| {
@@ -437,80 +548,57 @@ impl Live {
                 context(&ui, &b);
             }
         });
-        let weak = Rc::downgrade(self);
-        let dialog = b.downgrade();
-        obj::<gtk::Entry>(&b, "metadata_sequence").connect_changed(move |_| {
-            if let (Some(ui), Some(b)) = (weak.upgrade(), dialog.upgrade()) {
-                context(&ui, &b);
-            }
-        });
-        let reviewed: Rc<RefCell<Option<(SourceDescriptor, ScanOptions)>>> =
-            Rc::new(RefCell::new(None));
-        let state = reviewed.clone();
-        let dialog = b.downgrade();
-        obj::<gtk::Button>(&b, "back").connect_clicked(move |_| {
-            if let Some(b) = dialog.upgrade() {
-                state.replace(None);
-                obj::<gtk::Notebook>(&b, "options_tabs").set_visible(true);
-                obj::<gtk::Box>(&b, "plan_view").set_visible(false);
-                obj::<gtk::Button>(&b, "back").set_visible(false);
-                obj::<gtk::Button>(&b, "confirm").set_label("Next");
-                text(&b, "validation", "");
-            }
-        });
+        for id in ["metadata", "carver", "clone_engine"] {
+            let weak = Rc::downgrade(self);
+            let dialog = b.downgrade();
+            engine_picker::model(&b, id).connect_items_changed(move |_, _, _, _| {
+                if let (Some(ui), Some(b)) = (weak.upgrade(), dialog.upgrade()) {
+                    context(&ui, &b);
+                }
+            });
+        }
+        for id in ["offset", "length"] {
+            let weak = Rc::downgrade(self);
+            let dialog = b.downgrade();
+            obj::<gtk::Entry>(&b, id).connect_changed(move |_| {
+                if let (Some(ui), Some(b)) = (weak.upgrade(), dialog.upgrade()) {
+                    context(&ui, &b);
+                }
+            });
+        }
         let weak = Rc::downgrade(self);
         let dialog = b.downgrade();
         obj::<gtk::Button>(&b, "confirm").connect_clicked(move |_| {
             let (Some(ui), Some(b)) = (weak.upgrade(), dialog.upgrade()) else {
                 return;
             };
-            if let Some((source, options)) = reviewed.borrow_mut().take() {
-                let current = ui
+            let result = (|| -> engine::Result<ScanOptions> {
+                let source = ui
                     .selected
                     .get()
-                    .and_then(|i| ui.sources.borrow().get(i).cloned());
-                if !current.as_ref().is_some_and(|s| s.same_target(&source)) {
-                    text(
-                        &b,
-                        "validation",
-                        "The source changed. Go back and review the plan again.",
-                    );
-                    return;
+                    .and_then(|i| ui.sources.borrow().get(i).cloned())
+                    .ok_or_else(|| engine::Error::Message("Select a source first.".into()))?;
+                let mut options = scan_options(&b)?;
+                if let Some(error) = unavailable_selection(&b) {
+                    return engine::fail(error);
                 }
-                obj::<gtk::Window>(&b, "dialog").close();
-                ui.widget::<gtk::DropDown>("scan_mode")
-                    .set_selected(index(options.mode));
-                ui.begin(options);
-                return;
-            }
-            let result =
-                (|| -> engine::Result<(SourceDescriptor, ScanOptions, engine::plan::ScanPlan)> {
-                    let source = ui
-                        .selected
-                        .get()
-                        .and_then(|i| ui.sources.borrow().get(i).cloned())
-                        .ok_or_else(|| engine::Error::Message("Select a source first.".into()))?;
-                    let mut options = scan_options(&b)?;
-                    let versions = ui.custom_versions.borrow();
-                    let versions = versions.as_ref().ok_or_else(|| {
-                        engine::Error::Message("Checking installed engines…".into())
-                    })?;
-                    let plan = engine::plan::resolve(&source, &options, versions)?;
-                    options.metadata_sequence = plan.metadata.clone();
-                    if let Some(carver) = &plan.carver {
-                        options.carver = carver.clone();
-                    }
-                    Ok((source, options, plan))
-                })();
+                let versions = ui.custom_versions.borrow();
+                let versions = versions
+                    .as_ref()
+                    .ok_or_else(|| engine::Error::Message("Checking installed engines…".into()))?;
+                let plan = engine::plan::resolve(&source, &options, versions)?;
+                options.metadata_sequence = plan.metadata;
+                if let Some(carver) = plan.carver {
+                    options.carver = carver;
+                }
+                Ok(options)
+            })();
             match result {
-                Ok((source, options, plan)) => {
-                    text(&b, "plan_summary", &plan.description);
-                    reviewed.replace(Some((source, options)));
-                    obj::<gtk::Notebook>(&b, "options_tabs").set_visible(false);
-                    obj::<gtk::Box>(&b, "plan_view").set_visible(true);
-                    obj::<gtk::Button>(&b, "back").set_visible(true);
-                    obj::<gtk::Button>(&b, "confirm").set_label("Start scan");
-                    text(&b, "validation", "");
+                Ok(options) => {
+                    obj::<gtk::Window>(&b, "dialog").close();
+                    ui.widget::<gtk::DropDown>("scan_mode")
+                        .set_selected(index(options.mode));
+                    ui.begin(options);
                 }
                 Err(e) => text(&b, "validation", &e.to_string()),
             }

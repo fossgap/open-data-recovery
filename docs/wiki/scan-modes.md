@@ -48,7 +48,11 @@ Preparation and diagnostics precede these sequences. Optional consolidation foll
 
 The main **Scan** button uses the selected mode, workspace and main clone checkbox, with default scan options. It does not reuse a previous custom engine, filter or consolidation setting. The initial mode is Full.
 
-**Scan dropdown → Custom…** opens the Scan, Engines, Engine options and Advanced tabs. Click **Next** to review the resolved scan plan, **Back** to edit settings, or **Start scan** to execute it. Next does not start a scan or create a workspace. Controls become insensitive when their engine or stage is not used. An explicit metadata choice replaces the entire automatic metadata sequence with that single adapter. With Auto selected, an optional comma-separated metadata sequence selects and orders specific metadata engines. The reviewed sequence and carver are fixed for that attempt; execution rechecks their availability. An explicit content choice replaces the automatic carver choice. Quick does not use a content choice; Deep does not use a metadata choice; Full uses both stages.
+**Scan dropdown → Custom…** opens the Scan, Engines, Engine options and Advanced tabs. Set your options and click **Start scan** to begin directly. Controls become insensitive when their engine or stage is not used.
+
+The **Metadata engine** dropdown contains checkboxes. **Auto** uses the applicable default sequence; checking individual engines replaces Auto with those engines, in the order checked. The resolved order appears below the dropdowns. Choosing Auto clears the manual selection; removing the last checked engine returns to Auto. Saved selections retain their order. Carving and clone-engine dropdowns remain single-choice. Uninstalled or unavailable engines are greyed out, with a tooltip explaining why. If a saved selection becomes unavailable, choose an available engine or Auto before starting.
+
+The resolved sequence and carver are fixed for that attempt; execution rechecks availability. Quick ignores the carving choice; Deep ignores metadata choices; Full uses both stages. Hover over **Extensions** for the extraction-filter explanation.
 
 | Setting | Default | Effect |
 | --- | --- | --- |
@@ -99,7 +103,7 @@ The [implementation](../../src/engine/jobs.rs) and [engine selection code](../..
 
 ## Advanced engine controls
 
-**Custom… → Engine options** groups controls by engine. **Engines** selects the metadata engine/sequence, single carver and clone engine. Disabled controls are not applied. Auto resolves against the detected or explicitly interpreted filesystem and installed engines. The plan reports source, workspace, stages, engine versions, effective settings and extraction-filter behavior; `plan.json` and per-engine `commands.jsonl` retain the executed configuration.
+**Custom… → Engine options** groups controls by engine. **Engines** selects one or more metadata engines, a single carver and a clone engine. Disabled controls are not applied. Auto resolves against the detected or explicitly interpreted filesystem and installed engines. The CLI's `--plan` reports source, workspace, stages, engine versions, effective settings and extraction-filter behavior; `plan.json` and per-engine `commands.jsonl` retain the executed configuration. There is no separate plan step in Custom Scan.
 
 | Engine | Controls |
 | --- | --- |

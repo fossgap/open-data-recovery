@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <interface>
   <object class="GtkWindow" id="dialog">
     <property name="title">Custom scan</property>
@@ -115,6 +115,7 @@
                           <property name="column">1</property>
                           <property name="row">2</property>
                         </layout>
+                        <property name="tooltip-text">Extension filters constrain extraction where supported; other engines filter results. File families can include several extensions.</property>
                       </object>
                     </child>
                     <child>
@@ -205,19 +206,6 @@
                         </layout>
                       </object>
                     </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">Extension filters constrain extraction where supported; other engines filter results. File families can include several extensions.</property>
-                        <property name="xalign">0</property>
-                        <property name="wrap">true</property>
-                        <property name="max-width-chars">68</property>
-                        <layout>
-                          <property name="column">0</property>
-                          <property name="row">14</property>
-                          <property name="column-span">2</property>
-                        </layout>
-                      </object>
-                    </child>
                   </object>
                 </property>
               </object>
@@ -226,7 +214,7 @@
               <object class="GtkLabel">
                 <property name="label">Scan</property>
                 <property name="xalign">0</property>
-                <property name="wrap">true</property>
+                <property name="wrap">false</property>
                 <property name="max-width-chars">68</property>
               </object>
             </child>
@@ -257,29 +245,53 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkDropDown" id="metadata">
-                        <property name="selected">0</property>
+                      <object class="GtkMenuButton" id="metadata">
                         <property name="hexpand">true</property>
-                        <property name="model">
-                          <object class="GtkStringList">
-                            <items>
-                              <item>auto</item>
-                              <item>tsk</item>
-                              <item>tsk_recover</item>
-                              <item>ext4magic</item>
-                              <item>extundelete</item>
-                              <item>ntfsundelete</item>
-                              <item>recuperabit</item>
-                              <item>btrfs</item>
-                              <item>testdisk</item>
-                              <item>ext4rescue</item>
-                            </items>
-                          </object>
-                        </property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">0</property>
                         </layout>
+                        <property name="child">
+                          <object class="GtkBox">
+                            <property name="spacing">8</property>
+                            <child>
+                              <object class="GtkLabel" id="metadata_value">
+                                <property name="label">Auto</property>
+                                <property name="xalign">0</property>
+                                <property name="hexpand">true</property>
+                                <property name="ellipsize">end</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="icon-name">pan-down-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                        <property name="popover">
+                          <object class="GtkPopover">
+                            <property name="child">
+                              <object class="GtkScrolledWindow">
+                                <property name="hscrollbar-policy">never</property>
+                                <property name="min-content-width">200</property>
+                                <property name="max-content-height">320</property>
+                                <property name="propagate-natural-height">true</property>
+                                <property name="child">
+                                  <object class="GtkBox" id="metadata_choices">
+                                    <property name="orientation">vertical</property>
+                                    <property name="spacing">4</property>
+                                    <property name="margin-top">6</property>
+                                    <property name="margin-bottom">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="margin-end">6</property>
+                                  </object>
+                                </property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                        <property name="tooltip-text">Check one or more engines. They run in selection order. Auto uses the applicable default sequence.</property>
                       </object>
                     </child>
                     <child>
@@ -295,27 +307,52 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkDropDown" id="carver">
-                        <property name="selected">0</property>
+                      <object class="GtkMenuButton" id="carver">
                         <property name="hexpand">true</property>
-                        <property name="model">
-                          <object class="GtkStringList">
-                            <items>
-                              <item>auto</item>
-                              <item>photorec</item>
-                              <item>scalpel</item>
-                              <item>foremost</item>
-                              <item>digler</item>
-                              <item>magicrescue</item>
-                              <item>recoverjpeg</item>
-                              <item>bulk_extractor</item>
-                            </items>
-                          </object>
-                        </property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">1</property>
                         </layout>
+                        <property name="child">
+                          <object class="GtkBox">
+                            <property name="spacing">8</property>
+                            <child>
+                              <object class="GtkLabel" id="carver_value">
+                                <property name="label">Auto</property>
+                                <property name="xalign">0</property>
+                                <property name="hexpand">true</property>
+                                <property name="ellipsize">end</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="icon-name">pan-down-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                        <property name="popover">
+                          <object class="GtkPopover">
+                            <property name="child">
+                              <object class="GtkScrolledWindow">
+                                <property name="hscrollbar-policy">never</property>
+                                <property name="min-content-width">200</property>
+                                <property name="max-content-height">320</property>
+                                <property name="propagate-natural-height">true</property>
+                                <property name="child">
+                                  <object class="GtkBox" id="carver_choices">
+                                    <property name="orientation">vertical</property>
+                                    <property name="spacing">4</property>
+                                    <property name="margin-top">6</property>
+                                    <property name="margin-bottom">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="margin-end">6</property>
+                                  </object>
+                                </property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
                       </object>
                     </child>
                     <child>
@@ -331,57 +368,52 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkDropDown" id="clone_engine">
-                        <property name="selected">0</property>
+                      <object class="GtkMenuButton" id="clone_engine">
                         <property name="hexpand">true</property>
-                        <property name="model">
-                          <object class="GtkStringList">
-                            <items>
-                              <item>ddrescue</item>
-                              <item>safecopy</item>
-                            </items>
-                          </object>
-                        </property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">2</property>
                         </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">Metadata sequence</property>
-                        <property name="xalign">0</property>
-                        <property name="wrap">true</property>
-                        <property name="max-width-chars">68</property>
-                        <layout>
-                          <property name="column">0</property>
-                          <property name="row">3</property>
-                        </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="metadata_sequence">
-                        <property name="placeholder-text">Optional ordered engines, e.g. tsk, extundelete</property>
-                        <property name="text" />
-                        <property name="hexpand">true</property>
-                        <layout>
-                          <property name="column">1</property>
-                          <property name="row">3</property>
-                        </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">An explicit sequence replaces Auto. Quick uses metadata only; Deep uses one carver; Full uses both stages.</property>
-                        <property name="xalign">0</property>
-                        <property name="wrap">true</property>
-                        <property name="max-width-chars">68</property>
-                        <layout>
-                          <property name="column">0</property>
-                          <property name="row">8</property>
-                          <property name="column-span">2</property>
-                        </layout>
+                        <property name="child">
+                          <object class="GtkBox">
+                            <property name="spacing">8</property>
+                            <child>
+                              <object class="GtkLabel" id="clone_engine_value">
+                                <property name="label">ddrescue</property>
+                                <property name="xalign">0</property>
+                                <property name="hexpand">true</property>
+                                <property name="ellipsize">end</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="icon-name">pan-down-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                        <property name="popover">
+                          <object class="GtkPopover">
+                            <property name="child">
+                              <object class="GtkScrolledWindow">
+                                <property name="hscrollbar-policy">never</property>
+                                <property name="min-content-width">200</property>
+                                <property name="max-content-height">320</property>
+                                <property name="propagate-natural-height">true</property>
+                                <property name="child">
+                                  <object class="GtkBox" id="clone_engine_choices">
+                                    <property name="orientation">vertical</property>
+                                    <property name="spacing">4</property>
+                                    <property name="margin-top">6</property>
+                                    <property name="margin-bottom">6</property>
+                                    <property name="margin-start">6</property>
+                                    <property name="margin-end">6</property>
+                                  </object>
+                                </property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
                       </object>
                     </child>
                     <child>
@@ -405,7 +437,7 @@
               <object class="GtkLabel">
                 <property name="label">Engines</property>
                 <property name="xalign">0</property>
-                <property name="wrap">true</property>
+                <property name="wrap">false</property>
                 <property name="max-width-chars">68</property>
               </object>
             </child>
@@ -1369,7 +1401,7 @@
               <object class="GtkLabel">
                 <property name="label">Engine options</property>
                 <property name="xalign">0</property>
-                <property name="wrap">true</property>
+                <property name="wrap">false</property>
                 <property name="max-width-chars">68</property>
               </object>
             </child>
@@ -1617,40 +1649,8 @@
               <object class="GtkLabel">
                 <property name="label">Advanced</property>
                 <property name="xalign">0</property>
-                <property name="wrap">true</property>
+                <property name="wrap">false</property>
                 <property name="max-width-chars">68</property>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox" id="plan_view">
-            <property name="orientation">vertical</property>
-            <property name="spacing">8</property>
-            <property name="visible">false</property>
-            <property name="vexpand">true</property>
-            <child>
-              <object class="GtkLabel" id="plan_heading">
-                <property name="label">Scan plan</property>
-                <property name="xalign">0</property>
-                <property name="wrap">true</property>
-                <property name="max-width-chars">68</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow">
-                <property name="vexpand">true</property>
-                <property name="min-content-height">300</property>
-                <property name="hscrollbar-policy">never</property>
-                <property name="child">
-                  <object class="GtkLabel" id="plan_summary">
-                    <property name="label" />
-                    <property name="xalign">0</property>
-                    <property name="wrap">true</property>
-                    <property name="max-width-chars">68</property>
-                    <property name="selectable">true</property>
-                  </object>
-                </property>
               </object>
             </child>
           </object>
@@ -1673,14 +1673,8 @@
               </object>
             </child>
             <child>
-              <object class="GtkButton" id="back">
-                <property name="label">Back</property>
-                <property name="visible">false</property>
-              </object>
-            </child>
-            <child>
               <object class="GtkButton" id="confirm">
-                <property name="label">Next</property>
+                <property name="label">Start scan</property>
                 <style>
                   <class name="suggested-action" />
                 </style>
