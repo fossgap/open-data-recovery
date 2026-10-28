@@ -1099,6 +1099,15 @@ impl Ui {
         object::<gtk::Button>(&b, "browse").set_visible(false);
         object::<gtk::Label>(&b, "validation")
             .set_text("Demo settings only. No devices are opened or files written.");
+        let dialog = b.downgrade();
+        object::<gtk::Button>(&b, "back").connect_clicked(move |_| {
+            if let Some(b) = dialog.upgrade() {
+                object::<gtk::Notebook>(&b, "options_tabs").set_visible(true);
+                object::<gtk::Box>(&b, "plan_view").set_visible(false);
+                object::<gtk::Button>(&b, "back").set_visible(false);
+                object::<gtk::Button>(&b, "confirm").set_label("Next");
+            }
+        });
         let weak = Rc::downgrade(self);
         let dialog = b.downgrade();
         object::<gtk::Button>(&b, "confirm").connect_clicked(move |_| {
@@ -1107,6 +1116,16 @@ impl Ui {
                     &object::<gtk::Entry>(&b, "extensions").text(),
                 ) {
                     object::<gtk::Label>(&b, "validation").set_text(&error.to_string());
+                    return;
+                }
+                if object::<gtk::Notebook>(&b, "options_tabs").is_visible() {
+                    object::<gtk::Notebook>(&b, "options_tabs").set_visible(false);
+                    object::<gtk::Box>(&b, "plan_view").set_visible(true);
+                    object::<gtk::Button>(&b, "back").set_visible(true);
+                    object::<gtk::Label>(&b, "plan_summary").set_text(
+                        "Fixture-only scan. No source devices or recovery engines will run.",
+                    );
+                    object::<gtk::Button>(&b, "confirm").set_label("Start scan");
                     return;
                 }
                 ui.widget::<gtk::DropDown>("scan_mode")
@@ -1122,7 +1141,14 @@ impl Ui {
         let b = self.show_dialog(include_str!("../ui/saved-scans.ui"));
         object::<gtk::Entry>(&b, "workspace").set_text("Demo snapshots · in memory");
         object::<gtk::Entry>(&b, "workspace").set_sensitive(false);
-        for id in ["browse", "refresh", "resume", "compare", "delete"] {
+        for id in [
+            "browse",
+            "refresh",
+            "resume",
+            "resume_imaging",
+            "compare",
+            "delete",
+        ] {
             object::<gtk::Button>(&b, id).set_visible(false);
         }
         let list: gtk::ListBox = object(&b, "scans");

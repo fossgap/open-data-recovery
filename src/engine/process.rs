@@ -216,6 +216,20 @@ pub fn run(
 ) -> Result<Outcome> {
     control.checkpoint()?;
     let sandbox = Sandbox::new(&spec.writable)?;
+    // Record effective arguments for reproducibility; append because some adapters
+    // enumerate before extracting. Paths are arguments, never shell commands.
+    let mut audit = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .custom_flags(libc::O_NOFOLLOW)
+        .open(spec.cwd.join("commands.jsonl"))?;
+    if audit.metadata()?.len() < 4 * 1024 * 1024 {
+        writeln!(
+            audit,
+            "{}",
+            serde_json::json!({"program":spec.program,"arguments":spec.args.iter().map(|a|a.to_string_lossy()).collect::<Vec<_>>() })
+        )?;
+    }
     let input = spec.input.take();
     let mut command = command(&spec.program);
     command

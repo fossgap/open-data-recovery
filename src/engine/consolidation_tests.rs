@@ -101,6 +101,43 @@ fn consolidation_is_opt_in_and_old_options_still_load() {
 }
 
 #[test]
+fn consolidation_retains_each_paths_linux_metadata() {
+    let root = tempfile::tempdir().unwrap();
+    let (mut store, input) = fixture(root.path());
+    for (name, mode) in [("first.txt", 0o640), ("second.txt", 0o600)] {
+        let relative = format!("artifacts/{name}");
+        fs::write(store.directory.join(&relative), b"identical content").unwrap();
+        store
+            .insert(&Candidate {
+                path: name.into(),
+                bytes: 17,
+                backend: "tsk".into(),
+                locator: name.into(),
+                artifact: Some(relative),
+                linux_metadata: Some(LinuxMetadata {
+                    mode: Some(mode),
+                    uid: Some(1000),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            })
+            .unwrap();
+    }
+    finish(&mut store, &input);
+    let saved = Store::open(&store.directory).unwrap();
+    let groups = page(&saved).files;
+    assert_eq!(groups.len(), 1);
+    for files in [
+        saved.findings(groups[0].id, 0).unwrap(),
+        saved.recovery_paths(&groups[0], None).unwrap(),
+    ] {
+        assert_eq!(files.len(), 2);
+        assert_eq!(files[0].linux_metadata.as_ref().unwrap().mode, Some(0o640));
+        assert_eq!(files[1].linux_metadata.as_ref().unwrap().mode, Some(0o600));
+    }
+}
+
+#[test]
 fn active_scans_block_selection_but_interrupted_scans_keep_raw_findings_usable() {
     let root = tempfile::tempdir().unwrap();
     let (mut store, _) = fixture(root.path());

@@ -114,6 +114,101 @@ pub enum Conflict {
     Skip,
 }
 
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PhotoRecOptions {
+    pub families: Vec<String>,
+    pub free_space: bool,
+    pub brute_force: bool,
+    pub block_size: Option<u32>,
+    pub block_offset: u64,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct DdrescueOptions {
+    pub direct: bool,
+    pub reverse: bool,
+    pub scrape: bool,
+    pub min_read_rate: u64,
+    pub max_read_rate: u64,
+    pub read_timeout: u64,
+    pub max_read_errors: Option<u64>,
+    pub import_image: Option<PathBuf>,
+    pub import_map: Option<PathBuf>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ExtOptions {
+    pub target_kind: String,
+    pub target: String,
+    pub after: Option<u64>,
+    pub before: Option<u64>,
+    pub journal: Option<PathBuf>,
+    pub superblock: Option<u64>,
+    pub block_size: Option<u32>,
+    pub transaction: Option<u64>,
+}
+impl Default for ExtOptions {
+    fn default() -> Self {
+        Self {
+            target_kind: "all".into(),
+            target: String::new(),
+            after: None,
+            before: None,
+            journal: None,
+            superblock: None,
+            block_size: None,
+            transaction: None,
+        }
+    }
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BtrfsOptions {
+    pub subvolume: Option<u64>,
+    pub subvolume_root: Option<u64>,
+    pub superblock: u8,
+    pub snapshots: bool,
+    pub path: String,
+    pub ignore_errors: bool,
+}
+impl Default for BtrfsOptions {
+    fn default() -> Self {
+        Self {
+            subvolume: None,
+            subvolume_root: None,
+            superblock: 0,
+            snapshots: true,
+            path: String::new(),
+            ignore_errors: true,
+        }
+    }
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Interpretation {
+    pub filesystem: String,
+    pub sector_size: Option<u32>,
+    pub directory_inode: Option<u64>,
+}
+impl Default for Interpretation {
+    fn default() -> Self {
+        Self {
+            filesystem: "auto".into(),
+            sector_size: None,
+            directory_inode: None,
+        }
+    }
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct NtfsOptions {
+    pub pattern: String,
+    pub inodes: String,
+    pub minimum_percent: u8,
+    pub case_sensitive: bool,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ScanOptions {
@@ -135,6 +230,15 @@ pub struct ScanOptions {
     pub maximum_size: Option<u64>,
     pub timeout_seconds: u64,
     pub btrfs_root: Option<u64>,
+    pub photorec: PhotoRecOptions,
+    pub ddrescue: DdrescueOptions,
+    pub ext: ExtOptions,
+    pub btrfs: BtrfsOptions,
+    pub interpretation: Interpretation,
+    pub ntfs: NtfsOptions,
+    pub capture_metadata: bool,
+    /// Empty uses the automatic metadata sequence. Nonempty is an ordered subset.
+    pub metadata_sequence: Vec<String>,
 }
 impl Default for ScanOptions {
     fn default() -> Self {
@@ -150,13 +254,21 @@ impl Default for ScanOptions {
             metadata_backend: "auto".into(),
             carver: "auto".into(),
             keep_corrupted: false,
-            low_memory: true,
+            low_memory: false,
             offset_bytes: 0,
             length_bytes: None,
             minimum_size: 0,
             maximum_size: None,
             timeout_seconds: 0,
             btrfs_root: None,
+            photorec: PhotoRecOptions::default(),
+            ddrescue: DdrescueOptions::default(),
+            ext: ExtOptions::default(),
+            btrfs: BtrfsOptions::default(),
+            interpretation: Interpretation::default(),
+            ntfs: NtfsOptions::default(),
+            capture_metadata: false,
+            metadata_sequence: vec![],
         }
     }
 }
@@ -175,6 +287,7 @@ impl ScanOptions {
         if self.workspace.as_os_str().is_empty() {
             return fail("Choose a workspace directory.");
         }
+        super::options::validate(self)?;
         Ok(())
     }
     pub fn accepts(&self, name: &str, bytes: u64) -> bool {
@@ -231,6 +344,7 @@ pub struct RecoveryOptions {
     pub continue_on_error: bool,
     /// Restore every distinct recorded path instead of one copy per content group.
     pub restore_all_paths: bool,
+    pub preserve_linux_metadata: bool,
 }
 impl Default for RecoveryOptions {
     fn default() -> Self {
@@ -242,6 +356,7 @@ impl Default for RecoveryOptions {
             verify_after_write: true,
             continue_on_error: true,
             restore_all_paths: false,
+            preserve_linux_metadata: false,
         }
     }
 }
@@ -269,6 +384,20 @@ pub struct Candidate {
     pub sha256: Option<String>,
     #[serde(default)]
     pub consolidation_error: Option<String>,
+    #[serde(default)]
+    pub linux_metadata: Option<LinuxMetadata>,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct LinuxMetadata {
+    pub mode: Option<u32>,
+    pub uid: Option<u32>,
+    pub gid: Option<u32>,
+    pub xattrs: BTreeMap<String, Vec<u8>>,
+    pub link_target: Option<String>,
+    pub hardlink: Option<String>,
+    pub symbolic: bool,
 }
 
 fn one() -> u64 {
@@ -304,6 +433,16 @@ pub struct Manifest {
     /// Present only after the complete grouping transaction has been committed.
     #[serde(default)]
     pub consolidation: Option<Consolidation>,
+    #[serde(default)]
+    pub imaging: Option<ImagingState>,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct ImagingState {
+    pub rescued: u64,
+    pub pending: u64,
+    pub bad: u64,
+    pub complete: bool,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -340,6 +479,8 @@ pub struct RecoveryRecord {
     pub verified: bool,
     pub error: Option<String>,
     pub timestamp: u64,
+    #[serde(default)]
+    pub metadata_warnings: Vec<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -351,6 +492,10 @@ pub enum Event {
     },
     Session(PathBuf),
     Candidates(u64),
+    Imaged {
+        directory: PathBuf,
+        progress: ImagingState,
+    },
     Finished {
         directory: PathBuf,
         cancelled: bool,

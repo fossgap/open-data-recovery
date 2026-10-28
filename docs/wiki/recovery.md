@@ -41,6 +41,7 @@ Validation checks source/storage identity, output path confinement and available
 | Preserve folder structure | On | Recreate recorded relative folders using confined output paths. Turning it off writes basenames into the destination. |
 | If a filename already exists | Rename | Create a new name for the recovered copy. The alternative is to skip that output. Neither choice overwrites an existing file. |
 | Preserve modification timestamps | On | Apply the recorded modification time when available; engine artifacts do not always retain an original file's timestamp. |
+| Preserve Linux file metadata | Off | Restore available file permissions, ownership, supported attributes, symbolic/hard links and sparse layout; capture must have been enabled during scanning. |
 | Verify SHA-256 after writing | On | Reread each written file and compare its SHA-256 with the digest computed after extraction/copy. |
 | Continue after individual file errors | On | Record a per-file error and continue with other selected files. Fatal job/storage failures and cancellation still stop the job. |
 | Recover every recorded path | Off; shown for consolidated scans | Write a copy for each distinct recorded path in each selected group, including alternate engine-generated names. The default writes one copy per group. |
@@ -83,3 +84,16 @@ open-data-recovery --recover /media/recovery/scans/SESSION \
 Add `--all-paths` to restore each distinct recorded path from selected groups, `--flat` to omit recorded folders, or `--skip` to skip existing destination names. All-paths and all-results are different: `--all-paths` controls copies within selected groups, while `--all` controls which groups/results are selected. The CLI uses the default timestamp, output-verification and continue-on-error settings.
 
 See the [recovery implementation](../../src/engine/jobs.rs), [recovery defaults](../../src/engine/types.rs) and [CLI options](../../src/main.rs) for the underlying behavior.
+
+## Optional Linux file metadata
+
+Enable **Capture available file metadata and links** in Custom Scan, then **Preserve Linux file metadata, links and sparse layout** in Recover. Both are off by default. TSK supplies file mode, owner/group IDs and link information. Retained metadata-engine artifacts supply attributes available in their extracted output; Btrfs is instructed to restore file metadata and extended attributes during extraction. Carvers generally cannot supply original Linux metadata.
+
+Original hard-link identity is preserved between selected destination files when available; identical contents alone do not imply a hard link. Workspace files are never linked into the destination. Symbolic links are recreated without following their targets and are not followed for previews. Without preservation enabled, captured symbolic-link candidates are skipped explicitly. Sparse writes/hole punching preserve file contents while avoiding allocation of large zero-filled regions when supported.
+
+Ordinary file permissions, owner/group IDs, user extended attributes and file POSIX ACLs are attempted. Permission or filesystem limitations are recorded per output as metadata warnings; successful content recovery is reported separately. Privilege-elevating permission bits and security/trusted attributes are not applied. Directory metadata is not reconstructed; newly created output directories retain ODR's private defaults. Missing original metadata cannot be reconstructed from engine-created defaults, and the option does not certify original-file integrity.
+
+```sh
+open-data-recovery --recover /media/recovery/scans/SESSION \
+  --destination /media/recovery/restored --all --preserve-linux-metadata
+```

@@ -27,7 +27,9 @@ Open Data Recovery (ODR) brings Sleuth Kit, TestDisk, PhotoRec and other recover
 
 - Disk and partition layout with support for raw/dd and E01 images, unlocked mappers and mounted local folders
 - Quick metadata scans, Deep content carving, and Full scans combining both
-- Custom scan filters, engine selection, byte ranges, timeouts and clone-first options
+- Custom Scan → Next → Scan plan, with engine-aware controls and an explicit metadata sequence
+- Extraction filters where supported, PhotoRec scope/families/JPEG controls, and resumable ddrescue imaging
+- Targeted ext, Btrfs and NTFS recovery, filesystem interpretation overrides, and optional Linux file metadata preservation
 - Read-only TestDisk lost-partition discovery, with saved reports and bounded partition scan targets
 - Persistent SQLite scans, selections, engine records and activity logs; reopen, compare or delete saved scans
 - Optional final consolidation of byte-identical findings, preserving all recorded names and engine details
@@ -82,7 +84,7 @@ Optional `open-data-recovery-engines` packages provide pinned RecuperaBit, Digle
 ## Usage
 
 1. Select a disk or partition, or use **File → Add source** for an image or mounted folder.
-2. Choose **Quick**, **Deep** or **Full**. Click **Scan** for the defaults, or its dropdown → **Custom…** for workspace and engine options.
+2. Choose **Quick**, **Deep** or **Full**. Click **Scan** for the defaults, or its dropdown → **Custom…** for workspace and engine options. In Custom Scan, click **Next**, inspect the scan plan, then **Start scan**.
 3. Review the results, filter or preview candidates, and select the files to restore.
 4. Click **Recover**, choose the destination and recovery options in the review dialog, then recover the selected files.
 5. Use **Scan → Saved Scan** to reopen, compare, scan again or delete saved attempts. For missing partitions, start with **Scan → Find lost partitions…**.

@@ -424,6 +424,93 @@ impl GuardedDir {
         }
         fail("Too many filename conflicts in the destination.")
     }
+    /// Create a link without following any destination component or replacing a name.
+    pub fn create_link(
+        &self,
+        original: &str,
+        preserve_tree: bool,
+        conflict: Conflict,
+        symbolic: Option<&str>,
+        hardlink: Option<&File>,
+    ) -> Result<Option<PathBuf>> {
+        self.check_identity()?;
+        let relative = safe_relative(original, preserve_tree)?;
+        let mut directory = self.directory.try_clone()?;
+        if let Some(parent) = relative.parent() {
+            for component in parent.components() {
+                let Component::Normal(name) = component else {
+                    return fail("Invalid recovered directory.");
+                };
+                directory = Self::child_directory(&directory, name.as_bytes(), self.device)?;
+            }
+        }
+        let name = relative
+            .file_name()
+            .ok_or_else(|| Error::Message("Missing link filename.".into()))?
+            .to_string_lossy();
+        let target = if let Some(target) = symbolic {
+            if target.len() > 4096 {
+                return fail("Symbolic link target exceeds 4096 bytes.");
+            }
+            CString::new(target)
+                .map_err(|_| Error::Message("Invalid symbolic link target.".into()))?
+        } else {
+            let file =
+                hardlink.ok_or_else(|| Error::Message("Missing hard-link source.".into()))?;
+            if !file.metadata()?.is_file() || file.metadata()?.dev() != self.device {
+                return fail(
+                    "Hard links must refer to a recovered regular file on the destination filesystem.",
+                );
+            }
+            CString::new(format!("/proc/self/fd/{}", file.as_raw_fd())).unwrap()
+        };
+        for suffix in 0..10000 {
+            let filename = if suffix == 0 {
+                name.to_string()
+            } else {
+                format!(
+                    "{} ({suffix}){}",
+                    Path::new(name.as_ref())
+                        .file_stem()
+                        .unwrap_or_default()
+                        .to_string_lossy(),
+                    Path::new(name.as_ref())
+                        .extension()
+                        .map(|e| format!(".{}", e.to_string_lossy()))
+                        .unwrap_or_default()
+                )
+            };
+            let encoded = CString::new(filename.as_bytes()).unwrap();
+            let result = unsafe {
+                if symbolic.is_some() {
+                    libc::symlinkat(target.as_ptr(), directory.as_raw_fd(), encoded.as_ptr())
+                } else {
+                    libc::linkat(
+                        libc::AT_FDCWD,
+                        target.as_ptr(),
+                        directory.as_raw_fd(),
+                        encoded.as_ptr(),
+                        libc::AT_SYMLINK_FOLLOW,
+                    )
+                }
+            };
+            if result == 0 {
+                return Ok(Some(
+                    self.path
+                        .join(relative.parent().unwrap_or(Path::new("")))
+                        .join(filename),
+                ));
+            }
+            let error = std::io::Error::last_os_error();
+            if error.kind() != std::io::ErrorKind::AlreadyExists {
+                return Err(error.into());
+            }
+            if conflict == Conflict::Skip {
+                return Ok(None);
+            }
+        }
+        fail("Too many filename conflicts in the destination.")
+    }
 }
 
 pub fn safe_relative(name: &str, preserve_tree: bool) -> Result<PathBuf> {

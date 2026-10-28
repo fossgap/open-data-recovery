@@ -174,8 +174,18 @@ pub(super) fn run(ui: &Rc<Live>) -> bool {
                 ui.widget::<gtk::CheckButton>("clone_first")
                     .set_active(false);
                 ui.custom_scan();
+                step = 60;
+            }
+            60 if ui.custom_versions.borrow().is_some() => {
                 let b = ui.dialog.borrow().clone().unwrap();
                 obj::<gtk::CheckButton>(&b, "existing").set_active(true);
+                obj::<gtk::Button>(&b, "confirm").emit_clicked();
+                assert!(obj::<gtk::Box>(&b, "plan_view").is_visible());
+                assert!(
+                    obj::<gtk::Label>(&b, "plan_summary")
+                        .text()
+                        .contains("2097152")
+                );
                 obj::<gtk::Button>(&b, "confirm").emit_clicked();
                 step = 7;
             }

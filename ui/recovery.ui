@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <interface>
   <object class="GtkStringList" id="destinations">
     <items>
@@ -146,6 +146,13 @@
               <object class="GtkCheckButton" id="timestamps">
                 <property name="label">Preserve modification timestamps</property>
                 <property name="active">true</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="linux_metadata">
+                <property name="label">Preserve Linux file metadata, links and sparse layout</property>
+                <property name="tooltip-text">Restore available captured file metadata. Unsupported permissions or attributes are reported in the recovery log.</property>
+                <property name="active">false</property>
               </object>
             </child>
             <child>

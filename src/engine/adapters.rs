@@ -9,6 +9,7 @@ use std::{
     collections::BTreeMap,
     fs::{self, File},
     io::{Read, Seek, SeekFrom, Write},
+    os::unix::fs::MetadataExt,
     path::{Path, PathBuf},
 };
 
@@ -140,10 +141,44 @@ pub trait Recoverer {
         output: &File,
         work: &Path,
         sector: u32,
+        filesystem: &str,
         control: &Control,
     ) -> Result<()>;
 }
 pub struct Adapter(pub String);
+pub fn magicrescue_recipes(extensions: &[String]) -> Result<Vec<PathBuf>> {
+    let mut all = vec![];
+    let mut matching = vec![];
+    let mut covered = std::collections::BTreeSet::new();
+    for entry in fs::read_dir("/usr/share/magicrescue/recipes")? {
+        let entry = entry?;
+        if !entry.file_type()?.is_file() {
+            continue;
+        }
+        let text = fs::read_to_string(entry.path())?;
+        let extension = text
+            .lines()
+            .find_map(|line| line.trim().strip_prefix("extension "))
+            .map(str::trim);
+        if let Some(extension) = extension {
+            all.push(entry.path());
+            if extensions.iter().any(|e| e == extension) {
+                covered.insert(extension.to_string());
+                matching.push(entry.path());
+            }
+        }
+    }
+    let mut recipes = if !extensions.is_empty() && extensions.iter().all(|e| covered.contains(e)) {
+        matching
+    } else {
+        all
+    };
+    recipes.sort();
+    if recipes.is_empty() {
+        return fail("Install Magicrescue recipes before scanning.");
+    }
+    Ok(recipes)
+}
 impl Adapter {
     fn directory(&self, store: &Store, offset: u64) -> Result<PathBuf> {
         let dir = store
@@ -166,11 +201,21 @@ pub fn checked(outcome: process::Outcome, tool: &str) -> Result<()> {
         ))
     }
 }
+#[cfg(test)]
 pub fn parse_body(
     line: &str,
     offset: u64,
     length: u64,
     version: &str,
+) -> Result<Option<Candidate>> {
+    parse_body_metadata(line, offset, length, version, false)
+}
+fn parse_body_metadata(
+    line: &str,
+    offset: u64,
+    length: u64,
+    version: &str,
+    capture: bool,
 ) -> Result<Option<Candidate>> {
     // Split from the right: a legal filename can itself contain '|'. NTFS addresses
     // such as 42-128-3 remain strings rather than being truncated to inode numbers.
@@ -182,7 +227,11 @@ pub fn parse_body(
         return fail("Missing filename in fls output.");
     };
     let mode = fields[7];
-    if mode.contains('d') || mode.starts_with('l') || mode.contains("/l") || fields[8] == "0" {
+    if mode.contains('d')
+        || mode.starts_with('V')
+        || (!capture && (mode.starts_with('l') || mode.contains("/l")))
+        || fields[8] == "0"
+    {
         return Ok(None);
     }
     let deleted = name.ends_with(" (deleted)") || name.contains(" (deleted-realloc)");
@@ -195,8 +244,38 @@ pub fn parse_body(
     let bytes = fields[4]
         .parse::<u64>()
         .map_err(|_| Error::Message("Invalid file size from fls.".into()))?;
+    let mut metadata = capture.then(|| {
+        super::metadata::from_body(
+            mode,
+            fields[6],
+            fields[5],
+            format!("tsk:{offset}:{}", fields[8]),
+        )
+    });
+    let mut path = name;
+    if let Some(metadata) = metadata.as_mut().filter(|m| m.symbolic) {
+        // fls appends " -> target". The inode's byte length disambiguates arrows
+        // inside either the filename or target; icat does not read inline symlinks.
+        if let Some(start) = usize::try_from(bytes)
+            .ok()
+            .and_then(|n| name.len().checked_sub(n))
+        {
+            if start >= 4
+                && name.is_char_boundary(start)
+                && name.get(start - 4..start) == Some(" -> ")
+            {
+                path = &name[..start - 4];
+                metadata.link_target = Some(name[start..].into());
+            }
+        }
+        if metadata.link_target.is_none() {
+            return fail(
+                "TSK returned a symbolic link whose target could not be decoded faithfully.",
+            );
+        }
+    }
     Ok(Some(Candidate {
-        path: name.trim_start_matches('/').into(),
+        path: path.trim_start_matches('/').into(),
         bytes,
         modified: fields[2].parse().unwrap_or(0),
         backend: "tsk".into(),
@@ -205,6 +284,7 @@ pub fn parse_body(
         offset_bytes: offset,
         length_bytes: length,
         deleted,
+        linux_metadata: metadata,
         ..Default::default()
     }))
 }
@@ -231,12 +311,24 @@ impl Scanner for Adapter {
             if !options.include_existing {
                 spec.arg("-d");
             }
+            if options.interpretation.filesystem != "auto" {
+                spec.arg("-f").arg(&options.interpretation.filesystem);
+            }
             spec.arg("/proc/self/fd/3");
+            if let Some(inode) = options.interpretation.directory_inode {
+                spec.arg(inode.to_string());
+            }
             let scope = c.store.manifest.source.scope.clone();
             let mut inserted = 0;
             c.store.begin_batch()?;
             let result = process::run(spec, c.control, |line| {
-                if let Some(candidate) = parse_body(line, c.offset, c.length, &version)? {
+                if let Some(candidate) = parse_body_metadata(
+                    line,
+                    c.offset,
+                    c.length,
+                    &version,
+                    options.capture_metadata,
+                )? {
                     if options.accepts(&candidate.path, candidate.bytes)
                         && scope.as_ref().is_none_or(|scope| {
                             Path::new(&format!("/{}", candidate.path)).starts_with(scope)
@@ -273,40 +365,37 @@ impl Scanner for Adapter {
                 if options.include_existing {
                     spec.arg("-e");
                 }
+                if options.interpretation.filesystem != "auto" {
+                    spec.arg("-f").arg(&options.interpretation.filesystem);
+                }
                 spec.arg(source).arg(&output);
             }
             "ext4magic" => {
                 fs::create_dir_all(&output)?;
-                spec.arg(source).args(&["-M", "-d"]).arg(&output);
+                spec.arg(source);
+                super::advanced::ext_arguments(&mut spec, "ext4magic", &options, &dir)?;
+                spec.arg("-d").arg(&output);
             }
             "extundelete" => {
-                spec.arg(source).args(&["--restore-all", "-o"]).arg(&output);
+                spec.arg(source);
+                super::advanced::ext_arguments(&mut spec, "extundelete", &options, &dir)?;
+                spec.arg("-o").arg(&output);
             }
             "ntfsundelete" => {
-                fs::create_dir_all(&output)?;
-                spec.arg(source)
-                    .args(&["--undelete", "--match", "*", "--truncate", "--destination"])
-                    .arg(&output);
+                let result = super::advanced::ntfs_extract(c, &dir, &output);
+                if output.exists() {
+                    import_artifacts(c, &output, &self.0, &version, false)?;
+                }
+                return result;
             }
             "btrfs" => {
                 fs::create_dir_all(&output)?;
-                spec.args(&["restore", "-i", "-s"]);
-                if let Some(root) = options.btrfs_root {
-                    spec.arg("-t").arg(root.to_string());
-                }
+                super::advanced::btrfs_arguments(&mut spec, &options);
                 spec.arg(source).arg(&output);
             }
             "testdisk" => {
-                if !c
-                    .store
-                    .manifest
-                    .source
-                    .filesystem
-                    .eq_ignore_ascii_case("ntfs")
-                {
-                    return fail(
-                        "TestDisk scripted undelete requires an NTFS partition. Use TSK for FAT/exFAT or whole disks.",
-                    );
+                if super::options::filesystem(&c.store.manifest.source, &options) != "ntfs" {
+                    return fail("TestDisk scripted undelete requires an NTFS partition.");
                 }
                 spec.args(&[
                     "/log",
@@ -376,18 +465,11 @@ impl Scanner for Adapter {
                     .arg(compatible_map);
             }
             "photorec" => {
-                let mut commands = String::from("partition_none,options,");
-                if options.low_memory {
-                    commands.push_str("lowmem,");
-                }
-                commands.push_str(if options.keep_corrupted {
-                    "keep_corrupted_file,"
-                } else {
-                    "keep_corrupted_file_no,"
-                });
-                commands.push_str("fileopt,everything,enable,wholespace,search");
-                // File families do not map one-to-one to suffixes (e.g. docx/zip).
-                // Scan all families, then apply the exact extension filter on import.
+                let commands = super::options::photorec_command(
+                    &options,
+                    super::options::filesystem(&c.store.manifest.source, &options),
+                    c.sector_size,
+                );
                 spec.arg("/d")
                     .arg(&output)
                     .args(&["/cmd", source, &commands]);
@@ -400,6 +482,23 @@ impl Scanner for Adapter {
                     .ok_or_else(|| {
                         Error::Message("Install Scalpel's signature configuration.".into())
                     })?;
+                let known: std::collections::BTreeSet<_> = original
+                    .lines()
+                    .filter_map(|line| {
+                        let fields: Vec<_> = line
+                            .trim_start()
+                            .trim_start_matches('#')
+                            .split_whitespace()
+                            .collect();
+                        (fields.len() >= 4
+                            && matches!(fields[1], "y" | "n")
+                            && fields[2].parse::<u64>().is_ok())
+                        .then(|| fields[0].to_string())
+                    })
+                    .chain(std::iter::once("png".into()))
+                    .collect();
+                let filter = !options.extensions.is_empty()
+                    && options.extensions.iter().all(|e| known.contains(e));
                 let mut enabled = String::new();
                 for line in original.lines() {
                     let candidate = line.trim_start().trim_start_matches('#').trim_start();
@@ -408,6 +507,9 @@ impl Scanner for Adapter {
                         && matches!(fields[1], "y" | "n")
                         && fields[2].parse::<u64>().is_ok()
                     {
+                        if filter && !options.extensions.iter().any(|e| e == fields[0]) {
+                            continue;
+                        }
                         if fields[0] == "png" {
                             continue;
                         } // Old distro examples use an invalid PNG footer.
@@ -415,7 +517,9 @@ impl Scanner for Adapter {
                         enabled.push('\n');
                     }
                 }
-                enabled.push_str("png y 67108864 \\x89\\x50\\x4e\\x47\\x0d\\x0a\\x1a\\x0a \\x49\\x45\\x4e\\x44\\xae\\x42\\x60\\x82\n");
+                if !filter || options.extensions.iter().any(|e| e == "png") {
+                    enabled.push_str("png y 67108864 \\x89\\x50\\x4e\\x47\\x0d\\x0a\\x1a\\x0a \\x49\\x45\\x4e\\x44\\xae\\x42\\x60\\x82\n");
+                }
                 if enabled.is_empty() {
                     return fail("No supported Scalpel signatures were found.");
                 }
@@ -427,16 +531,22 @@ impl Scanner for Adapter {
                     .arg(source);
             }
             "foremost" => {
-                spec.args(&["-t", "all", "-i", source, "-o"]).arg(&output);
+                spec.arg("-t")
+                    .arg(
+                        super::options::foremost_types(&options.extensions).unwrap_or("all".into()),
+                    )
+                    .args(&["-i", source, "-o"])
+                    .arg(&output);
             }
             "digler" => {
                 spec.args(&["scan", source, "--dump"]).arg(&output);
             }
             "magicrescue" => {
                 fs::create_dir_all(&output)?;
-                spec.args(&["-r", "/usr/share/magicrescue/recipes", "-d"])
-                    .arg(&output)
-                    .arg(source);
+                for recipe in magicrescue_recipes(&options.extensions)? {
+                    spec.arg("-r").arg(recipe);
+                }
+                spec.arg("-d").arg(&output).arg(source);
             }
             "recoverjpeg" => {
                 fs::create_dir_all(&output)?;
@@ -525,7 +635,7 @@ impl Scanner for Adapter {
     }
 }
 
-fn append_output(dir: &Path, line: &str) -> Result<()> {
+pub(super) fn append_output(dir: &Path, line: &str) -> Result<()> {
     use std::fs::OpenOptions;
     let mut log = OpenOptions::new()
         .create(true)
@@ -552,6 +662,7 @@ fn import_artifacts(
         version: &str,
         carved: bool,
         depth: usize,
+        link_metadata: &mut BTreeMap<(u64, u64), LinuxMetadata>,
     ) -> Result<()> {
         if depth > 128 {
             return fail("Backend artifact nesting exceeds 128 levels.");
@@ -559,14 +670,25 @@ fn import_artifacts(
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
             let kind = entry.file_type()?;
-            if kind.is_symlink() {
+            let preserve = c.store.manifest.options.capture_metadata && !carved;
+            if kind.is_symlink() && !preserve {
                 continue;
             }
             if kind.is_dir() {
-                visit(c, root, &entry.path(), backend, version, carved, depth + 1)?;
+                super::metadata::prepare_artifact(&entry.path(), true)?;
+                visit(
+                    c,
+                    root,
+                    &entry.path(),
+                    backend,
+                    version,
+                    carved,
+                    depth + 1,
+                    link_metadata,
+                )?;
                 continue;
             }
-            if !kind.is_file() {
+            if !kind.is_file() && !kind.is_symlink() {
                 continue;
             }
             let path = entry.path();
@@ -579,6 +701,8 @@ fn import_artifacts(
                 entry.file_name().to_str(),
                 Some(
                     "engine.log"
+                        | "commands.jsonl"
+                        | "saved-journal.bin"
                         | "testdisk.log"
                         | "photorec.log"
                         | "report.xml"
@@ -589,7 +713,7 @@ fn import_artifacts(
             ) {
                 continue;
             }
-            let meta = entry.metadata()?;
+            let meta = fs::symlink_metadata(&path)?;
             if !c.store.manifest.options.accepts(&name, meta.len()) {
                 continue;
             }
@@ -608,6 +732,23 @@ fn import_artifacts(
                 .map_err(|_| Error::Message("Invalid artifact location.".into()))?
                 .to_string_lossy()
                 .into_owned();
+            let linux_metadata = if preserve {
+                let key = (meta.dev(), meta.ino());
+                if let Some(captured) = link_metadata.get(&key) {
+                    Some(captured.clone())
+                } else {
+                    let captured = super::metadata::capture_artifact(&path)?;
+                    if meta.nlink() > 1 && kind.is_file() {
+                        link_metadata.insert(key, captured.clone());
+                    }
+                    Some(captured)
+                }
+            } else {
+                None
+            };
+            if kind.is_file() {
+                super::metadata::prepare_artifact(&path, false)?;
+            }
             c.store.insert(&Candidate {
                 path: format!("{backend}/{name}"),
                 bytes: meta.len(),
@@ -622,7 +763,12 @@ fn import_artifacts(
                 locator: artifact.clone(),
                 offset_bytes: c.offset,
                 length_bytes: c.length,
-                artifact: Some(artifact),
+                artifact: if kind.is_symlink() {
+                    None
+                } else {
+                    Some(artifact)
+                },
+                linux_metadata,
                 carved,
                 deleted: !carved,
                 ..Default::default()
@@ -631,7 +777,16 @@ fn import_artifacts(
         Ok(())
     }
     c.store.begin_batch()?;
-    let result = visit(c, root, root, backend, version, carved, 0);
+    let result = visit(
+        c,
+        root,
+        root,
+        backend,
+        version,
+        carved,
+        0,
+        &mut BTreeMap::new(),
+    );
     c.store.commit_batch()?;
     result?;
     (c.notify)(Event::Candidates(c.store.count()?));
@@ -646,6 +801,7 @@ impl Recoverer for Adapter {
         output: &File,
         work: &Path,
         sector: u32,
+        filesystem: &str,
         control: &Control,
     ) -> Result<()> {
         if self.0 != "tsk" {
@@ -670,9 +826,11 @@ impl Recoverer for Adapter {
         spec.args(&["-r", "-b"])
             .arg(sector.to_string())
             .arg("-o")
-            .arg((candidate.offset_bytes / sector as u64).to_string())
-            .arg("/proc/self/fd/3")
-            .arg(&candidate.locator);
+            .arg((candidate.offset_bytes / sector as u64).to_string());
+        if filesystem != "auto" {
+            spec.arg("-f").arg(filesystem);
+        }
+        spec.arg("/proc/self/fd/3").arg(&candidate.locator);
         checked(process::run(spec, control, |_| Ok(()))?, "icat")
     }
 }

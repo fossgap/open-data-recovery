@@ -89,6 +89,7 @@ impl Store {
               length_bytes INTEGER NOT NULL, artifact TEXT, carved INTEGER NOT NULL, deleted INTEGER NOT NULL,
               UNIQUE(backend,locator,offset_bytes,path));
             CREATE INDEX candidate_path ON candidates(path); CREATE INDEX candidate_backend ON candidates(backend);
+            CREATE TABLE linux_metadata(candidate_id INTEGER PRIMARY KEY, metadata TEXT NOT NULL);
             PRAGMA user_version=1;")?;
         let scan_lock = if options.consolidate {
             let file = OpenOptions::new()
@@ -123,6 +124,7 @@ impl Store {
             candidate_count: 0,
             complete: false,
             consolidation: None,
+            imaging: None,
         };
         let mut store = Self {
             directory,
@@ -183,6 +185,17 @@ impl Store {
             return fail("Candidate exceeds supported byte-address range.");
         }
         self.connection.execute("INSERT OR IGNORE INTO candidates(path,bytes,modified,backend,backend_version,locator,offset_bytes,length_bytes,artifact,carved,deleted) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)", params![file.path,file.bytes as i64,file.modified,file.backend,file.backend_version,file.locator,file.offset_bytes as i64,file.length_bytes as i64,file.artifact,file.carved,file.deleted])?;
+        if self.connection.changes() > 0 {
+            if let Some(metadata) = &file.linux_metadata {
+                self.connection.execute(
+                    "INSERT INTO linux_metadata VALUES(?1,?2)",
+                    params![
+                        self.connection.last_insert_rowid(),
+                        serde_json::to_string(metadata)?
+                    ],
+                )?;
+            }
+        }
         Ok(())
     }
     pub fn begin_batch(&self) -> Result<()> {
@@ -211,6 +224,7 @@ impl Store {
             [id],
             row_candidate,
         )?;
+        self.attach_metadata(&mut file)?;
         if file.backend_version.is_empty() {
             file.backend_version = self
                 .manifest
@@ -220,6 +234,41 @@ impl Store {
                 .unwrap_or_else(|| "unknown (legacy scan)".into());
         }
         Ok(file)
+    }
+    pub(super) fn metadata(&self, raw_id: i64) -> Result<Option<LinuxMetadata>> {
+        use rusqlite::OptionalExtension;
+        let exists: bool = self.connection.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_master WHERE name='linux_metadata' AND type='table')",[],|r|r.get(0))?;
+        if !exists {
+            return Ok(None);
+        }
+        let json: Option<String> = self
+            .connection
+            .query_row(
+                "SELECT metadata FROM linux_metadata WHERE candidate_id=?1",
+                [raw_id],
+                |r| r.get(0),
+            )
+            .optional()?;
+        json.map(|s| {
+            if s.len() > 1024 * 1024 {
+                return fail("Saved Linux metadata exceeds 1 MiB.");
+            }
+            Ok(serde_json::from_str(&s)?)
+        })
+        .transpose()
+    }
+    fn attach_metadata(&self, file: &mut Candidate) -> Result<()> {
+        let id = if self.consolidated() {
+            self.connection.query_row(
+                "SELECT representative_id FROM consolidated_groups WHERE id=?1",
+                [file.id],
+                |r| r.get(0),
+            )?
+        } else {
+            file.id
+        };
+        file.linux_metadata = self.metadata(id)?;
+        Ok(())
     }
     pub fn consolidated(&self) -> bool {
         self.manifest.consolidation.is_some()
@@ -241,9 +290,13 @@ impl Store {
         let mut statement = self.connection.prepare(&format!(
             "SELECT {} FROM candidates WHERE id IN (SELECT candidate_id FROM consolidated_members WHERE group_id=?1 AND candidate_id>?2 ORDER BY candidate_id LIMIT 100) ORDER BY id",
             native_projection()))?;
-        Ok(statement
+        let mut files = statement
             .query_map(params![group, after], row_candidate)?
-            .collect::<std::result::Result<Vec<_>, _>>()?)
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        for file in &mut files {
+            file.linux_metadata = self.metadata(file.id)?;
+        }
+        Ok(files)
     }
 
     /// Each distinct recorded path, with the group's verified canonical content.
@@ -256,12 +309,15 @@ impl Store {
             });
         }
         let mut statement = self.connection.prepare(
-            "SELECT p.path,c.modified FROM consolidated_paths p JOIN candidates c ON c.id=p.candidate_id WHERE p.group_id=?1 AND (?2 IS NULL OR p.path>?2) ORDER BY p.path LIMIT 100")?;
+            "SELECT p.path,c.modified,c.id FROM consolidated_paths p JOIN candidates c ON c.id=p.candidate_id WHERE p.group_id=?1 AND (?2 IS NULL OR p.path>?2) ORDER BY p.path LIMIT 100")?;
         Ok(statement
             .query_map(params![file.id, after], |row| {
                 let mut candidate = file.clone();
                 candidate.path = row.get(0)?;
                 candidate.modified = row.get(1)?;
+                candidate.linux_metadata = self
+                    .metadata(row.get(2)?)
+                    .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))?;
                 Ok(candidate)
             })?
             .collect::<std::result::Result<Vec<_>, _>>()?)
@@ -298,6 +354,7 @@ impl Store {
             .collect::<std::result::Result<Vec<_>, _>>()?;
         let selection = self.selection_read()?;
         for file in &mut files {
+            self.attach_metadata(file)?;
             if let Some(selection) = &selection {
                 file.selected = selection.query_row(
                     "SELECT EXISTS(SELECT 1 FROM selected WHERE id=?1)",
@@ -358,7 +415,7 @@ impl Store {
         let _selection_lock = if self.manifest.options.consolidate
             && matches!(
                 self.manifest.state.as_str(),
-                "preparing" | "scanning" | "consolidating"
+                "preparing" | "imaging" | "scanning" | "consolidating"
             ) {
             let file = File::open(safety::confined_artifact(&self.directory, "tree.sqlite")?)?;
             if unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_SH | libc::LOCK_NB) } != 0 {
@@ -529,6 +586,7 @@ pub(super) fn row_candidate(row: &rusqlite::Row<'_>) -> rusqlite::Result<Candida
         paths: row.get::<_, i64>(13)?.max(1) as u64,
         sha256: row.get(14)?,
         consolidation_error: row.get(15)?,
+        linux_metadata: None,
     })
 }
 fn legacy_projection(connection: &Connection) -> Result<(String, String)> {

@@ -89,7 +89,11 @@ impl Finalizer<'_> {
                     candidate,
                     &file,
                     &self.cache.path,
-                    self.store.manifest.source.sector_size,
+                    super::options::sector(
+                        &self.store.manifest.source,
+                        &self.store.manifest.options,
+                    ),
+                    &self.store.manifest.options.interpretation.filesystem,
                     self.control,
                 )
                 .and_then(|()| Ok(file.sync_all()?));
@@ -179,7 +183,11 @@ impl Finalizer<'_> {
             } else {
                 0
             })?;
-        let group = if unique_size {
+        let symbolic = self
+            .store
+            .metadata(candidate.id)?
+            .is_some_and(|m| m.symbolic);
+        let group = if unique_size || symbolic {
             self.singleton(&candidate, None, None)?
         } else {
             match self.content(&candidate) {

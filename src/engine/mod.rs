@@ -1,11 +1,18 @@
 pub mod adapters;
+pub mod advanced;
+#[cfg(test)]
+mod advanced_tests;
 pub mod consolidation;
 #[cfg(test)]
 mod consolidation_tests;
 pub mod discovery;
 #[cfg(test)]
 mod discovery_tests;
+pub mod imaging;
 pub mod jobs;
+pub mod metadata;
+pub mod options;
+pub mod plan;
 pub mod process;
 pub mod safety;
 pub mod sessions;

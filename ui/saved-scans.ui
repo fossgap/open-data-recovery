@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <interface>
   <object class="GtkWindow" id="dialog">
     <property name="title">Saved scans</property>
@@ -57,6 +57,12 @@
                 <property name="label">Refresh</property>
               </object>
             </child>
+            <child>
+              <object class="GtkButton" id="resume_imaging">
+                <property name="label">Resume imaging…</property>
+                <property name="sensitive">false</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>
@@ -105,7 +111,11 @@
                 <property name="tooltip-text">Permanently delete the selected saved-scan folder and its contents.</property>
               </object>
             </child>
-            <child><object class="GtkLabel"><property name="hexpand">true</property></object></child>
+            <child>
+              <object class="GtkLabel">
+                <property name="hexpand">true</property>
+              </object>
+            </child>
             <child>
               <object class="GtkButton" id="close">
                 <property name="label">Close</property>

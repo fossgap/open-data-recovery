@@ -23,7 +23,7 @@ impl Lease {
     pub(crate) fn shared(path: &Path) -> Result<Self> {
         Self::acquire(path, false)
     }
-    fn acquire(path: &Path, exclusive: bool) -> Result<Self> {
+    pub(crate) fn acquire(path: &Path, exclusive: bool) -> Result<Self> {
         if safety::existing_parent(path)? != path {
             return fail("The saved-scan directory no longer exists.");
         }

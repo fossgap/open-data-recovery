@@ -13,7 +13,7 @@ use super::{
 use sha2::{Digest, Sha256};
 use std::{
     fs::{self, File, OpenOptions},
-    io::{Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, SeekFrom},
     os::unix::fs::OpenOptionsExt,
     path::{Path, PathBuf},
     sync::mpsc::{self, Receiver, SyncSender},
@@ -26,7 +26,10 @@ pub struct Job {
 }
 fn send(tx: &SyncSender<Event>, event: Event) {
     match event {
-        Event::Finished { .. } | Event::Recovered { .. } | Event::Session(_) => {
+        Event::Finished { .. }
+        | Event::Imaged { .. }
+        | Event::Recovered { .. }
+        | Event::Session(_) => {
             let _ = tx.send(event);
         }
         _ => {
@@ -103,6 +106,22 @@ pub fn restart(directory: PathBuf) -> Job {
     });
     Job { control, events }
 }
+pub fn start_imaging_resume(directory: PathBuf, tuning: DdrescueOptions, retries: u32) -> Job {
+    let control = Control::default();
+    let worker = control.clone();
+    let (tx, events) = mpsc::sync_channel(128);
+    thread::spawn(move || {
+        let notify = |event| send(&tx, event);
+        if let Err(error) = super::imaging::resume(&directory, tuning, retries, &worker, &notify) {
+            notify(Event::Finished {
+                directory,
+                cancelled: matches!(error, Error::Cancelled),
+                error: Some(error.to_string()),
+            });
+        }
+    });
+    Job { control, events }
+}
 pub fn scan(
     source: SourceDescriptor,
     options: ScanOptions,
@@ -169,48 +188,16 @@ fn scan_attempt(
     // Validation precedes creating a log, cache, database or output directory.
     safety::validate_storage(&source, &options.workspace, 0)?;
     let versions = adapters::versions();
-    let carve_only = matches!(
-        source.filesystem.to_ascii_lowercase().as_str(),
-        "xfs" | "apfs" | "hfs" | "hfsplus"
-    );
-    let metadata = if options.mode != Mode::Deep && !carve_only {
-        let mut plan = vec![adapters::metadata_engine(&source, &options, &versions)?];
-        if options.metadata_backend == "auto" && source.scope.is_none() {
-            let extras: &[&str] = match source.filesystem.to_ascii_lowercase().as_str() {
-                "ext3" | "ext4" => &["ext4magic", "extundelete"],
-                "ntfs" => &["ntfsundelete", "recuperabit", "testdisk"],
-                _ => &[],
-            };
-            plan.extend(
-                extras
-                    .iter()
-                    .filter(|name| versions.contains_key(**name))
-                    .map(|name| (*name).to_string()),
-            );
-        }
-        plan
-    } else {
-        vec![]
-    };
-    if options.mode == Mode::Quick && carve_only {
-        return fail(
-            "This filesystem is supported through Deep content carving. Choose Deep scan.",
-        );
-    }
-    let carver = if options.mode != Mode::Quick {
-        Some(adapters::carving_engine(&options, &versions)?)
-    } else {
-        None
-    };
-    if options.clone_first && !["ddrescue", "safecopy"].contains(&options.clone_backend.as_str()) {
-        return fail("Choose ddrescue or safecopy for cloning.");
-    }
+    let plan = super::plan::resolve(&source, &options, &versions)?;
+    let metadata = plan.metadata.clone();
+    let carver = plan.carver.clone();
     let input = if let Some(path) = &retained {
         File::open(path)?
     } else {
         sources::open_readonly(&source)?
     };
     let mut store = Store::create(&source, &options, versions)?;
+    super::store::write_json(&store.directory.join("plan.json"), &plan)?;
     notify(Event::Session(store.directory.clone()));
     if source.mounted {
         notify(Event::Message("Live source: other applications can still change the mounted filesystem. A clone of a live filesystem may be inconsistent.".into()));
@@ -261,7 +248,7 @@ fn scan_attempt(
             let work = store.directory.join("artifacts/partition-table");
             fs::create_dir_all(&work)?;
             let ranges = if engine == "tsk" && store.manifest.source.scope.is_none() {
-                adapters::partitions(&input, &work, source.sector_size, input_size, control)?
+                adapters::partitions(&input, &work, plan.sector_size, input_size, control)?
             } else {
                 vec![(0, input_size)]
             };
@@ -274,7 +261,7 @@ fn scan_attempt(
                     notify,
                     offset,
                     length,
-                    sector_size: source.sector_size,
+                    sector_size: plan.sector_size,
                 };
                 if let Err(error) = Adapter(engine.clone()).scan(&mut context) {
                     if matches!(error, Error::Cancelled) {
@@ -298,7 +285,7 @@ fn scan_attempt(
                 notify,
                 offset: 0,
                 length: input_size,
-                sector_size: source.sector_size,
+                sector_size: plan.sector_size,
             };
             if let Err(error) = Adapter(engine).scan(&mut context) {
                 if matches!(error, Error::Cancelled) {
@@ -390,15 +377,39 @@ fn prepare(
         store.manifest.scan_input = Some("ewf.raw".into());
         store.save()?;
     }
-    if options.clone_first {
+    if options.clone_first && options.clone_backend == "ddrescue" {
+        store.manifest.clone = Some("clone/clone.img".into());
+        store.manifest.clone_map = Some("clone/clone.map".into());
+        store.manifest.state = "imaging".into();
+        store.save()?;
+        let result = super::imaging::acquire(
+            &store.directory,
+            &store.manifest.source,
+            &input,
+            &options,
+            false,
+            control,
+            notify,
+        );
+        store.manifest.imaging =
+            super::imaging::read_map(&store.directory.join("clone/clone.map"), size)
+                .ok()
+                .map(|v| v.0);
+        store.save()?;
+        let state = result?;
+        if !state.complete {
+            return fail(
+                "Imaging has unread regions. The clone and map are retained; use Saved scans → Resume imaging to continue, or Scan again to explicitly scan the partial image.",
+            );
+        }
+        input = File::open(store.directory.join("clone/clone.img"))?;
+        store.manifest.scan_input = store.manifest.clone.clone();
+        store.save()?;
+    } else if options.clone_first {
         let work = store.directory.join("clone");
         fs::create_dir(&work)?;
         let target = work.join("clone.img");
-        let map = work.join(if options.clone_backend == "ddrescue" {
-            "clone.map"
-        } else {
-            "clone.badblocks"
-        });
+        let map = work.join("clone.badblocks");
         notify(Event::Stage {
             text: format!("Cloning source · {}", options.clone_backend),
             fraction: None,
@@ -406,21 +417,12 @@ fn prepare(
         let mut spec = Spec::new(&options.clone_backend, &work);
         spec.source(&input)?;
         spec.timeout = options.timeout_seconds;
-        if options.clone_backend == "ddrescue" {
-            spec.arg("-n")
-                .arg("-r")
-                .arg(options.retry_passes.to_string())
-                .arg("/proc/self/fd/3")
-                .arg(&target)
-                .arg(&map);
-        } else {
-            spec.args(&["--stage1", "-L", "0", "-Z", "0", "-R"])
-                .arg((options.retry_passes + 1).to_string())
-                .arg("-o")
-                .arg(&map)
-                .arg("/proc/self/fd/3")
-                .arg(&target);
-        }
+        spec.args(&["--stage1", "-L", "0", "-Z", "0", "-R"])
+            .arg((options.retry_passes + 1).to_string())
+            .arg("-o")
+            .arg(&map)
+            .arg("/proc/self/fd/3")
+            .arg(&target);
         // Retain clone/map paths before running so interrupted clones remain discoverable.
         store.manifest.clone = Some("clone/clone.img".into());
         store.manifest.clone_map = Some(format!(
@@ -586,6 +588,8 @@ pub fn recover(
     fs::create_dir_all(&jobdir)?;
     let (mut successful, mut failed, mut skipped, mut after) = (0, 0, 0, 0);
     let mut input = None;
+    let mut hardlinks: std::collections::BTreeMap<String, (PathBuf, String)> =
+        std::collections::BTreeMap::new();
     loop {
         let candidates = store.selected_page(after)?;
         if candidates.is_empty() {
@@ -618,8 +622,115 @@ pub fn recover(
                         verified: false,
                         error: None,
                         timestamp: timestamp(),
+                        metadata_warnings: vec![],
                     };
                     let result = (|| -> Result<bool> {
+                        if candidate
+                            .linux_metadata
+                            .as_ref()
+                            .is_some_and(|m| m.symbolic)
+                        {
+                            if !options.preserve_linux_metadata {
+                                record.error=Some("Skipped symbolic link: Linux metadata preservation is disabled.".into());
+                                return Ok(false);
+                            }
+                            let metadata = candidate.linux_metadata.as_ref().unwrap();
+                            let target = if let Some(target) = &metadata.link_target {
+                                target.clone()
+                            } else {
+                                if input.is_none() {
+                                    input = Some(input_for(&store)?);
+                                }
+                                let temporary =
+                                    jobdir.join(format!("link-{}-{}", candidate.id, timestamp()));
+                                let mut file = new_file(&temporary)?;
+                                let result = Adapter(candidate.backend.clone()).recover(
+                                    input.as_ref().unwrap(),
+                                    &candidate,
+                                    &file,
+                                    &jobdir,
+                                    super::options::sector(&source, &store.manifest.options),
+                                    &store.manifest.options.interpretation.filesystem,
+                                    control,
+                                );
+                                let text = (|| {
+                                    result?;
+                                    file.seek(SeekFrom::Start(0))?;
+                                    let mut text = String::new();
+                                    file.take(4097).read_to_string(&mut text)?;
+                                    if text.len() > 4096 {
+                                        return fail("Symbolic link target is too long.");
+                                    }
+                                    Ok(text)
+                                })();
+                                let _ = fs::remove_file(temporary);
+                                text?
+                            };
+                            record.output_path = output.create_link(
+                                &candidate.path,
+                                options.preserve_tree,
+                                options.conflict,
+                                Some(&target),
+                                None,
+                            )?;
+                            if let Some(path) = &record.output_path {
+                                record.bytes = target.len() as u64;
+                                record.sha256 =
+                                    Some(format!("{:x}", Sha256::digest(target.as_bytes())));
+                                if options.verify_after_write {
+                                    record.verified = fs::read_link(path)?.as_os_str()
+                                        == std::ffi::OsStr::new(&target);
+                                    if !record.verified {
+                                        return fail("Symbolic link verification failed.");
+                                    }
+                                }
+                                return Ok(true);
+                            }
+                            return Ok(false);
+                        }
+                        let link_key = if options.preserve_linux_metadata {
+                            candidate
+                                .linux_metadata
+                                .as_ref()
+                                .and_then(|m| m.hardlink.clone())
+                                .map(|key| format!("{}:{key}", candidate.backend))
+                        } else {
+                            None
+                        };
+                        if let Some((first, digest)) =
+                            link_key.as_ref().and_then(|k| hardlinks.get(k))
+                        {
+                            let existing = OpenOptions::new()
+                                .read(true)
+                                .custom_flags(libc::O_NOFOLLOW)
+                                .open(first);
+                            if let Ok(mut existing) = existing {
+                                if existing.metadata()?.len() == candidate.bytes
+                                    && hash_file(&mut existing, control)? == *digest
+                                {
+                                    match output.create_link(
+                                        &candidate.path,
+                                        options.preserve_tree,
+                                        options.conflict,
+                                        None,
+                                        Some(&existing),
+                                    ) {
+                                        Ok(path) => {
+                                            record.output_path = path;
+                                            record.bytes = candidate.bytes;
+                                            record.sha256 = Some(digest.clone());
+                                            record.verified = options.verify_after_write;
+                                            return Ok(record.output_path.is_some());
+                                        }
+                                        Err(error) => record.metadata_warnings.push(format!(
+                                            "Hard link unavailable; writing a copy: {error}"
+                                        )),
+                                    }
+                                }
+                            } else {
+                                record.metadata_warnings.push("Hard link unavailable after restoring permissions; writing a copy.".into());
+                            }
+                        }
                         let Some((mut file, path)) = output.create_file(
                             &candidate.path,
                             options.preserve_tree,
@@ -632,16 +743,12 @@ pub fn recover(
                         if let Some(artifact) = &candidate.artifact {
                             let mut original =
                                 File::open(safety::confined_artifact(&store.directory, artifact)?)?;
-                            let mut buffer = vec![0; 1024 * 1024];
-                            loop {
-                                control.checkpoint()?;
-                                let count = original.read(&mut buffer)?;
-                                if count == 0 {
-                                    break;
-                                }
-                                file.write_all(&buffer[..count])?;
-                                record.bytes += count as u64;
-                            }
+                            record.bytes = super::metadata::copy(
+                                &mut original,
+                                &mut file,
+                                options.preserve_linux_metadata,
+                                control,
+                            )?;
                         } else {
                             if input.is_none() {
                                 input = Some(input_for(&store)?);
@@ -651,9 +758,20 @@ pub fn recover(
                                 &candidate,
                                 &file,
                                 &jobdir,
-                                source.sector_size,
+                                super::options::sector(&source, &store.manifest.options),
+                                &store.manifest.options.interpretation.filesystem,
                                 control,
                             )?;
+                        }
+                        if options.preserve_linux_metadata && candidate.artifact.is_none() {
+                            if let Err(error) = super::metadata::sparsify(&mut file, control) {
+                                if matches!(error, Error::Cancelled) {
+                                    return Err(error);
+                                }
+                                record
+                                    .metadata_warnings
+                                    .push(format!("Sparse layout unavailable: {error}"));
+                            }
                         }
                         file.sync_all()?;
                         record.bytes = file.metadata()?.len();
@@ -689,14 +807,33 @@ pub fn recover(
                                     + std::time::Duration::from_secs(candidate.modified as u64),
                             ))?;
                         }
+                        if options.preserve_linux_metadata {
+                            if let Some(metadata) = &candidate.linux_metadata {
+                                record
+                                    .metadata_warnings
+                                    .extend(super::metadata::apply(&file, metadata));
+                            } else {
+                                record.metadata_warnings.push(
+                                    "No Linux metadata was supplied by this scan/engine.".into(),
+                                );
+                            }
+                            if let Some(key) = link_key {
+                                hardlinks.insert(
+                                    key,
+                                    (record.output_path.as_ref().unwrap().clone(), digest),
+                                );
+                            }
+                        }
                         Ok(true)
                     })();
                     match &result {
                         Ok(true) => successful += 1,
                         Ok(false) => {
                             skipped += 1;
-                            record.error =
-                                Some("Skipped: a destination filename already exists.".into());
+                            if record.error.is_none() {
+                                record.error =
+                                    Some("Skipped: a destination filename already exists.".into());
+                            }
                         }
                         Err(error) => {
                             failed += 1;
@@ -707,6 +844,9 @@ pub fn recover(
                                 }
                             }
                         }
+                    }
+                    for warning in &record.metadata_warnings {
+                        notify(Event::Message(format!("{}: {warning}", candidate.path)));
                     }
                     store.record_recovery(&record)?;
                     notify(Event::Stage {
@@ -752,6 +892,15 @@ pub fn hash_file(file: &mut File, control: &Control) -> Result<String> {
 pub fn preview(directory: &Path, id: i64) -> Result<PathBuf> {
     let store = Store::open(directory)?;
     let candidate = store.get(id)?;
+    if candidate
+        .linux_metadata
+        .as_ref()
+        .is_some_and(|m| m.symbolic)
+    {
+        return fail(
+            "Symbolic links are never followed for previews. Inspect their saved metadata instead.",
+        );
+    }
     if candidate.bytes > 8 * 1024 * 1024 {
         return fail(
             "Preview is limited to files up to 8 MiB. Recover this file to inspect it externally.",
@@ -785,7 +934,8 @@ pub fn preview(directory: &Path, id: i64) -> Result<PathBuf> {
         &candidate,
         &file,
         &dir,
-        source.sector_size,
+        super::options::sector(&source, &store.manifest.options),
+        &store.manifest.options.interpretation.filesystem,
         &control,
     );
     if result.is_err() {

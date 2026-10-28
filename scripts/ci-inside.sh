@@ -9,6 +9,7 @@ for engine in recuperabit digler ext4rescue; do command -v "$engine" >/dev/null;
 cargo fmt --all -- --check
 xvfb-run -a sh scripts/check.sh --inside
 sh scripts/check-engines.sh
+sh scripts/check-ui-advanced.sh
 ODR_TEST_STORAGE=/tmp ODR_CONSOLIDATE=1 ODR_MANAGE_SCANS=1 sh scripts/check-ui-recovery.sh
 ODR_TEST_STORAGE=/tmp sh scripts/check-ui-partitions.sh
 if [ "$mode" = release ]; then

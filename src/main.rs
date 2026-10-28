@@ -20,9 +20,11 @@ fn cli(args: &[String]) -> engine::Result<()> {
                 "--extensions",
                 "--metadata",
                 "--carver",
+                "--options",
             ],
-            &["--clone", "--include-existing", "--consolidate"],
+            &["--clone", "--include-existing", "--consolidate", "--plan"],
         ),
+        "--resume-imaging" => (&["--resume-imaging", "--options"], &[]),
         "--discover-partitions" => (
             &[
                 "--discover-partitions",
@@ -34,7 +36,13 @@ fn cli(args: &[String]) -> engine::Result<()> {
         ),
         "--recover" => (
             &["--recover", "--destination", "--ids"],
-            &["--all", "--flat", "--skip", "--all-paths"],
+            &[
+                "--all",
+                "--flat",
+                "--skip",
+                "--all-paths",
+                "--preserve-linux-metadata",
+            ],
         ),
         "--list" => (&["--list"], &[]),
         "--findings" => (&["--findings", "--id"], &[]),
@@ -88,6 +96,23 @@ fn cli(args: &[String]) -> engine::Result<()> {
                 .unwrap_or_default()
         ),
         Event::Candidates(count) => eprintln!("{count} candidates"),
+        Event::Imaged {
+            directory,
+            progress,
+        } => {
+            println!("SAVED={}", directory.display());
+            eprintln!(
+                "Imaging {}: {} rescued bytes, {} pending, {} bad. Use Saved scans → Scan again to scan the retained image.",
+                if progress.complete {
+                    "complete"
+                } else {
+                    "stopped"
+                },
+                progress.rescued,
+                progress.pending,
+                progress.bad
+            );
+        }
         Event::Finished {
             directory,
             cancelled,
@@ -110,6 +135,21 @@ fn cli(args: &[String]) -> engine::Result<()> {
             println!("Recovered {successful}; failed {failed}; skipped {skipped}");
         }
     };
+    if args[0] == "--resume-imaging" {
+        let directory = PathBuf::from(argument(args, "--resume-imaging")?);
+        let options: ScanOptions = if seen.contains("--options") {
+            engine::read_json(&PathBuf::from(argument(args, "--options")?))?
+        } else {
+            Store::open(&directory)?.manifest.options
+        };
+        return engine::imaging::resume(
+            &directory,
+            options.ddrescue,
+            options.retry_passes,
+            &engine::process::Control::default(),
+            &notify,
+        );
+    }
     if args[0] == "--backends" {
         for (name, version) in engine::adapters::versions() {
             println!("{name}: {version}");
@@ -220,10 +260,16 @@ fn cli(args: &[String]) -> engine::Result<()> {
         } else {
             engine::sources::inspect(&PathBuf::from(argument(args, "--scan")?))?
         };
-        let mut options = ScanOptions {
-            workspace: PathBuf::from(argument(args, "--workspace")?),
-            ..Default::default()
+        let mut options: ScanOptions = if seen.contains("--options") {
+            engine::read_json(&PathBuf::from(argument(args, "--options")?))?
+        } else {
+            ScanOptions::default()
         };
+        if seen.contains("--workspace") {
+            options.workspace = PathBuf::from(argument(args, "--workspace")?);
+        } else if !seen.contains("--options") && !seen.contains("--plan") {
+            return engine::fail("Provide --workspace or an --options file.");
+        }
         if args.contains(&"--mode".into()) {
             options.mode = match argument(args, "--mode")?.as_str() {
                 "quick" => Mode::Quick,
@@ -241,9 +287,23 @@ fn cli(args: &[String]) -> engine::Result<()> {
         if args.contains(&"--carver".into()) {
             options.carver = argument(args, "--carver")?;
         }
-        options.clone_first = args.contains(&"--clone".into());
-        options.include_existing = args.contains(&"--include-existing".into());
-        options.consolidate = args.contains(&"--consolidate".into());
+        if seen.contains("--clone") {
+            options.clone_first = true;
+        }
+        if seen.contains("--include-existing") {
+            options.include_existing = true;
+        }
+        if seen.contains("--consolidate") {
+            options.consolidate = true;
+        }
+        if seen.contains("--plan") {
+            let plan = engine::plan::resolve(&source, &options, &engine::adapters::versions())?;
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&serde_json::json!({"plan":plan,"options":options}))?
+            );
+            return Ok(());
+        }
         let dir = engine::jobs::scan(
             source,
             options,
@@ -290,6 +350,7 @@ fn cli(args: &[String]) -> engine::Result<()> {
         let options = RecoveryOptions {
             destination: PathBuf::from(argument(args, "--destination")?),
             preserve_tree: !args.contains(&"--flat".into()),
+            preserve_linux_metadata: seen.contains("--preserve-linux-metadata"),
             restore_all_paths: args.contains(&"--all-paths".into()),
             conflict: if args.contains(&"--skip".into()) {
                 Conflict::Skip
@@ -316,7 +377,7 @@ fn main() -> gtk::glib::ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     if args.iter().any(|a| a == "--help" || a == "-h") {
         println!(
-            "Open Data Recovery\n\nUsage:\n  open-data-recovery                         Native GTK workspace\n  open-data-recovery --demo                  Safe fixture demonstration\n  open-data-recovery --sources | --backends\n  open-data-recovery --scan SOURCE --workspace DIRECTORY [--mode quick|deep|full]\n      [--extensions jpg,pdf] [--metadata ENGINE] [--carver ENGINE] [--clone] [--include-existing] [--consolidate]\n  open-data-recovery --discover-partitions SOURCE --workspace DIRECTORY [--table auto|intel|gpt] [--deeper] [--timeout SECONDS]\n  open-data-recovery --scan-partition REPORT.json --partition NUMBER --workspace DIRECTORY [scan options]\n  open-data-recovery --list SESSION\n  open-data-recovery --findings SESSION --id GROUP_ID\n  open-data-recovery --recover SESSION --destination DIRECTORY [--ids 1,2 | --all] [--flat] [--skip] [--all-paths]\n  open-data-recovery --smoke-test | --live-smoke-test\n\nSources are read-only. Device sources require a separate physical drive for output. Regular image files may share their drive with output folders, which must not contain the image or its segments.\nPartition discovery only searches; it never writes a partition table. Partition numbers start at 1.\nConsolidation is off by default; --consolidate compares contents after scanning.\nRecovery uses the persisted selection unless --ids or --all is supplied.\nConsolidated groups recover one copy each; --all-paths restores every recorded path."
+            "Open Data Recovery\n\nUsage:\n  open-data-recovery                         Native GTK workspace\n  open-data-recovery --demo                  Safe fixture demonstration\n  open-data-recovery --sources | --backends\n  open-data-recovery --scan SOURCE --workspace DIRECTORY [--mode quick|deep|full]\n      [--extensions jpg,pdf] [--metadata ENGINE] [--carver ENGINE] [--clone] [--include-existing] [--consolidate] [--options FILE.json] [--plan]\n  open-data-recovery --resume-imaging SESSION [--options FILE.json]\n  open-data-recovery --discover-partitions SOURCE --workspace DIRECTORY [--table auto|intel|gpt] [--deeper] [--timeout SECONDS]\n  open-data-recovery --scan-partition REPORT.json --partition NUMBER --workspace DIRECTORY [scan options]\n  open-data-recovery --list SESSION\n  open-data-recovery --findings SESSION --id GROUP_ID\n  open-data-recovery --recover SESSION --destination DIRECTORY [--ids 1,2 | --all] [--flat] [--skip] [--all-paths] [--preserve-linux-metadata]\n  open-data-recovery --smoke-test | --live-smoke-test\n\nSources are read-only. Device sources require a separate physical drive for output. Regular image files may share their drive with output folders, which must not contain the image or its segments.\nPartition discovery only searches; it never writes a partition table. Partition numbers start at 1.\nConsolidation is off by default; --consolidate compares contents after scanning.\nRecovery uses the persisted selection unless --ids or --all is supplied.\nConsolidated groups recover one copy each; --all-paths restores every recorded path."
         );
         return gtk::glib::ExitCode::SUCCESS;
     }

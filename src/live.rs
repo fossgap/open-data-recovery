@@ -1,6 +1,8 @@
 //! Production GTK controller. All blocking discovery, database and engine work runs off the UI thread.
 mod partitions;
 mod partitions_smoke;
+mod scan;
+mod scan_smoke;
 use crate::{
     engine::{
         self, adapters, discovery,
@@ -24,6 +26,8 @@ use std::{
 
 type Task = Box<dyn FnOnce() -> Message + Send>;
 enum Message {
+    CustomEngines(u64, BTreeMap<String, String>),
+    BtrfsInspection(u64, engine::Result<String>),
     RecoveryValidation(u64, String, bool, engine::Result<String>),
     Findings(u64, i64, engine::Result<Vec<Candidate>>),
     Sources(engine::Result<Vec<SourceDescriptor>>),
@@ -51,6 +55,7 @@ pub struct Live {
     directory: RefCell<Option<PathBuf>>,
     view_source: RefCell<Option<SourceDescriptor>>,
     options: RefCell<ScanOptions>,
+    custom_versions: RefCell<Option<BTreeMap<String, String>>>,
     page: RefCell<Page>,
     query: RefCell<Query>,
     files: RefCell<Vec<Option<i64>>>,
@@ -91,8 +96,9 @@ fn checked(b: &gtk::Builder, id: &str) -> bool {
     obj::<gtk::CheckButton>(b, id).is_active()
 }
 fn choice(b: &gtk::Builder, id: &str) -> String {
-    obj::<gtk::DropDown>(b, id)
-        .selected_item()
+    let drop: gtk::DropDown = obj(b, id);
+    drop.model()
+        .and_then(|m| m.item(drop.selected()))
         .and_downcast::<gtk::StringObject>()
         .map(|s| s.string().to_string())
         .unwrap_or_default()
@@ -1091,48 +1097,7 @@ impl Live {
         self.controls();
     }
     fn custom_scan(self: &Rc<Self>) {
-        let b = self.show(include_str!("../ui/scan-options.ui"));
-        let options = self.options.borrow().clone();
-        obj::<gtk::DropDown>(&b, "mode")
-            .set_selected(self.widget::<gtk::DropDown>("scan_mode").selected());
-        obj::<gtk::Entry>(&b, "workspace").set_text(&options.workspace.to_string_lossy());
-        obj::<gtk::CheckButton>(&b, "clone")
-            .set_active(self.widget::<gtk::CheckButton>("clone_first").is_active());
-        obj::<gtk::CheckButton>(&b, "consolidate").set_active(options.consolidate);
-        if let Some(partition) = self
-            .selected
-            .get()
-            .and_then(|i| self.sources.borrow().get(i)?.partition.clone())
-        {
-            for (id, value) in [
-                ("offset", partition.offset_bytes.to_string()),
-                ("length", partition.length_bytes.to_string()),
-            ] {
-                let entry: gtk::Entry = obj(&b, id);
-                entry.set_text(&value);
-                entry.set_sensitive(false);
-                entry.set_tooltip_text(Some("The discovered partition defines this range. It is retained in the workspace before scanning."));
-            }
-        }
-        Self::browse(&b, "browse", "workspace", "chooser");
-        let weak = Rc::downgrade(self);
-        let dialog = b.downgrade();
-        obj::<gtk::Button>(&b, "confirm").connect_clicked(move |_| {
-            let Some(dialog) = dialog.upgrade() else {
-                return;
-            };
-            if let Some(ui) = weak.upgrade() {
-                match scan_options(&dialog) {
-                    Ok(options) => {
-                        obj::<gtk::Window>(&dialog, "dialog").close();
-                        ui.widget::<gtk::DropDown>("scan_mode")
-                            .set_selected(index(options.mode));
-                        ui.begin(options);
-                    }
-                    Err(error) => text(&dialog, "validation", &error.to_string()),
-                }
-            }
-        });
+        self.custom_scan_dialog();
     }
     fn pause(self: &Rc<Self>) {
         if let Some(job) = self.job.borrow().as_ref() {
@@ -1287,6 +1252,7 @@ impl Live {
                     verify_after_write: checked(&dialog, "verify"),
                     continue_on_error: checked(&dialog, "continue_errors"),
                     restore_all_paths: checked(&dialog, "all_paths"),
+                    preserve_linux_metadata: checked(&dialog, "linux_metadata"),
                 };
                 if !options.destination.is_absolute() {
                     text(
@@ -1331,8 +1297,11 @@ impl Live {
                 return;
             };
             obj::<gtk::Button>(&dialog, "delete").set_sensitive(row.is_some());
+            obj::<gtk::Button>(&dialog, "resume_imaging").set_sensitive(false);
             if let (Some(ui), Some(row)) = (weak.upgrade(), row) {
                 if let Some(scan) = ui.saved.borrow().get(row.index() as usize) {
+                    obj::<gtk::Button>(&dialog, "resume_imaging")
+                        .set_sensitive(engine::imaging::can_resume(&scan.manifest));
                     text(
                         &dialog,
                         "details",
@@ -1350,11 +1319,11 @@ impl Live {
                                 .map(|(name, version)| format!("{name} ({version})"))
                                 .collect::<Vec<_>>()
                                 .join(", "),
-                            if scan.manifest.clone.is_some() {
-                                "\nRetained clone: original source is not required for recovery."
-                            } else {
-                                ""
-                            }
+                            if let Some(progress)=&scan.manifest.imaging {
+                                format!("\nImage: {} rescued · {} pending · {} bad. {}",model::size(progress.rescued),model::size(progress.pending),model::size(progress.bad),if progress.complete {"Acquisition complete."} else {"Original source is needed to resume imaging."})
+                            } else if scan.manifest.clone.is_some() {
+                                "\nRetained image available; check the acquisition log for unread regions.".into()
+                            } else {String::new()}
                         ),
                     );
                 }
@@ -1379,6 +1348,19 @@ impl Live {
             text(&dialog, "validation", "Checking the selected saved scan…");
             let generation = ui.dialog_generation.get();
             ui.submit(move || Message::DeletePrepared(generation, Deletion::prepare(scan)));
+        });
+        let weak = Rc::downgrade(self);
+        let dialog = b.downgrade();
+        obj::<gtk::Button>(&b, "resume_imaging").connect_clicked(move |_| {
+            let (Some(ui), Some(b)) = (weak.upgrade(), dialog.upgrade()) else {
+                return;
+            };
+            let scan = obj::<gtk::ListBox>(&b, "scans")
+                .selected_row()
+                .and_then(|r| ui.saved.borrow().get(r.index() as usize).cloned());
+            if let Some(scan) = scan {
+                ui.resume_imaging_dialog(scan);
+            }
         });
         for (id, operation) in [("confirm", 0), ("resume", 1), ("compare", 2)] {
             let weak = Rc::downgrade(self);
@@ -1495,6 +1477,33 @@ impl Live {
                 Event::Candidates(count) => {
                     self.label("result_count", &count.to_string());
                     self.reload();
+                }
+                Event::Imaged {
+                    directory,
+                    progress,
+                } => {
+                    self.job.replace(None);
+                    self.pulse.set(false);
+                    self.paused.set(false);
+                    let bar = self.widget::<gtk::ProgressBar>("progress");
+                    bar.remove_css_class("paused");
+                    let size = progress.rescued + progress.pending + progress.bad;
+                    let fraction = progress.rescued as f64 / size.max(1) as f64;
+                    bar.set_fraction(fraction.clamp(0.0, 1.0));
+                    self.label("progress_text", &format!("{:.0}%", fraction * 100.0));
+                    let status = if progress.complete {
+                        "Imaging complete · use Saved scans → Scan again to scan the retained image"
+                    } else {
+                        "Imaging stopped with unread regions · progress retained"
+                    };
+                    self.label("status_text", status);
+                    self.event(status);
+                    self.directory.replace(Some(directory));
+                    self.reload();
+                    self.controls();
+                    if self.quitting.get() {
+                        self.window().close();
+                    }
                 }
                 Event::Stage { text, fraction } => {
                     self.label("status_text", &text);
@@ -1893,6 +1902,29 @@ impl Live {
                     }
                     Err(error) => self.info("Saved scans", &error.to_string()),
                 },
+                Message::CustomEngines(generation, versions) => {
+                    if generation == self.dialog_generation.get() {
+                        self.custom_versions.replace(Some(versions));
+                        if let Some(b) = self.dialog.borrow().as_ref() {
+                            if b.object::<gtk::Notebook>("options_tabs").is_some() {
+                                scan::context(self, b);
+                            }
+                        }
+                    }
+                }
+                Message::BtrfsInspection(generation, result) => {
+                    if generation == self.dialog_generation.get() {
+                        if let Some(b) = self.dialog.borrow().as_ref() {
+                            if b.object::<gtk::Label>("inspection_report").is_some() {
+                                text(
+                                    b,
+                                    "inspection_report",
+                                    &result.unwrap_or_else(|e| e.to_string()),
+                                );
+                            }
+                        }
+                    }
+                }
                 Message::Info(title, result) => {
                     self.info(&title, &result.unwrap_or_else(|error| error.to_string()))
                 }
@@ -1917,7 +1949,11 @@ fn scan_options(b: &gtk::Builder) -> engine::Result<ScanOptions> {
             number(b, id).map(Some)
         }
     }
-    let retries = number(b, "retries")?;
+    let retries = if obj::<gtk::Widget>(b, "retries").is_sensitive() {
+        number(b, "retries")?
+    } else {
+        ScanOptions::default().retry_passes as u64
+    };
     if retries > 20 {
         return engine::fail("Retry passes must be between 0 and 20.");
     }
@@ -1939,8 +1975,14 @@ fn scan_options(b: &gtk::Builder) -> engine::Result<ScanOptions> {
         minimum_size: number(b, "minimum")?,
         maximum_size: optional(b, "maximum")?,
         timeout_seconds: number(b, "timeout")?,
-        btrfs_root: optional(b, "btrfs_root")?,
+        btrfs_root: if obj::<gtk::Widget>(b, "btrfs_root").is_sensitive() {
+            optional(b, "btrfs_root")?
+        } else {
+            None
+        },
+        ..Default::default()
     };
+    scan::read(b, &mut options)?;
     options.validate()?;
     Ok(options)
 }
@@ -1975,6 +2017,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         directory: RefCell::new(None),
         view_source: RefCell::new(None),
         options: RefCell::new(ScanOptions::default()),
+        custom_versions: RefCell::new(None),
         page: RefCell::new(Page::default()),
         query: RefCell::new(Query {
             limit: 250,
@@ -2034,6 +2077,9 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         }
     });
     if smoke {
+        if scan_smoke::run(&ui) {
+            return;
+        }
         if partitions_smoke::run(&ui) {
             return;
         }

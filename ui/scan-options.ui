@@ -1,14 +1,14 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <interface>
   <object class="GtkWindow" id="dialog">
     <property name="title">Custom scan</property>
     <property name="modal">true</property>
-    <property name="default-width">600</property>
-    <property name="default-height">480</property>
+    <property name="default-width">680</property>
+    <property name="default-height">530</property>
     <property name="child">
       <object class="GtkBox">
         <property name="orientation">vertical</property>
-        <property name="spacing">10</property>
+        <property name="spacing">8</property>
         <property name="margin-top">12</property>
         <property name="margin-bottom">12</property>
         <property name="margin-start">12</property>
@@ -19,24 +19,23 @@
             <child>
               <object class="GtkScrolledWindow">
                 <property name="hscrollbar-policy">never</property>
-                <property name="vscrollbar-policy">automatic</property>
-                <property name="min-content-height">280</property>
+                <property name="min-content-height">300</property>
                 <property name="vexpand">true</property>
                 <property name="child">
                   <object class="GtkGrid">
                     <property name="row-spacing">8</property>
                     <property name="column-spacing">12</property>
-                    <property name="margin-top">12</property>
-                    <property name="margin-bottom">12</property>
-                    <property name="margin-start">12</property>
-                    <property name="margin-end">12</property>
+                    <property name="margin-top">8</property>
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-start">8</property>
+                    <property name="margin-end">8</property>
                     <property name="valign">start</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">_Mode</property>
+                        <property name="label">Mode</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">mode</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">0</property>
@@ -45,16 +44,17 @@
                     </child>
                     <child>
                       <object class="GtkDropDown" id="mode">
+                        <property name="selected">2</property>
+                        <property name="hexpand">true</property>
                         <property name="model">
                           <object class="GtkStringList">
                             <items>
-                              <item>Quick · metadata</item>
-                              <item>Deep · file contents</item>
-                              <item>Full · metadata + file contents</item>
+                              <item>Quick</item>
+                              <item>Deep</item>
+                              <item>Full</item>
                             </items>
                           </object>
                         </property>
-                        <property name="hexpand">true</property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">0</property>
@@ -63,10 +63,10 @@
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">_Workspace</property>
+                        <property name="label">Workspace</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">workspace</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">1</property>
@@ -75,14 +75,12 @@
                     </child>
                     <child>
                       <object class="GtkBox">
-                        <property name="spacing">6</property>
-                        <property name="hexpand">true</property>
+                        <property name="spacing">8</property>
                         <child>
                           <object class="GtkEntry" id="workspace">
+                            <property name="placeholder-text">/media/recovery/scans</property>
                             <property name="text" />
                             <property name="hexpand">true</property>
-                            <property name="placeholder-text">/media/recovery/scans</property>
-                            <property name="tooltip-text">Store the scan on a separate physical drive from the source.</property>
                           </object>
                         </child>
                         <child>
@@ -98,10 +96,10 @@
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">_Extensions</property>
+                        <property name="label">Extensions</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">extensions</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">2</property>
@@ -110,10 +108,9 @@
                     </child>
                     <child>
                       <object class="GtkEntry" id="extensions">
+                        <property name="placeholder-text">jpg, png, pdf, docx — empty = all</property>
                         <property name="text" />
                         <property name="hexpand">true</property>
-                        <property name="placeholder-text">jpg, png, pdf, docx</property>
-                        <property name="tooltip-text">Comma-separated extensions. Leave empty for all files. Filters apply to recovered results.</property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">2</property>
@@ -121,8 +118,20 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkLabel">
+                        <property name="label">Existing files</property>
+                        <property name="xalign">0</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">3</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkCheckButton" id="existing">
-                        <property name="label">Include existing files in metadata results</property>
+                        <property name="label">Include existing metadata entries</property>
                         <property name="active">false</property>
                         <layout>
                           <property name="column">1</property>
@@ -131,8 +140,20 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkLabel">
+                        <property name="label">Imaging</property>
+                        <property name="xalign">0</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">4</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkCheckButton" id="clone">
-                        <property name="label">Clone the source before scanning</property>
+                        <property name="label">Clone source before scanning</property>
                         <property name="active">false</property>
                         <layout>
                           <property name="column">1</property>
@@ -141,30 +162,58 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="consolidate">
-                        <property name="label">Consolidate identical files when the scan finishes</property>
-                        <property name="active">false</property>
-                        <property name="tooltip-text">Compare file contents after scanning and group only byte-identical findings, preserving all names and engine details. This can substantially extend the scan and require extra workspace to extract and cache files. Existing verified copies are reused. The grouped list appears only when consolidation finishes. Improve Recoverable files review by grouping duplicates.</property>
+                      <object class="GtkLabel">
+                        <property name="label">Linux metadata</property>
+                        <property name="xalign">0</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">5</property>
-                          <property name="column-span">2</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="capture_metadata">
+                        <property name="label">Capture available file metadata and links</property>
+                        <property name="active">false</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">5</property>
                         </layout>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">Quick searches filesystem metadata. Deep searches file contents. Full runs both. Image files and output folders may share a drive; device sources require a separate drive.</property>
+                        <property name="label">Consolidation</property>
                         <property name="xalign">0</property>
                         <property name="wrap">true</property>
-                        <property name="max-width-chars">64</property>
-                        <property name="margin-top">4</property>
-                        <style>
-                          <class name="dim-label" />
-                        </style>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">6</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="consolidate">
+                        <property name="label">Group identical files after scanning</property>
+                        <property name="active">false</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">6</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Extension filters constrain extraction where supported; other engines filter results. File families can include several extensions.</property>
+                        <property name="xalign">0</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">14</property>
                           <property name="column-span">2</property>
                         </layout>
                       </object>
@@ -177,29 +226,30 @@
               <object class="GtkLabel">
                 <property name="label">Scan</property>
                 <property name="xalign">0</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">68</property>
               </object>
             </child>
             <child>
               <object class="GtkScrolledWindow">
                 <property name="hscrollbar-policy">never</property>
-                <property name="vscrollbar-policy">automatic</property>
-                <property name="min-content-height">280</property>
+                <property name="min-content-height">300</property>
                 <property name="vexpand">true</property>
                 <property name="child">
                   <object class="GtkGrid">
                     <property name="row-spacing">8</property>
                     <property name="column-spacing">12</property>
-                    <property name="margin-top">12</property>
-                    <property name="margin-bottom">12</property>
-                    <property name="margin-start">12</property>
-                    <property name="margin-end">12</property>
+                    <property name="margin-top">8</property>
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-start">8</property>
+                    <property name="margin-end">8</property>
                     <property name="valign">start</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">_Metadata engine</property>
+                        <property name="label">Metadata engine</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">metadata</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">0</property>
@@ -208,6 +258,8 @@
                     </child>
                     <child>
                       <object class="GtkDropDown" id="metadata">
+                        <property name="selected">0</property>
+                        <property name="hexpand">true</property>
                         <property name="model">
                           <object class="GtkStringList">
                             <items>
@@ -224,7 +276,6 @@
                             </items>
                           </object>
                         </property>
-                        <property name="hexpand">true</property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">0</property>
@@ -233,10 +284,10 @@
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">_Carving engine</property>
+                        <property name="label">Carving engine</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">carver</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">1</property>
@@ -245,6 +296,8 @@
                     </child>
                     <child>
                       <object class="GtkDropDown" id="carver">
+                        <property name="selected">0</property>
+                        <property name="hexpand">true</property>
                         <property name="model">
                           <object class="GtkStringList">
                             <items>
@@ -259,7 +312,6 @@
                             </items>
                           </object>
                         </property>
-                        <property name="hexpand">true</property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">1</property>
@@ -268,52 +320,20 @@
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">PhotoRec</property>
+                        <property name="label">Clone engine</property>
                         <property name="xalign">0</property>
-                        <property name="valign">start</property>
-                        <property name="margin-top">5</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">2</property>
-                        </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkBox">
-                        <property name="orientation">vertical</property>
-                        <property name="spacing">4</property>
-                        <child>
-                          <object class="GtkCheckButton" id="corrupted">
-                            <property name="label">Keep corrupted files</property>
-                            <property name="active">false</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkCheckButton" id="low_memory">
-                            <property name="label">Use low memory mode</property>
-                            <property name="active">true</property>
-                          </object>
-                        </child>
-                        <layout>
-                          <property name="column">1</property>
-                          <property name="row">2</property>
-                        </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">C_lone engine</property>
-                        <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">clone_engine</property>
-                        <layout>
-                          <property name="column">0</property>
-                          <property name="row">3</property>
                         </layout>
                       </object>
                     </child>
                     <child>
                       <object class="GtkDropDown" id="clone_engine">
+                        <property name="selected">0</property>
+                        <property name="hexpand">true</property>
                         <property name="model">
                           <object class="GtkStringList">
                             <items>
@@ -322,6 +342,28 @@
                             </items>
                           </object>
                         </property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">2</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">Metadata sequence</property>
+                        <property name="xalign">0</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">3</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="metadata_sequence">
+                        <property name="placeholder-text">Optional ordered engines, e.g. tsk, extundelete</property>
+                        <property name="text" />
                         <property name="hexpand">true</property>
                         <layout>
                           <property name="column">1</property>
@@ -331,41 +373,26 @@
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">_Retry passes</property>
-                        <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">retries</property>
-                        <layout>
-                          <property name="column">0</property>
-                          <property name="row">4</property>
-                        </layout>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="retries">
-                        <property name="text">0</property>
-                        <property name="hexpand">true</property>
-                        <property name="tooltip-text">ddrescue retry passes, from 0 to 20. Applies when cloning is enabled.</property>
-                        <layout>
-                          <property name="column">1</property>
-                          <property name="row">4</property>
-                        </layout>
-                        <property name="input-purpose">digits</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label">Auto uses suitable installed engines. Clone settings apply when “Clone the source before scanning” is enabled.</property>
+                        <property name="label">An explicit sequence replaces Auto. Quick uses metadata only; Deep uses one carver; Full uses both stages.</property>
                         <property name="xalign">0</property>
                         <property name="wrap">true</property>
-                        <property name="max-width-chars">64</property>
-                        <property name="margin-top">4</property>
-                        <style>
-                          <class name="dim-label" />
-                        </style>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
-                          <property name="row">5</property>
+                          <property name="row">8</property>
+                          <property name="column-span">2</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="engine_context">
+                        <property name="label">Checking installed engines…</property>
+                        <property name="xalign">0</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">9</property>
                           <property name="column-span">2</property>
                         </layout>
                       </object>
@@ -378,29 +405,994 @@
               <object class="GtkLabel">
                 <property name="label">Engines</property>
                 <property name="xalign">0</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">68</property>
               </object>
             </child>
             <child>
               <object class="GtkScrolledWindow">
                 <property name="hscrollbar-policy">never</property>
-                <property name="vscrollbar-policy">automatic</property>
-                <property name="min-content-height">280</property>
+                <property name="min-content-height">300</property>
+                <property name="vexpand">true</property>
+                <property name="child">
+                  <object class="GtkBox" id="engine_settings">
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">8</property>
+                    <child>
+                      <object class="GtkExpander" id="photorec_options">
+                        <property name="label">PhotoRec</property>
+                        <property name="child">
+                          <object class="GtkGrid">
+                            <property name="row-spacing">8</property>
+                            <property name="column-spacing">12</property>
+                            <property name="margin-top">8</property>
+                            <property name="margin-bottom">8</property>
+                            <property name="margin-start">8</property>
+                            <property name="margin-end">8</property>
+                            <property name="valign">start</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Scan area</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">0</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkDropDown" id="photo_space">
+                                <property name="selected">0</property>
+                                <property name="hexpand">true</property>
+                                <property name="model">
+                                  <object class="GtkStringList">
+                                    <items>
+                                      <item>Whole selected input</item>
+                                      <item>Unallocated space only</item>
+                                    </items>
+                                  </object>
+                                </property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">0</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">JPEG recovery</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">1</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="photo_brute">
+                                <property name="label">Try fragmented JPEG brute force</property>
+                                <property name="active">false</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">1</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Damaged files</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="corrupted">
+                                <property name="label">Keep corrupted files</property>
+                                <property name="active">false</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Memory</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">3</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="low_memory">
+                                <property name="label">Use low-memory mode</property>
+                                <property name="active">false</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">3</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Block size (bytes)</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">4</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="photo_block">
+                                <property name="placeholder-text">Empty = automatic</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">4</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">File families</property>
+                                <property name="xalign">0</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">5</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="photo_families">
+                                <property name="placeholder-text">Empty = infer extensions; e.g. jpg, pdf, zip</property>
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">5</property>
+                                </layout>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkExpander" id="ddrescue_options">
+                        <property name="label">ddrescue imaging</property>
+                        <property name="child">
+                          <object class="GtkGrid">
+                            <property name="row-spacing">8</property>
+                            <property name="column-spacing">12</property>
+                            <property name="margin-top">8</property>
+                            <property name="margin-bottom">8</property>
+                            <property name="margin-start">8</property>
+                            <property name="margin-end">8</property>
+                            <property name="valign">start</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Retry passes</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">0</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="retries">
+                                <property name="placeholder-text">0–20</property>
+                                <property name="text">0</property>
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">0</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Reads</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">1</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="dd_direct">
+                                <property name="label">Use direct reads (bypass cache)</property>
+                                <property name="active">false</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">1</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Direction</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="dd_reverse">
+                                <property name="label">Reverse pass direction</property>
+                                <property name="active">false</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Difficult regions</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">3</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="dd_scrape">
+                                <property name="label">Enable scraping</property>
+                                <property name="active">false</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">3</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Slow-read threshold (B/s)</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">4</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="dd_min_rate">
+                                <property name="placeholder-text">0 = engine default</property>
+                                <property name="text">0</property>
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">4</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Maximum read rate (B/s)</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">5</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="dd_max_rate">
+                                <property name="placeholder-text">0 = unlimited</property>
+                                <property name="text">0</property>
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">5</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">No successful read timeout (s)</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">6</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="dd_timeout">
+                                <property name="placeholder-text">0 = unlimited</property>
+                                <property name="text">0</property>
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">6</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Maximum read errors</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">7</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="dd_errors">
+                                <property name="placeholder-text">Empty = unlimited</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">7</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Import partial image</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">8</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="import_image">
+                                <property name="placeholder-text">Optional existing raw image (copied)</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">8</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Matching ddrescue map</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">9</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="import_map">
+                                <property name="placeholder-text">Required when importing an image</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">9</property>
+                                </layout>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkExpander" id="ext_options">
+                        <property name="label">ext3 / ext4 recovery</property>
+                        <property name="child">
+                          <object class="GtkGrid">
+                            <property name="row-spacing">8</property>
+                            <property name="column-spacing">12</property>
+                            <property name="margin-top">8</property>
+                            <property name="margin-bottom">8</property>
+                            <property name="margin-start">8</property>
+                            <property name="margin-end">8</property>
+                            <property name="valign">start</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Target kind</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">0</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkDropDown" id="ext_kind">
+                                <property name="selected">0</property>
+                                <property name="hexpand">true</property>
+                                <property name="model">
+                                  <object class="GtkStringList">
+                                    <items>
+                                      <item>all</item>
+                                      <item>file</item>
+                                      <item>directory</item>
+                                      <item>inode</item>
+                                    </items>
+                                  </object>
+                                </property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">0</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Target</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">1</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="ext_target">
+                                <property name="placeholder-text">Relative path or inode number(s)</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">1</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">After (UTC Unix seconds)</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="ext_after">
+                                <property name="placeholder-text">Empty = engine default</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Before (UTC Unix seconds)</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">3</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="ext_before">
+                                <property name="placeholder-text">Empty = engine default</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">3</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Saved external journal</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">4</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="ext_journal">
+                                <property name="placeholder-text">Empty = internal journal</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">4</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Backup superblock</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">5</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="ext_super">
+                                <property name="placeholder-text">extundelete only; block number</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">5</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Filesystem block size</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">6</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="ext_block">
+                                <property name="placeholder-text">extundelete only; bytes</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">6</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Journal transaction</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">7</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="ext_transaction">
+                                <property name="placeholder-text">ext4magic only; targeted recovery</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">7</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="ext_time_help">
+                                <property name="label">extundelete dates constrain deletion time. ext4magic dates select journal history; they are not interchangeable.</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">16</property>
+                                  <property name="column-span">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkExpander" id="btrfs_options">
+                        <property name="label">Btrfs recovery</property>
+                        <property name="child">
+                          <object class="GtkGrid">
+                            <property name="row-spacing">8</property>
+                            <property name="column-spacing">12</property>
+                            <property name="margin-top">8</property>
+                            <property name="margin-bottom">8</property>
+                            <property name="margin-start">8</property>
+                            <property name="margin-end">8</property>
+                            <property name="valign">start</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Tree root (bytes)</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">0</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="btrfs_root">
+                                <property name="placeholder-text">Empty = automatic</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">0</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Subvolume ID</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">1</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="btrfs_subvolume">
+                                <property name="placeholder-text">Empty = all</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">1</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Subvolume root (bytes)</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="btrfs_subroot">
+                                <property name="placeholder-text">Alternative to subvolume ID</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Superblock mirror</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">3</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkDropDown" id="btrfs_super">
+                                <property name="selected">0</property>
+                                <property name="hexpand">true</property>
+                                <property name="model">
+                                  <object class="GtkStringList">
+                                    <items>
+                                      <item>0</item>
+                                      <item>1</item>
+                                      <item>2</item>
+                                    </items>
+                                  </object>
+                                </property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">3</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Directory</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">4</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="btrfs_path">
+                                <property name="placeholder-text">Relative directory; empty = all</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">4</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Snapshots</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">5</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="btrfs_snapshots">
+                                <property name="label">Include snapshots</property>
+                                <property name="active">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">5</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Errors</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">6</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="btrfs_errors">
+                                <property name="label">Continue after individual errors</property>
+                                <property name="active">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">6</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="spacing">8</property>
+                                <child>
+                                  <object class="GtkButton" id="btrfs_list">
+                                    <property name="label">List roots</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkButton" id="btrfs_preview">
+                                    <property name="label">Preview paths</property>
+                                  </object>
+                                </child>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">14</property>
+                                  <property name="column-span">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="inspection_report">
+                                <property name="label" />
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">15</property>
+                                  <property name="column-span">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkExpander" id="ntfs_options">
+                        <property name="label">NTFS undelete</property>
+                        <property name="child">
+                          <object class="GtkGrid">
+                            <property name="row-spacing">8</property>
+                            <property name="column-spacing">12</property>
+                            <property name="margin-top">8</property>
+                            <property name="margin-bottom">8</property>
+                            <property name="margin-start">8</property>
+                            <property name="margin-end">8</property>
+                            <property name="valign">start</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Filename pattern</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">0</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="ntfs_pattern">
+                                <property name="placeholder-text">Optional glob, e.g. Report*.pdf</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">0</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Inodes</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">1</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="ntfs_inodes">
+                                <property name="placeholder-text">Optional IDs/ranges, e.g. 42,70-80</property>
+                                <property name="text" />
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">1</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Estimated recoverable (%)</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="ntfs_percent">
+                                <property name="placeholder-text">0–100</property>
+                                <property name="text">0</property>
+                                <property name="hexpand">true</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">2</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Matching</property>
+                                <property name="xalign">0</property>
+                                <property name="wrap">true</property>
+                                <property name="max-width-chars">68</property>
+                                <layout>
+                                  <property name="column">0</property>
+                                  <property name="row">3</property>
+                                </layout>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="ntfs_case">
+                                <property name="label">Case-sensitive filename pattern</property>
+                                <property name="active">false</property>
+                                <layout>
+                                  <property name="column">1</property>
+                                  <property name="row">3</property>
+                                </layout>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel">
+                <property name="label">Engine options</property>
+                <property name="xalign">0</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">68</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="hscrollbar-policy">never</property>
+                <property name="min-content-height">300</property>
                 <property name="vexpand">true</property>
                 <property name="child">
                   <object class="GtkGrid">
                     <property name="row-spacing">8</property>
                     <property name="column-spacing">12</property>
-                    <property name="margin-top">12</property>
-                    <property name="margin-bottom">12</property>
-                    <property name="margin-start">12</property>
-                    <property name="margin-end">12</property>
+                    <property name="margin-top">8</property>
+                    <property name="margin-bottom">8</property>
+                    <property name="margin-start">8</property>
+                    <property name="margin-end">8</property>
                     <property name="valign">start</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">_Minimum size (bytes)</property>
+                        <property name="label">Minimum size (bytes)</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">minimum</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">0</property>
@@ -409,21 +1401,21 @@
                     </child>
                     <child>
                       <object class="GtkEntry" id="minimum">
+                        <property name="placeholder-text">0</property>
                         <property name="text">0</property>
                         <property name="hexpand">true</property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">0</property>
                         </layout>
-                        <property name="input-purpose">digits</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">Ma_ximum size (bytes)</property>
+                        <property name="label">Maximum size (bytes)</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">maximum</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">1</property>
@@ -432,22 +1424,21 @@
                     </child>
                     <child>
                       <object class="GtkEntry" id="maximum">
+                        <property name="placeholder-text">Empty = unlimited</property>
                         <property name="text" />
                         <property name="hexpand">true</property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">1</property>
                         </layout>
-                        <property name="placeholder-text">No limit</property>
-                        <property name="input-purpose">digits</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">Source _offset (bytes)</property>
+                        <property name="label">Source offset (bytes)</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">offset</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">2</property>
@@ -456,21 +1447,21 @@
                     </child>
                     <child>
                       <object class="GtkEntry" id="offset">
+                        <property name="placeholder-text">0</property>
                         <property name="text">0</property>
                         <property name="hexpand">true</property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">2</property>
                         </layout>
-                        <property name="input-purpose">digits</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">Source _length (bytes)</property>
+                        <property name="label">Source length (bytes)</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">length</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">3</property>
@@ -479,22 +1470,21 @@
                     </child>
                     <child>
                       <object class="GtkEntry" id="length">
+                        <property name="placeholder-text">Empty = to end</property>
                         <property name="text" />
                         <property name="hexpand">true</property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">3</property>
                         </layout>
-                        <property name="placeholder-text">Remainder of source</property>
-                        <property name="input-purpose">digits</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">_Timeout (seconds)</property>
+                        <property name="label">Engine runtime limit (s)</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">timeout</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">4</property>
@@ -503,22 +1493,21 @@
                     </child>
                     <child>
                       <object class="GtkEntry" id="timeout">
+                        <property name="placeholder-text">0 = unlimited</property>
                         <property name="text">0</property>
                         <property name="hexpand">true</property>
-                        <property name="tooltip-text">Maximum engine runtime. 0 means unlimited.</property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">4</property>
                         </layout>
-                        <property name="input-purpose">digits</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">_btrfs tree root (bytes)</property>
+                        <property name="label">Filesystem interpretation</property>
                         <property name="xalign">0</property>
-                        <property name="use-underline">true</property>
-                        <property name="mnemonic-widget">btrfs_root</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">5</property>
@@ -526,30 +1515,96 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkEntry" id="btrfs_root">
-                        <property name="text" />
+                      <object class="GtkDropDown" id="filesystem">
+                        <property name="selected">0</property>
                         <property name="hexpand">true</property>
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item>auto</item>
+                              <item>ext2</item>
+                              <item>ext3</item>
+                              <item>ext4</item>
+                              <item>ntfs</item>
+                              <item>fat12</item>
+                              <item>fat16</item>
+                              <item>fat32</item>
+                              <item>exfat</item>
+                              <item>btrfs</item>
+                            </items>
+                          </object>
+                        </property>
                         <layout>
                           <property name="column">1</property>
                           <property name="row">5</property>
                         </layout>
-                        <property name="placeholder-text">Default tree root</property>
-                        <property name="input-purpose">digits</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">A custom byte range is copied into the workspace before scanning. A timeout of 0 is unlimited.</property>
+                        <property name="label">Sector size (bytes)</property>
                         <property name="xalign">0</property>
                         <property name="wrap">true</property>
-                        <property name="max-width-chars">64</property>
-                        <property name="margin-top">4</property>
-                        <style>
-                          <class name="dim-label" />
-                        </style>
+                        <property name="max-width-chars">68</property>
                         <layout>
                           <property name="column">0</property>
                           <property name="row">6</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkDropDown" id="sector_size">
+                        <property name="selected">0</property>
+                        <property name="hexpand">true</property>
+                        <property name="model">
+                          <object class="GtkStringList">
+                            <items>
+                              <item>auto</item>
+                              <item>512</item>
+                              <item>1024</item>
+                              <item>2048</item>
+                              <item>4096</item>
+                            </items>
+                          </object>
+                        </property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">6</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">TSK directory inode</property>
+                        <property name="xalign">0</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">7</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="directory_inode">
+                        <property name="placeholder-text">Empty = filesystem root</property>
+                        <property name="text" />
+                        <property name="hexpand">true</property>
+                        <layout>
+                          <property name="column">1</property>
+                          <property name="row">7</property>
+                        </layout>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label">A custom source range is retained in the workspace. Overrides are recorded and reused for recovery.</property>
+                        <property name="xalign">0</property>
+                        <property name="wrap">true</property>
+                        <property name="max-width-chars">68</property>
+                        <layout>
+                          <property name="column">0</property>
+                          <property name="row">16</property>
                           <property name="column-span">2</property>
                         </layout>
                       </object>
@@ -562,6 +1617,40 @@
               <object class="GtkLabel">
                 <property name="label">Advanced</property>
                 <property name="xalign">0</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">68</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="plan_view">
+            <property name="orientation">vertical</property>
+            <property name="spacing">8</property>
+            <property name="visible">false</property>
+            <property name="vexpand">true</property>
+            <child>
+              <object class="GtkLabel" id="plan_heading">
+                <property name="label">Scan plan</property>
+                <property name="xalign">0</property>
+                <property name="wrap">true</property>
+                <property name="max-width-chars">68</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="vexpand">true</property>
+                <property name="min-content-height">300</property>
+                <property name="hscrollbar-policy">never</property>
+                <property name="child">
+                  <object class="GtkLabel" id="plan_summary">
+                    <property name="label" />
+                    <property name="xalign">0</property>
+                    <property name="wrap">true</property>
+                    <property name="max-width-chars">68</property>
+                    <property name="selectable">true</property>
+                  </object>
+                </property>
               </object>
             </child>
           </object>
@@ -584,8 +1673,14 @@
               </object>
             </child>
             <child>
+              <object class="GtkButton" id="back">
+                <property name="label">Back</property>
+                <property name="visible">false</property>
+              </object>
+            </child>
+            <child>
               <object class="GtkButton" id="confirm">
-                <property name="label">Start scan</property>
+                <property name="label">Next</property>
                 <style>
                   <class name="suggested-action" />
                 </style>
@@ -597,7 +1692,7 @@
     </property>
   </object>
   <object class="GtkFileChooserNative" id="chooser">
-    <property name="title">Choose a folder</property>
+    <property name="title">Choose workspace</property>
     <property name="action">select-folder</property>
     <property name="accept-label">Choose</property>
     <property name="cancel-label">Cancel</property>

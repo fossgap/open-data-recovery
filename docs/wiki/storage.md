@@ -59,7 +59,7 @@ Consequently, **Quick is not guaranteed to use little workspace**, and **Deep is
 
 The workspace preserves the scan and what its engines produced. It may contain unselected files, duplicate engine outputs, partial files, generated names and reports. The destination contains the file copies you chose to recover, arranged according to the folder and filename-conflict options.
 
-For a finding whose contents are already retained, recovery **copies** those contents to the destination. It does not move the workspace file or replace the output with a hard link. The duplication is real, and it lets the saved scan remain usable for another recovery.
+For a finding whose contents are already retained, recovery **copies** those contents to the destination. It does not move the workspace file or link the output to the workspace. Optional Linux metadata preservation can recreate original hard links between destination files. The duplication is real, and it lets the saved scan remain usable for another recovery.
 
 For a metadata-only finding, recovery reads its contents from the original source or retained scan input directly into the destination. That finding does not automatically acquire another permanent full-content cache during recovery.
 
@@ -72,6 +72,7 @@ These paths are relative to `WORKSPACE/SESSION/`; optional files exist only when
 | Path | Purpose |
 | --- | --- |
 | `manifest.json`, `source.json` | Source identity, scan settings, state, errors and recorded engine versions |
+| `plan.json`, `artifacts/*/commands.jsonl` | Resolved scan plan and effective engine arguments |
 | `tree.sqlite` | Original findings and, when enabled and finished, final groups and their paths |
 | `selection.sqlite` | Persisted selection; created when files are selected |
 | `events.log` | Scan events and recovery audit records, including output paths, errors and hashes |
@@ -123,3 +124,5 @@ Deletion refuses a snapshot in active use by a current application scan/recovery
 Removing only engine artifacts manually can break later previews and recovery. When another attempt shares a retained image through a hard link, deleting one snapshot removes its link but does not free the image's storage until the remaining links are removed.
 
 Read-only source access applies to this application and its tools. It does not stop other applications from changing a mounted source filesystem.
+
+Interrupted ddrescue images and maps remain in their saved scan. See [resumable imaging](scan-modes.md#resumable-ddrescue-imaging) for completion checks, imported image/map copies and immutability after a clone has been used by another scan.
