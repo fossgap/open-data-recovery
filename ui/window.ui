@@ -3,89 +3,93 @@
   <requires lib="gtk" version="4.8" />
   <menu id="menubar">
     <submenu>
-      <attribute name="label">_File</attribute>
+      <attribute name="label" translatable="yes">_File</attribute>
       <section>
         <item>
-          <attribute name="label">Add source…</attribute>
+          <attribute name="label" translatable="yes">Add source…</attribute>
           <attribute name="action">win.add-source</attribute>
         </item>
         <item>
-          <attribute name="label">Recover…</attribute>
+          <attribute name="label" translatable="yes">Recover…</attribute>
           <attribute name="action">win.recover</attribute>
         </item>
       </section>
       <section>
         <item>
-          <attribute name="label">Quit</attribute>
+          <attribute name="label" translatable="yes">Quit</attribute>
           <attribute name="action">app.quit</attribute>
         </item>
       </section>
     </submenu>
     <submenu>
-      <attribute name="label">_Scan</attribute>
+      <attribute name="label" translatable="yes">_Scan</attribute>
       <section>
         <item>
-          <attribute name="label">Start scan</attribute>
+          <attribute name="label" translatable="yes">Start scan</attribute>
           <attribute name="action">win.start</attribute>
         </item>
         <item>
-          <attribute name="label">Pause / resume</attribute>
+          <attribute name="label" translatable="yes">Pause / resume</attribute>
           <attribute name="action">win.pause</attribute>
         </item>
         <item>
-          <attribute name="label">Cancel scan</attribute>
+          <attribute name="label" translatable="yes">Cancel scan</attribute>
           <attribute name="action">win.cancel</attribute>
         </item>
       </section>
       <section>
         <item>
-          <attribute name="label">Find lost partitions…</attribute>
+          <attribute name="label" translatable="yes">Find lost partitions…</attribute>
           <attribute name="action">win.discover-partitions</attribute>
         </item>
         <item>
-          <attribute name="label">Custom scan…</attribute>
+          <attribute name="label" translatable="yes">Custom scan…</attribute>
           <attribute name="action">win.custom-scan</attribute>
         </item>
         <item>
-          <attribute name="label">Saved Scan…</attribute>
+          <attribute name="label" translatable="yes">Saved Scan…</attribute>
           <attribute name="action">win.saved-scans</attribute>
         </item>
       </section>
     </submenu>
     <submenu>
-      <attribute name="label">_View</attribute>
+      <attribute name="label" translatable="yes">_View</attribute>
       <section>
         <item>
-          <attribute name="label">File preview</attribute>
+          <attribute name="label" translatable="yes">File preview</attribute>
           <attribute name="action">win.preview</attribute>
         </item>
         <item>
-          <attribute name="label">Event log</attribute>
+          <attribute name="label" translatable="yes">Event log</attribute>
           <attribute name="action">win.events</attribute>
         </item>
         <item>
-          <attribute name="label">Search files</attribute>
+          <attribute name="label" translatable="yes">Search files</attribute>
           <attribute name="action">win.search</attribute>
         </item>
         <item>
-          <attribute name="label">Refresh sources</attribute>
+          <attribute name="label" translatable="yes">Refresh sources</attribute>
           <attribute name="action">win.reset</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">Language…</attribute>
+          <attribute name="action">win.language</attribute>
         </item>
       </section>
     </submenu>
     <submenu>
-      <attribute name="label">_Help</attribute>
+      <attribute name="label" translatable="yes">_Help</attribute>
       <section>
         <item>
-          <attribute name="label">About Open Data Recovery</attribute>
+          <attribute name="label" translatable="yes">About Open Data Recovery</attribute>
           <attribute name="action">win.about</attribute>
         </item>
         <item>
-          <attribute name="label">Keyboard shortcuts</attribute>
+          <attribute name="label" translatable="yes">Keyboard shortcuts</attribute>
           <attribute name="action">win.shortcuts</attribute>
         </item>
         <item>
-          <attribute name="label">Backend availability</attribute>
+          <attribute name="label" translatable="yes">Backend availability</attribute>
           <attribute name="action">win.backends</attribute>
         </item>
       </section>
@@ -99,7 +103,7 @@
     </items>
   </object>
   <object class="GtkApplicationWindow" id="window">
-    <property name="title">Open Data Recovery — Demo</property>
+    <property name="title" translatable="yes">Open Data Recovery — Demo</property>
     <property name="default-width">1380</property>
     <property name="default-height">920</property>
     <property name="width-request">1060</property>
@@ -160,7 +164,7 @@
             </child>
             <child>
               <object class="GtkLabel">
-                <property name="label">Demo mode</property>
+                <property name="label" translatable="yes">Demo mode</property>
                 <style>
                   <class name="strong" />
                   <class name="heading" />
@@ -169,7 +173,7 @@
             </child>
             <child>
               <object class="GtkLabel">
-                <property name="label">Sample sources and files. No disks are accessed or files recovered.</property>
+                <property name="label" translatable="yes">Sample sources and files. No disks are accessed or files recovered.</property>
                 <property name="xalign">0</property>
                 <property name="hexpand">true</property>
                 <property name="ellipsize">end</property>
@@ -177,7 +181,7 @@
             </child>
             <child>
               <object class="GtkButton">
-                <property name="label">Reset demo</property>
+                <property name="label" translatable="yes">Reset demo</property>
                 <property name="action-name">win.reset</property>
                 <style>
                   <class name="flat" />
@@ -209,7 +213,7 @@
                     </style>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">DISKS &amp; PARTITIONS</property>
+                        <property name="label" translatable="yes">DISKS &amp; PARTITIONS</property>
                         <property name="xalign">0</property>
                         <property name="hexpand">true</property>
                         <style>
@@ -221,7 +225,7 @@
                       <object class="GtkButton" id="add_source">
                         <property name="icon-name">list-add-symbolic</property>
                         <property name="action-name">win.add-source</property>
-                        <property name="tooltip-text">Add a sample disk image or mounted folder</property>
+                        <property name="tooltip-text" translatable="yes">Add a sample disk image or mounted folder</property>
                         <style>
                           <class name="flat" />
                         </style>
@@ -260,7 +264,7 @@
                     </style>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">SAVED SCANS</property>
+                        <property name="label" translatable="yes">SAVED SCANS</property>
                         <property name="xalign">0</property>
                         <property name="hexpand">true</property>
                         <style>
@@ -272,7 +276,7 @@
                       <object class="GtkButton" id="open_saved_scans">
                         <property name="icon-name">document-open-recent-symbolic</property>
                         <property name="action-name">win.saved-scans</property>
-                        <property name="tooltip-text">Open saved scans</property>
+                        <property name="tooltip-text" translatable="yes">Open saved scans</property>
                         <style>
                           <class name="flat" />
                         </style>
@@ -297,7 +301,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel" id="snapshot_notice">
-                    <property name="label">Demo snapshots stay in memory.</property>
+                    <property name="label" translatable="yes">Demo snapshots stay in memory.</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                     <style>
@@ -333,7 +337,7 @@
                         <property name="hexpand">true</property>
                         <child>
                           <object class="GtkLabel" id="source_title">
-                            <property name="label">Archive SSD</property>
+                            <property name="label" translatable="yes">Archive SSD</property>
                             <property name="xalign">0</property>
                             <style>
                               <class name="title" />
@@ -358,7 +362,7 @@
                         <property name="visible">false</property>
                         <property name="spacing">6</property>
                         <property name="valign">center</property>
-                        <property name="tooltip-text">Source protection: read-only access</property>
+                        <property name="tooltip-text" translatable="yes">Source protection: read-only access</property>
                         <child>
                           <object class="GtkImage" id="source_lock">
                             <property name="icon-name">changes-prevent-symbolic</property>
@@ -367,7 +371,7 @@
                         </child>
                         <child>
                           <object class="GtkLabel" id="source_state">
-                            <property name="label">Read-only source</property>
+                            <property name="label" translatable="yes">Read-only source</property>
                           </object>
                         </child>
                       </object>
@@ -384,13 +388,13 @@
                       <object class="GtkDropDown" id="scan_mode">
                         <property name="model">scan_modes</property>
                         <property name="selected">2</property>
-                        <property name="tooltip-text">Choose metadata recovery, file carving, or both</property>
+                        <property name="tooltip-text" translatable="yes">Choose metadata recovery, file carving, or both</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckButton" id="clone_first">
-                        <property name="label">Clone first</property>
-                        <property name="tooltip-text">Simulate making a read-only source image before scanning</property>
+                        <property name="label" translatable="yes">Clone first</property>
+                        <property name="tooltip-text" translatable="yes">Simulate making a read-only source image before scanning</property>
                       </object>
                     </child>
                     <child>
@@ -409,7 +413,7 @@
                         </style>
                         <child>
                           <object class="GtkButton" id="start">
-                            <property name="label">Scan again</property>
+                            <property name="label" translatable="yes">Scan again</property>
                             <property name="action-name">win.start</property>
                             <style>
                               <class name="suggested-action" />
@@ -420,14 +424,14 @@
                           <object class="GtkMenuButton" id="scan_dropdown">
                             <property name="icon-name">pan-down-symbolic</property>
                             <property name="menu-model">scan_menu</property>
-                            <property name="tooltip-text">Default or custom scan options</property>
+                            <property name="tooltip-text" translatable="yes">Default or custom scan options</property>
                           </object>
                         </child>
                       </object>
                     </child>
                     <child>
                       <object class="GtkButton" id="pause">
-                        <property name="label">Pause</property>
+                        <property name="label" translatable="yes">Pause</property>
                         <property name="action-name">win.pause</property>
                       </object>
                     </child>
@@ -435,7 +439,7 @@
                       <object class="GtkButton" id="cancel">
                         <property name="icon-name">process-stop-symbolic</property>
                         <property name="action-name">win.cancel</property>
-                        <property name="tooltip-text">Cancel scan and keep partial results</property>
+                        <property name="tooltip-text" translatable="yes">Cancel scan and keep partial results</property>
                       </object>
                     </child>
                     <child>
@@ -482,7 +486,7 @@
                                 </style>
                                 <child>
                                   <object class="GtkLabel">
-                                    <property name="label">Recoverable files</property>
+                                    <property name="label" translatable="yes">Recoverable files</property>
                                     <property name="xalign">0</property>
                                     <style>
                                       <class name="section-title" />
@@ -505,9 +509,9 @@
                                 </child>
                                 <child>
                                   <object class="GtkSearchEntry" id="search">
-                                    <property name="placeholder-text">Search files…</property>
+                                    <property name="placeholder-text" translatable="yes">Search files…</property>
                                     <property name="width-request">180</property>
-                                    <property name="tooltip-text">Filter by file name or folder (Ctrl+F)</property>
+                                    <property name="tooltip-text" translatable="yes">Filter by file name or folder (Ctrl+F)</property>
                                   </object>
                                 </child>
                               </object>
@@ -531,7 +535,7 @@
                                 </style>
                                 <child>
                                   <object class="GtkToggleButton" id="filter_all">
-                                    <property name="label">All files</property>
+                                    <property name="label" translatable="yes">All files</property>
                                     <property name="active">true</property>
                                     <style>
                                       <class name="filter" />
@@ -540,7 +544,7 @@
                                 </child>
                                 <child>
                                   <object class="GtkToggleButton" id="filter_images">
-                                    <property name="label">Images</property>
+                                    <property name="label" translatable="yes">Images</property>
                                     <property name="group">filter_all</property>
                                     <style>
                                       <class name="filter" />
@@ -549,7 +553,7 @@
                                 </child>
                                 <child>
                                   <object class="GtkToggleButton" id="filter_documents">
-                                    <property name="label">Documents</property>
+                                    <property name="label" translatable="yes">Documents</property>
                                     <property name="group">filter_all</property>
                                     <style>
                                       <class name="filter" />
@@ -558,7 +562,7 @@
                                 </child>
                                 <child>
                                   <object class="GtkToggleButton" id="filter_other">
-                                    <property name="label">Other</property>
+                                    <property name="label" translatable="yes">Other</property>
                                     <property name="group">filter_all</property>
                                     <style>
                                       <class name="filter" />
@@ -575,26 +579,26 @@
                                 </style>
                                 <child>
                                   <object class="GtkCheckButton" id="select_all">
-                                    <property name="tooltip-text">Select all files matching the current filter, including collapsed folders</property>
+                                    <property name="tooltip-text" translatable="yes">Select all files matching the current filter, including collapsed folders</property>
                                   </object>
                                 </child>
                                 <child>
                                   <object class="GtkLabel">
-                                    <property name="label">Name</property>
+                                    <property name="label" translatable="yes">Name</property>
                                     <property name="xalign">0</property>
                                     <property name="hexpand">true</property>
                                   </object>
                                 </child>
                                 <child>
                                   <object class="GtkLabel">
-                                    <property name="label">Size</property>
+                                    <property name="label" translatable="yes">Size</property>
                                     <property name="xalign">1</property>
                                     <property name="width-request">78</property>
                                   </object>
                                 </child>
                                 <child>
                                   <object class="GtkLabel">
-                                    <property name="label">Discovery</property>
+                                    <property name="label" translatable="yes">Discovery</property>
                                     <property name="xalign">0</property>
                                     <property name="width-request">100</property>
                                   </object>
@@ -666,7 +670,7 @@
                                 <property name="margin-end">14</property>
                                 <child>
                                   <object class="GtkButton" id="previous_page">
-                                    <property name="label">Previous</property>
+                                    <property name="label" translatable="yes">Previous</property>
                                   </object>
                                 </child>
                                 <child>
@@ -676,7 +680,7 @@
                                 </child>
                                 <child>
                                   <object class="GtkButton" id="next_page">
-                                    <property name="label">Next</property>
+                                    <property name="label" translatable="yes">Next</property>
                                   </object>
                                 </child>
                               </object>
@@ -707,7 +711,7 @@
                                 </style>
                                 <child>
                                   <object class="GtkLabel">
-                                    <property name="label">File preview</property>
+                                    <property name="label" translatable="yes">File preview</property>
                                     <property name="hexpand">true</property>
                                     <property name="xalign">0</property>
                                     <style>
@@ -720,7 +724,7 @@
                                   <object class="GtkButton">
                                     <property name="icon-name">window-close-symbolic</property>
                                     <property name="action-name">win.preview</property>
-                                    <property name="tooltip-text">Hide preview (Ctrl+P)</property>
+                                    <property name="tooltip-text" translatable="yes">Hide preview (Ctrl+P)</property>
                                     <style>
                                       <class name="flat" />
                                     </style>
@@ -751,7 +755,7 @@
                                     </child>
                                     <child>
                                       <object class="GtkLabel" id="preview_name">
-                                        <property name="label">Choose a file</property>
+                                        <property name="label" translatable="yes">Choose a file</property>
                                         <property name="xalign">0</property>
                                         <property name="wrap">true</property>
                                         <property name="selectable">true</property>
@@ -782,7 +786,7 @@
                                     </child>
                                     <child>
                                       <object class="GtkLabel" id="preview_text">
-                                        <property name="label">Select a candidate to inspect its contents and metadata.</property>
+                                        <property name="label" translatable="yes">Select a candidate to inspect its contents and metadata.</property>
                                         <property name="xalign">0</property>
                                         <property name="yalign">0</property>
                                         <property name="wrap">true</property>
@@ -808,7 +812,7 @@
                                     </child>
                                     <child>
                                       <object class="GtkLabel" id="preview_note">
-                                        <property name="label">A preview is not a guarantee of recovery.</property>
+                                        <property name="label" translatable="yes">A preview is not a guarantee of recovery.</property>
                                         <property name="xalign">0</property>
                                         <property name="wrap">true</property>
                                         <style>
@@ -844,7 +848,7 @@
                             </child>
                             <child>
                               <object class="GtkLabel">
-                                <property name="label">Activity</property>
+                                <property name="label" translatable="yes">Activity</property>
                                 <style>
                                   <class name="section-title" />
                                   <class name="heading" />
@@ -866,7 +870,7 @@
                             </child>
                             <child>
                               <object class="GtkButton" id="clear_events">
-                                <property name="label">Clear</property>
+                                <property name="label" translatable="yes">Clear</property>
                                 <style>
                                   <class name="flat" />
                                 </style>
@@ -906,7 +910,7 @@
                         <property name="hexpand">true</property>
                         <child>
                           <object class="GtkLabel" id="selection_summary">
-                            <property name="label">No files selected</property>
+                            <property name="label" translatable="yes">No files selected</property>
                             <property name="xalign">0</property>
                             <style>
                               <class name="strong" />
@@ -916,7 +920,7 @@
                         </child>
                         <child>
                           <object class="GtkLabel">
-                            <property name="label">Choose files, then review the recovery destination.</property>
+                            <property name="label" translatable="yes">Choose files, then review the recovery destination.</property>
                             <property name="xalign">0</property>
                             <property name="ellipsize">end</property>
                             <style>
@@ -929,7 +933,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="recover">
-                        <property name="label">Recover</property>
+                        <property name="label" translatable="yes">Recover</property>
                         <property name="action-name">win.recover</property>
                         <style>
                           <class name="suggested-action" />
@@ -962,7 +966,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel" id="status_text">
-                    <property name="label">Scan complete</property>
+                    <property name="label" translatable="yes">Scan complete</property>
                     <property name="xalign">0</property>
                     <property name="hexpand">true</property>
                     <property name="ellipsize">end</property>
@@ -1003,7 +1007,7 @@
             </child>
             <child>
               <object class="GtkLabel" id="demo_indicator">
-                <property name="label">DEMO · NO DISK ACCESS</property>
+                <property name="label" translatable="yes">DEMO · NO DISK ACCESS</property>
                 <property name="margin-start">16</property>
                 <property name="margin-end">16</property>
                 <style>
@@ -1019,11 +1023,11 @@
   <menu id="scan_menu">
     <section>
       <item>
-        <attribute name="label">Default · start scan</attribute>
+        <attribute name="label" translatable="yes">Default · start scan</attribute>
         <attribute name="action">win.start</attribute>
       </item>
       <item>
-        <attribute name="label">Custom…</attribute>
+        <attribute name="label" translatable="yes">Custom…</attribute>
         <attribute name="action">win.custom-scan</attribute>
       </item>
     </section>

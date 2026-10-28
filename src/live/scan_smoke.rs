@@ -44,13 +44,16 @@ pub(super) fn run(ui: &Rc<Live>) -> bool {
                 assert!(b.object::<gtk::Widget>("back").is_none());
                 assert_eq!(
                     obj::<gtk::Button>(&b, "confirm").label().as_deref(),
-                    Some("Start scan")
+                    Some(tr("Start scan"))
                 );
                 assert!(
                     obj::<gtk::Entry>(&b, "extensions")
                         .tooltip_text()
                         .unwrap()
-                        .contains("Extension filters constrain")
+                        .as_str()
+                        == tr(
+                            "Extension filters constrain extraction where supported; other engines filter results. File families can include several extensions."
+                        )
                 );
                 assert!(
                     !obj::<gtk::Label>(&b, "engine_context")
@@ -109,7 +112,10 @@ pub(super) fn run(ui: &Rc<Live>) -> bool {
                 ] {
                     let check = engine_picker::check(&b, id, name);
                     assert!(!check.get_sensitive());
-                    assert!(check.tooltip_text().unwrap().contains("Not installed"));
+                    assert!(
+                        check.tooltip_text().unwrap().as_str()
+                            == tr("Not installed. See Help → Backend availability.")
+                    );
                     check.set_active(true);
                     assert!(!check.is_active());
                     assert!(!engine_picker::selected(&b, id).iter().any(|s| s == name));

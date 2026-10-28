@@ -5,8 +5,9 @@ if [ "${1:-}" = "--inside" ]; then
     for file in ui/*.ui; do
         gtk4-builder-tool validate "$file"
     done
-    G_DEBUG=fatal-criticals target/debug/open-data-recovery --smoke-test
-    G_DEBUG=fatal-criticals target/debug/open-data-recovery --live-smoke-test
+    ODR_LANGUAGE=en G_DEBUG=fatal-criticals target/debug/open-data-recovery --smoke-test
+    ODR_LANGUAGE=en G_DEBUG=fatal-criticals target/debug/open-data-recovery --live-smoke-test
+    sh scripts/check-i18n.sh --inside
 else
     cargo test --locked
     cargo build --locked

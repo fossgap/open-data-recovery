@@ -279,13 +279,15 @@ impl ScanOptions {
             return fail("Retry passes must be between 0 and 20.");
         }
         if self.maximum_size.is_some_and(|max| max < self.minimum_size) {
-            return fail("Maximum size must be greater than minimum size.");
+            return fail(crate::i18n::tr(
+                "Maximum size must be greater than minimum size.",
+            ));
         }
         if self.length_bytes == Some(0) {
-            return fail("A byte range must have a nonzero length.");
+            return fail(crate::i18n::tr("A byte range must have a nonzero length."));
         }
         if self.workspace.as_os_str().is_empty() {
-            return fail("Choose a workspace directory.");
+            return fail(crate::i18n::tr("Choose a workspace directory."));
         }
         super::options::validate(self)?;
         Ok(())
@@ -313,9 +315,9 @@ pub fn normalize_extensions(text: &str) -> Result<Vec<String>> {
             .to_ascii_lowercase();
         if entry.len() > 20 || entry.is_empty() || !entry.bytes().all(|c| c.is_ascii_alphanumeric())
         {
-            return fail(
+            return fail(crate::i18n::tr(
                 "Extensions must be names such as jpg, png, pdf; no commands or paths are accepted.",
-            );
+            ));
         }
         extensions.push(entry);
     }

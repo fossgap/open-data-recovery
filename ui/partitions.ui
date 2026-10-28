@@ -3,7 +3,7 @@
   <object class="GtkStringList" id="tables"><items><item>Auto</item><item>MBR / Intel</item><item>GPT</item></items></object>
   <object class="GtkStringList" id="searches"><items><item>Quick Search</item><item>Deeper Search</item></items></object>
   <object class="GtkWindow" id="dialog">
-    <property name="title">Find lost partitions</property>
+    <property name="title" translatable="yes">Find lost partitions</property>
     <property name="modal">true</property>
     <property name="default-width">740</property>
     <property name="default-height">620</property>
@@ -16,26 +16,26 @@
         <style><class name="heading" /></style>
       </object></child>
       <child><object class="GtkLabel">
-        <property name="label">Search the selected disk or raw image for filesystem boundaries. No partition table is written. Choose a result to use as a source for a separate file scan.</property>
+        <property name="label" translatable="yes">Search the selected disk or raw image for filesystem boundaries. No partition table is written. Choose a result to use as a source for a separate file scan.</property>
         <property name="xalign">0</property><property name="wrap">true</property><property name="max-width-chars">75</property>
       </object></child>
       <child><object class="GtkBox" id="settings">
         <property name="orientation">vertical</property><property name="spacing">8</property>
-        <child><object class="GtkLabel" id="workspace_caption"><property name="label">Workspace for search reports</property><property name="xalign">0</property></object></child>
+        <child><object class="GtkLabel" id="workspace_caption"><property name="label" translatable="yes">Workspace for search reports</property><property name="xalign">0</property></object></child>
         <child><object class="GtkBox"><property name="spacing">8</property>
           <child><object class="GtkEntry" id="workspace"><property name="hexpand">true</property></object></child>
-          <child><object class="GtkButton" id="browse"><property name="label">Browse…</property></object></child>
+          <child><object class="GtkButton" id="browse"><property name="label" translatable="yes">Browse…</property></object></child>
         </object></child>
         <child><object class="GtkBox"><property name="spacing">8</property>
-          <child><object class="GtkLabel"><property name="label">Table</property></object></child>
+          <child><object class="GtkLabel"><property name="label" translatable="yes">Table</property></object></child>
           <child><object class="GtkDropDown" id="table"><property name="model">tables</property></object></child>
-          <child><object class="GtkLabel"><property name="label">Search</property><property name="margin-start">12</property></object></child>
+          <child><object class="GtkLabel"><property name="label" translatable="yes">Search</property><property name="margin-start">12</property></object></child>
           <child><object class="GtkDropDown" id="depth"><property name="model">searches</property></object></child>
           <child><object class="GtkLabel"><property name="hexpand">true</property></object></child>
         </object></child>
       </object></child>
       <child><object class="GtkLabel">
-        <property name="label">Candidates can include existing, overlapping or stale partitions. This search reads the source directly; clone-first applies when starting a file scan.</property>
+        <property name="label" translatable="yes">Candidates can include existing, overlapping or stale partitions. This search reads the source directly; clone-first applies when starting a file scan.</property>
         <property name="xalign">0</property><property name="wrap">true</property><property name="max-width-chars">75</property>
         <style><class name="dim-label" /></style>
       </object></child>
@@ -48,7 +48,7 @@
         <property name="child"><object class="GtkListBox" id="partitions"><property name="selection-mode">single</property></object></property>
       </object></child>
       <child><object class="GtkLabel" id="details">
-        <property name="label">Select a candidate to inspect its exact byte range.</property><property name="xalign">0</property>
+        <property name="label" translatable="yes">Select a candidate to inspect its exact byte range.</property><property name="xalign">0</property>
         <property name="wrap">true</property><property name="max-width-chars">75</property><property name="selectable">true</property>
       </object></child>
       <child><object class="GtkLabel" id="report">
@@ -56,14 +56,14 @@
         <style><class name="dim-label" /></style>
       </object></child>
       <child><object class="GtkBox"><property name="spacing">8</property>
-        <child><object class="GtkButton" id="open_report"><property name="label">Open report…</property></object></child>
+        <child><object class="GtkButton" id="open_report"><property name="label" translatable="yes">Open report…</property></object></child>
         <child><object class="GtkLabel"><property name="hexpand">true</property></object></child>
-        <child><object class="GtkButton" id="close"><property name="label">Close</property></object></child>
-        <child><object class="GtkButton" id="search"><property name="label">Search</property></object></child>
-        <child><object class="GtkButton" id="confirm"><property name="label">Use partition</property><property name="sensitive">false</property><style><class name="suggested-action" /></style></object></child>
+        <child><object class="GtkButton" id="close"><property name="label" translatable="yes">Close</property></object></child>
+        <child><object class="GtkButton" id="search"><property name="label" translatable="yes">Search</property></object></child>
+        <child><object class="GtkButton" id="confirm"><property name="label" translatable="yes">Use partition</property><property name="sensitive">false</property><style><class name="suggested-action" /></style></object></child>
       </object></child>
     </object></property>
   </object>
-  <object class="GtkFileChooserNative" id="chooser"><property name="title">Choose a workspace</property><property name="action">select-folder</property><property name="accept-label">Choose</property><property name="cancel-label">Cancel</property></object>
-  <object class="GtkFileChooserNative" id="report_chooser"><property name="title">Open partition search report.json</property><property name="action">open</property><property name="accept-label">Open</property><property name="cancel-label">Cancel</property></object>
+  <object class="GtkFileChooserNative" id="chooser"><property name="title" translatable="yes">Choose a workspace</property><property name="action">select-folder</property><property name="accept-label" translatable="yes">Choose</property><property name="cancel-label" translatable="yes">Cancel</property></object>
+  <object class="GtkFileChooserNative" id="report_chooser"><property name="title" translatable="yes">Open partition search report.json</property><property name="action">open</property><property name="accept-label" translatable="yes">Open</property><property name="cancel-label" translatable="yes">Cancel</property></object>
 </interface>

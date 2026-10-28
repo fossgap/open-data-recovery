@@ -9,7 +9,7 @@
         <property name="spacing">10</property>
         <child>
           <object class="GtkCheckButton" id="check">
-            <property name="tooltip-text">Select file for recovery</property>
+            <property name="tooltip-text" translatable="yes">Select file for recovery</property>
           </object>
         </child>
         <child>
@@ -31,7 +31,7 @@
         <child>
           <object class="GtkButton" id="findings">
             <property name="visible">false</property>
-            <property name="tooltip-text">Inspect all findings, original paths and engines in this group</property>
+            <property name="tooltip-text" translatable="yes">Inspect all findings, original paths and engines in this group</property>
             <style><class name="flat" /></style>
           </object>
         </child>

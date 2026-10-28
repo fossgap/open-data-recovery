@@ -133,7 +133,9 @@ pub fn path_ancestry(path: &Path) -> Result<Vec<String>> {
 /// Returns the nearest existing directory without following symlinks anywhere in the path.
 pub fn existing_parent(path: &Path) -> Result<PathBuf> {
     if !path.is_absolute() {
-        return fail("Use an absolute destination/workspace path.");
+        return fail(crate::i18n::tr(
+            "Use an absolute destination/workspace path.",
+        ));
     }
     let mut existing = PathBuf::from("/");
     let mut missing = false;
@@ -147,7 +149,9 @@ pub fn existing_parent(path: &Path) -> Result<PathBuf> {
                 let next = existing.join(name);
                 match fs::symlink_metadata(&next) {
                     Ok(meta) if meta.file_type().is_symlink() => {
-                        return fail("Storage paths must not contain symbolic links.");
+                        return fail(crate::i18n::tr(
+                            "Storage paths must not contain symbolic links.",
+                        ));
                     }
                     Ok(meta) if !meta.is_dir() => {
                         return fail(format!("{} is not a directory.", next.display()));
@@ -157,7 +161,11 @@ pub fn existing_parent(path: &Path) -> Result<PathBuf> {
                     Err(error) => return Err(error.into()),
                 }
             }
-            _ => return fail("Storage paths must not contain '..' components."),
+            _ => {
+                return fail(crate::i18n::tr(
+                    "Storage paths must not contain '..' components.",
+                ));
+            }
         }
     }
     Ok(existing)
@@ -180,9 +188,9 @@ pub fn validate_storage(
     let target_devices = validate_storage_location(source, target)?;
     let existing = existing_parent(target)?;
     if free_bytes(&existing)? < required_bytes.saturating_add(8 * 1024 * 1024) {
-        return fail(
+        return fail(crate::i18n::tr(
             "The chosen storage does not have enough available space (including an 8 MiB reserve).",
-        );
+        ));
     }
     Ok(target_devices)
 }
@@ -201,9 +209,9 @@ pub fn validate_storage_location(source: &SourceDescriptor, target: &Path) -> Re
             .iter()
             .any(|device| target_devices.contains(device))
     {
-        return fail(
+        return fail(crate::i18n::tr(
             "The workspace/destination shares a physical device with the source. Choose a separate drive (another partition on the same disk is not sufficient).",
-        );
+        ));
     }
     // An image is an allocated file, not the free space of its hosting drive.
     // Keep every input (including E01 segments) outside output directories;
@@ -217,9 +225,9 @@ pub fn validate_storage_location(source: &SourceDescriptor, target: &Path) -> Re
             return fail("The recorded source path is invalid.");
         }
         if target.starts_with(input) || input.starts_with(target) {
-            return fail(
+            return fail(crate::i18n::tr(
                 "The source image, its segments and output folders must not contain each other. Choose a different output folder.",
-            );
+            ));
         }
         if source.is_image_file() {
             match fs::symlink_metadata(input) {

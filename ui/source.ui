@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <interface>
   <object class="GtkWindow" id="dialog">
-    <property name="title">Add source</property>
+    <property name="title" translatable="yes">Add source</property>
     <property name="modal">true</property>
     <property name="default-width">590</property>
     <property name="child">
@@ -14,7 +14,7 @@
         <property name="margin-end">22</property>
         <child>
           <object class="GtkLabel">
-            <property name="label">Choose an image, device, or mounted folder.</property>
+            <property name="label" translatable="yes">Choose an image, device, or mounted folder.</property>
             <property name="xalign">0</property>
             <property name="wrap">true</property>
             <style>
@@ -29,7 +29,7 @@
             <property name="spacing">10</property>
             <child>
               <object class="GtkLabel">
-                <property name="label">Absolute source path</property>
+                <property name="label" translatable="yes">Absolute source path</property>
                 <property name="xalign">0</property>
                 <property name="wrap">true</property>
               </object>
@@ -38,7 +38,7 @@
               <object class="GtkEntry" id="path">
                 <property name="text" />
                 <property name="hexpand">true</property>
-                <property name="placeholder-text">/media/evidence/disk.img or /dev/mapper/unlocked</property>
+                <property name="placeholder-text" translatable="yes">/media/evidence/disk.img or /dev/mapper/unlocked</property>
               </object>
             </child>
           </object>
@@ -49,19 +49,19 @@
             <property name="spacing">10</property>
             <child>
               <object class="GtkButton" id="browse">
-                <property name="label">Browse image…</property>
+                <property name="label" translatable="yes">Browse image…</property>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="folder">
-                <property name="label">Browse folder…</property>
+                <property name="label" translatable="yes">Browse folder…</property>
               </object>
             </child>
           </object>
         </child>
         <child>
           <object class="GtkLabel">
-            <property name="label">Raw/dd and E01 images, disks, partitions, and already-unlocked mappers are supported. A mounted folder limits Quick metadata results to that path.</property>
+            <property name="label" translatable="yes">Raw/dd and E01 images, disks, partitions, and already-unlocked mappers are supported. A mounted folder limits Quick metadata results to that path.</property>
             <property name="xalign">0</property>
             <property name="wrap">true</property>
           </object>
@@ -80,12 +80,12 @@
             <property name="halign">end</property>
             <child>
               <object class="GtkButton" id="close">
-                <property name="label">Cancel</property>
+                <property name="label" translatable="yes">Cancel</property>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="confirm">
-                <property name="label">Add source</property>
+                <property name="label" translatable="yes">Add source</property>
                 <style>
                   <class name="suggested-action" />
                 </style>
@@ -100,15 +100,15 @@
     </style>
   </object>
   <object class="GtkFileChooserNative" id="chooser">
-    <property name="title">Choose a source image</property>
+    <property name="title" translatable="yes">Choose a source image</property>
     <property name="action">open</property>
-    <property name="accept-label">Choose</property>
-    <property name="cancel-label">Cancel</property>
+    <property name="accept-label" translatable="yes">Choose</property>
+    <property name="cancel-label" translatable="yes">Cancel</property>
   </object>
   <object class="GtkFileChooserNative" id="folder_chooser">
-    <property name="title">Choose a mounted folder</property>
+    <property name="title" translatable="yes">Choose a mounted folder</property>
     <property name="action">select-folder</property>
-    <property name="accept-label">Choose</property>
-    <property name="cancel-label">Cancel</property>
+    <property name="accept-label" translatable="yes">Choose</property>
+    <property name="cancel-label" translatable="yes">Cancel</property>
   </object>
 </interface>

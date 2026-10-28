@@ -1,4 +1,5 @@
 use super::*;
+use crate::i18n::tr;
 
 impl Live {
     pub(super) fn find_partitions(self: &Rc<Self>) {
@@ -46,15 +47,15 @@ impl Live {
             };
             ui.partition_report.replace(None);
             clear(&obj::<gtk::ListBox>(&b, "partitions"));
-            text(&b, "details", "Searching for partition candidates…");
+            text(&b, "details", tr("Searching for partition candidates…"));
             text(&b, "report", "");
             text(
                 &b,
                 "validation",
                 if options.deeper {
-                    "TestDisk · Deeper Search in progress. Large disks can take a long time."
+                    tr("TestDisk · Deeper Search in progress. Large disks can take a long time.")
                 } else {
-                    "TestDisk · Quick Search in progress…"
+                    tr("TestDisk · Quick Search in progress…")
                 },
             );
             ui.close_partition_search.set(false);
@@ -72,12 +73,8 @@ impl Live {
             let selected = row.and_then(|r| report.as_ref()?.partitions.get(r.index() as usize));
             obj::<gtk::Button>(&b, "confirm").set_sensitive(!ui.busy() && selected.is_some());
             if let Some(p) = selected {
-                text(&b, "details", &format!(
-                    "Start byte: {} · Length: {} bytes · Sector: {} bytes\n{}\n{}\nUse Custom Scan → Include existing files to list files lost with the partition.",
-                    p.offset_bytes, p.length_bytes, p.sector_size, p.description,
-                    if p.verified { "Filesystem header verified. File recoverability must still be checked by a scan." }
-                    else { "Unverified filesystem header. This may be a damaged or stale candidate; a scan can fail or find no files." }
-                ));
+                text(&b, "details", &crate::trf!("Start byte: {p0} · Length: {p1} bytes · Sector: {p2} bytes\n{p3}\n{p4}\nUse Custom Scan → Include existing files to list files lost with the partition.", p0 = p.offset_bytes, p1 = p.length_bytes, p2 = p.sector_size, p3 = p.description, p4 = if p.verified { tr("Filesystem header verified. File recoverability must still be checked by a scan.") }
+                    else { tr("Unverified filesystem header. This may be a damaged or stale candidate; a scan can fail or find no files.") }));
             }
         });
 
@@ -126,13 +123,9 @@ impl Live {
                     ui.controls();
                     ui.label(
                         "status_text",
-                        "Discovered partition selected · choose a scan mode to search its files",
+                        tr("Discovered partition selected · choose a scan mode to search its files"),
                     );
-                    ui.event(&format!(
-                        "Selected partition {} from {}",
-                        row.index() + 1,
-                        report.path().display()
-                    ));
+                    ui.event(&crate::trf!("Selected partition {p0} from {p1}", p0 = row.index() + 1, p1 = report.path().display()));
                 }
                 Err(error) => text(&b, "validation", &error.to_string()),
             }
@@ -175,7 +168,7 @@ impl Live {
                         text(
                             b,
                             "validation",
-                            "Cancelling partition search and retaining its logs…",
+                            tr("Cancelling partition search and retaining its logs…"),
                         );
                     }
                     return glib::Propagation::Stop;
@@ -197,7 +190,7 @@ impl Live {
 
     pub(super) fn open_partition_report(self: &Rc<Self>, path: PathBuf) {
         if let Some(b) = self.dialog.borrow().as_ref() {
-            text(b, "validation", "Reading partition search report…");
+            text(b, "validation", tr("Reading partition search report…"));
         }
         let generation = self.dialog_generation.get();
         self.submit(move || Message::PartitionReport(generation, discovery::load(&path)));
@@ -214,9 +207,9 @@ impl Live {
                     .as_ref()
                     .is_some_and(SourceDescriptor::is_image_file)
                 {
-                    "Workspace for search reports (may share the image's drive)"
+                    tr("Workspace for search reports (may share the image's drive)")
                 } else {
-                    "Workspace for search reports (separate drive for devices)"
+                    tr("Workspace for search reports (separate drive for devices)")
                 },
             );
             let caption = self
@@ -232,7 +225,8 @@ impl Live {
                     )
                 })
                 .unwrap_or_else(|| {
-                    "Select a raw disk image or device in Sources, or open a search report.".into()
+                    tr("Select a raw disk image or device in Sources, or open a search report.")
+                        .into()
                 });
             text(b, "source", &caption);
         }
@@ -256,9 +250,9 @@ impl Live {
                         .is_some(),
             );
             obj::<gtk::Button>(b, "close").set_label(if running {
-                "Cancel search"
+                tr("Cancel search")
             } else {
-                "Close"
+                tr("Close")
             });
             let spinner: gtk::Spinner = obj(b, "spinner");
             spinner.set_visible(running);
@@ -280,25 +274,25 @@ impl Live {
             let list: gtk::ListBox = obj(b, "partitions");
             clear(&list);
             for (i, p) in report.partitions.iter().enumerate() {
-                let caption = format!(
-                    "{} · {}{} · {}\nByte {} · {}",
-                    i + 1,
-                    if p.filesystem.is_empty() {
-                        "Unknown filesystem"
+                let caption = crate::trf!(
+                    "{p0} · {p1}{p2} · {p3}\nByte {p4} · {p5}",
+                    p0 = i + 1,
+                    p1 = if p.filesystem.is_empty() {
+                        tr("Unknown filesystem")
                     } else {
                         &p.filesystem
                     },
-                    if p.label.is_empty() {
+                    p2 = if p.label.is_empty() {
                         String::new()
                     } else {
                         format!(" · {}", p.label)
                     },
-                    model::size(p.length_bytes),
-                    p.offset_bytes,
-                    if p.verified {
-                        "Filesystem header verified"
+                    p3 = model::size(p.length_bytes),
+                    p4 = p.offset_bytes,
+                    p5 = if p.verified {
+                        tr("Filesystem header verified")
                     } else {
-                        "Unverified candidate"
+                        tr("Unverified candidate")
                     }
                 );
                 let label = gtk::Label::new(Some(&caption));
@@ -314,12 +308,12 @@ impl Live {
             let status = if let Some(error) = &report.error {
                 error.clone()
             } else if report.partitions.is_empty() {
-                "Search complete · no partition candidates found. Try Deeper Search or another table type.".into()
+                tr("Search complete · no partition candidates found. Try Deeper Search or another table type.").into()
             } else {
-                format!(
-                    "Search complete · {} candidate(s) · {}",
-                    report.partitions.len(),
-                    report.table
+                crate::trf!(
+                    "Search complete · {p0} candidate(s) · {p1}",
+                    p0 = report.partitions.len(),
+                    p1 = report.table
                 )
             };
             text(
@@ -337,9 +331,11 @@ impl Live {
             text(
                 b,
                 "details",
-                "Select a candidate to inspect its exact byte range. Starting a file scan retains that range in the workspace. Use Custom Scan → Include existing files to list files lost with the partition.",
+                tr(
+                    "Select a candidate to inspect its exact byte range. Starting a file scan retains that range in the workspace. Use Custom Scan → Include existing files to list files lost with the partition.",
+                ),
             );
-            let caption = format!("Report: {}", report.path().display());
+            let caption = crate::trf!("Report: {p0}", p0 = report.path().display());
             text(b, "report", &caption);
             obj::<gtk::Label>(b, "report").set_tooltip_text(Some(&caption));
         }
@@ -350,9 +346,9 @@ impl Live {
             match search.result.try_recv() {
                 Ok(result) => Some(result),
                 Err(mpsc::TryRecvError::Empty) => None,
-                Err(mpsc::TryRecvError::Disconnected) => Some(engine::fail(
+                Err(mpsc::TryRecvError::Disconnected) => Some(engine::fail(tr(
                     "The partition search worker stopped unexpectedly.",
-                )),
+                ))),
             }
         });
         let Some(result) = result else {
@@ -362,17 +358,17 @@ impl Live {
         let same_dialog = self.partition_generation.get() == self.dialog_generation.get();
         match result {
             Ok(report) => {
-                self.event(&format!(
-                    "Partition search {} · {} candidate(s) · {}",
-                    if report.complete {
-                        "complete"
+                self.event(&crate::trf!(
+                    "Partition search {p0} · {p1} candidate(s) · {p2}",
+                    p0 = if report.complete {
+                        tr("Complete")
                     } else if report.cancelled {
-                        "cancelled"
+                        tr("Cancelled")
                     } else {
-                        "failed"
+                        tr("Failed")
                     },
-                    report.partitions.len(),
-                    report.path().display()
+                    p1 = report.partitions.len(),
+                    p2 = report.path().display()
                 ));
                 if same_dialog {
                     self.show_partition_report(report);

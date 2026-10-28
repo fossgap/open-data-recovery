@@ -1,3 +1,4 @@
+use crate::i18n::tr;
 pub(crate) mod engine_picker;
 
 use crate::model::{self, Filter, Kind, Phase, ScanMode, Session, Snapshot, Source, SourceKind};
@@ -107,6 +108,7 @@ impl Ui {
     }
 
     fn connect(self: &Rc<Self>, app: &gtk::Application) {
+        crate::i18n::language_action(&self.window());
         self.action("start", Self::start);
         self.action("pause", Self::pause);
         self.action("cancel", Self::cancel);
@@ -117,18 +119,18 @@ impl Ui {
         self.action("saved-scans", Self::saved_scans);
         self.action("discover-partitions", |ui| {
             ui.info(
-                "Demo mode",
-                "Partition discovery is available in the normal application.",
+                tr("Demo mode"),
+                tr("Partition discovery is available in the normal application."),
             )
         });
         self.enable("discover-partitions", false);
-        self.action("backends", |ui| ui.info("Demo mode", "The demonstration runs no recovery tools. Launch without --demo to discover devices, inspect installed backends, and perform real recovery."));
+        self.action("backends", |ui| ui.info(tr("Demo mode"), tr("The demonstration runs no recovery tools. Launch without --demo to discover devices, inspect installed backends, and perform real recovery.")));
         self.action("reset", Self::reset);
         self.action("search", |ui| {
             ui.widget::<gtk::SearchEntry>("search").grab_focus();
         });
-        self.action("about", |ui| ui.info("Open Data Recovery", "A native Linux recovery workspace.\n\nDemo mode uses fictional sources, files, previews, and destinations. Its saved scans live only in memory and disappear when the app closes.\n\nNo recovery backends, source access, disk writes, or permission prompts run in demo mode. Launch without --demo to use the recovery engines.\n\nVersion 0.1.0 · Demo mode"));
-        self.action("shortcuts", |ui| ui.info("Keyboard shortcuts", "Ctrl+O    Add a sample source\nCtrl+S    Save a demo snapshot\nCtrl+F    Search files\nCtrl+R    Start scan\nCtrl+P    Toggle file preview\nCtrl+L    Toggle activity log\nCtrl+Q    Quit\n\nTab / Shift+Tab    Move between controls\nSpace    Toggle a focused checkbox\nEnter    Expand or collapse a focused folder"));
+        self.action("about", |ui| ui.info("Open Data Recovery", &crate::trf!("A native Linux recovery workspace.\n\nDemo mode uses fictional sources, files, previews, and destinations. Its saved scans live only in memory and disappear when the app closes.\n\nNo recovery backends, source access, disk writes, or permission prompts run in demo mode. Launch without --demo to use the recovery engines.\n\nVersion {version} · Demo mode", version = env!("CARGO_PKG_VERSION"))));
+        self.action("shortcuts", |ui| ui.info(tr("Keyboard shortcuts"), tr("Ctrl+O    Add a sample source\nCtrl+S    Save a demo snapshot\nCtrl+F    Search files\nCtrl+R    Start scan\nCtrl+P    Toggle file preview\nCtrl+L    Toggle activity log\nCtrl+Q    Quit\n\nTab / Shift+Tab    Move between controls\nSpace    Toggle a focused checkbox\nEnter    Expand or collapse a focused folder")));
 
         for (name, panel) in [("preview", "preview_panel"), ("events", "events_panel")] {
             let action = gio::SimpleAction::new_stateful(name, None, &true.to_variant());
@@ -296,7 +298,7 @@ impl Ui {
                 if let Some(ui) = weak.upgrade() {
                     clear_list(&ui.widget("events"));
                     ui.event_count.set(0);
-                    ui.label("event_count", "0 events");
+                    ui.label("event_count", tr("0 events"));
                 }
             });
     }
@@ -314,7 +316,7 @@ impl Ui {
             .enumerate()
             .filter(|(_, source)| source.kind == SourceKind::Disk)
         {
-            let builder = gtk::Builder::from_string(DISK_ROW);
+            let builder = crate::i18n::builder(DISK_ROW);
             object::<gtk::Label>(&builder, "name").set_text(&source.name);
             object::<gtk::Label>(&builder, "detail")
                 .set_text(&format!("{} · {}", source.path, source.filesystem));
@@ -327,10 +329,14 @@ impl Ui {
             } else {
                 "pan-down-symbolic"
             });
-            expand.set_tooltip_text(Some(&format!(
-                "{} partitions on {}",
-                if collapsed { "Expand" } else { "Collapse" },
-                source.name
+            expand.set_tooltip_text(Some(&crate::trf!(
+                "{p0} partitions on {p1}",
+                p0 = if collapsed {
+                    tr("Expand")
+                } else {
+                    tr("Collapse")
+                },
+                p1 = source.name
             )));
             let weak = Rc::downgrade(self);
             expand.connect_clicked(move |_| {
@@ -344,10 +350,7 @@ impl Ui {
             if children.contains(&selected) {
                 row.add_css_class("contains-selected");
             }
-            row.set_tooltip_text(Some(&format!(
-                "{} · {} · {}\nSelect to scan the whole sample disk. Expand to select a partition.",
-                source.name, source.path, source.capacity
-            )));
+            row.set_tooltip_text(Some(&crate::trf!("{p0} · {p1} · {p2}\nSelect to scan the whole sample disk. Expand to select a partition.", p0 = source.name, p1 = source.path, p2 = source.capacity)));
             let map: gtk::DrawingArea = object(&builder, "layout");
             map.set_tooltip_text(Some(
                 &children
@@ -398,30 +401,34 @@ impl Ui {
             }
             for child in children {
                 let source = &state.sources[child];
-                let builder = gtk::Builder::from_string(PARTITION_ROW);
+                let builder = crate::i18n::builder(PARTITION_ROW);
                 object::<gtk::Image>(&builder, "icon").set_icon_name(Some(source.icon));
                 object::<gtk::Label>(&builder, "name").set_text(&source.name);
                 object::<gtk::Label>(&builder, "capacity").set_text(source.capacity);
                 object::<gtk::Label>(&builder, "detail").set_text(&if source.kind
                     == SourceKind::Unallocated
                 {
-                    "Unallocated · carve only".into()
+                    tr("Unallocated · carve only").into()
                 } else {
                     format!(
                         "{} · {}{}",
                         source.path.trim_start_matches("/dev/"),
                         source.filesystem,
-                        if source.mounted { " · mounted" } else { "" }
+                        if source.mounted {
+                            tr(" · mounted")
+                        } else {
+                            ""
+                        }
                     )
                 });
                 let row: gtk::ListBoxRow = object(&builder, "row");
-                row.set_tooltip_text(Some(&format!(
-                    "{} · {} · {}\n{} on {}\nSample source — no device access",
-                    source.name,
-                    source.path,
-                    source.capacity,
-                    source.detail,
-                    state.sources[id].name
+                row.set_tooltip_text(Some(&crate::trf!(
+                    "{p0} · {p1} · {p2}\n{p3} on {p4}\nSample source — no device access",
+                    p0 = source.name,
+                    p1 = source.path,
+                    p2 = source.capacity,
+                    p3 = source.detail,
+                    p4 = state.sources[id].name
                 )));
                 self.source_keys.borrow_mut().push(Some(child));
                 list.append(&row);
@@ -434,19 +441,20 @@ impl Ui {
             .filter(|(_, source)| source.parent.is_none() && source.kind != SourceKind::Disk)
             .collect();
         if !standalone.is_empty() {
-            let builder = gtk::Builder::from_string(SOURCE_SECTION);
+            let builder = crate::i18n::builder(SOURCE_SECTION);
             self.source_keys.borrow_mut().push(None);
             list.append(&object::<gtk::ListBoxRow>(&builder, "row"));
         }
         for (id, source) in standalone {
-            let builder = gtk::Builder::from_string(SOURCE_ROW);
+            let builder = crate::i18n::builder(SOURCE_ROW);
             object::<gtk::Label>(&builder, "name").set_text(&source.name);
             object::<gtk::Label>(&builder, "detail").set_text(&source.detail);
             object::<gtk::Image>(&builder, "icon").set_icon_name(Some(source.icon));
             let row: gtk::ListBoxRow = object(&builder, "row");
-            row.set_tooltip_text(Some(&format!(
-                "{} · {}\nSample source — no device access",
-                source.path, source.capacity
+            row.set_tooltip_text(Some(&crate::trf!(
+                "{p0} · {p1}\nSample source — no device access",
+                p0 = source.path,
+                p1 = source.capacity
             )));
             row.add_css_class("standalone-source");
             self.source_keys.borrow_mut().push(Some(id));
@@ -498,12 +506,12 @@ impl Ui {
         let list: gtk::ListBox = self.widget("snapshots");
         clear_list(&list);
         for snapshot in &self.state.borrow().snapshots {
-            let builder = gtk::Builder::from_string(SOURCE_ROW);
+            let builder = crate::i18n::builder(SOURCE_ROW);
             object::<gtk::Label>(&builder, "name").set_text(&snapshot.title);
-            object::<gtk::Label>(&builder, "detail").set_text(&format!(
-                "{} files · {}% · in memory",
-                snapshot.session.found.len(),
-                snapshot.session.progress
+            object::<gtk::Label>(&builder, "detail").set_text(&crate::trf!(
+                "{p0} files · {p1}% · in memory",
+                p0 = snapshot.session.found.len(),
+                p1 = snapshot.session.progress
             ));
             object::<gtk::Image>(&builder, "icon")
                 .set_icon_name(Some("document-open-recent-symbolic"));
@@ -516,12 +524,12 @@ impl Ui {
         let source = &state.sources[state.session.source];
         let mode = ScanMode::from_index(self.widget::<gtk::DropDown>("scan_mode").selected());
         self.label("mode_hint", if source.kind == SourceKind::Unallocated {
-            "Unallocated space: search file signatures. Original names and folders may be lost."
+            tr("Unallocated space: search file signatures. Original names and folders may be lost.")
         } else if source.carve_only {
-            "This filesystem supports best-effort carving only. Original names may be lost."
+            tr("This filesystem supports best-effort carving only. Original names may be lost.")
         } else if source.mounted {
-            "Live source: mounted filesystems can change during a scan. Clone-first is available."
-        } else { mode.description() });
+            tr("Live source: mounted filesystems can change during a scan. Clone-first is available.")
+        } else { tr(mode.description()) });
     }
 
     fn render_status(&self) {
@@ -531,14 +539,14 @@ impl Ui {
         self.label("source_title", &source.name);
         self.label(
             "source_detail",
-            &format!(
-                "{}   ·   {}   ·   {}{}   ·   Sample source",
-                source.path,
-                source.filesystem,
-                source.capacity,
-                source
+            &crate::trf!(
+                "{p0}   ·   {p1}   ·   {p2}{p3}   ·   Sample source",
+                p0 = source.path,
+                p1 = source.filesystem,
+                p2 = source.capacity,
+                p3 = source
                     .parent
-                    .map(|id| format!("   ·   on {}", state.sources[id].path))
+                    .map(|id| crate::trf!("   ·   on {p0}", p0 = state.sources[id].path))
                     .unwrap_or_default()
             ),
         );
@@ -550,18 +558,18 @@ impl Ui {
         self.label(
             "source_state",
             if source.mounted {
-                "Read-only source · mounted"
+                tr("Read-only source · mounted")
             } else {
-                "Read-only source"
+                tr("Read-only source")
             },
         );
         self.label(
             "status_text",
-            &format!(
-                "{} · {} · {} candidates",
-                session.stage(),
-                session.mode.name(),
-                session.found.len()
+            &crate::trf!(
+                "{p0} · {p1} · {p2} candidates",
+                p0 = tr(session.stage()),
+                p1 = tr(session.mode.name()),
+                p2 = session.found.len()
             ),
         );
         let progress: gtk::ProgressBar = self.widget("progress");
@@ -601,15 +609,15 @@ impl Ui {
             .set_sensitive(!busy);
         self.widget::<gtk::Button>("start")
             .set_label(if session.phase == Phase::Ready {
-                "Start scan"
+                tr("Start scan")
             } else {
-                "Scan again"
+                tr("Scan again")
             });
         self.widget::<gtk::Button>("pause")
             .set_label(if session.phase == Phase::Paused {
-                "Resume"
+                tr("Resume")
             } else {
-                "Pause"
+                tr("Pause")
             });
         drop(state);
         self.render_selection();
@@ -623,12 +631,13 @@ impl Ui {
         self.label(
             "selection_summary",
             &if count == 0 {
-                "No files selected".into()
+                tr("No files selected").into()
             } else {
-                format!(
-                    "{count} {} selected · {}",
-                    if count == 1 { "file" } else { "files" },
-                    model::size(session.selected_bytes())
+                crate::trf!(
+                    "Selection ({p0}): {count} · {p1}",
+                    count = count,
+                    p0 = tr("files"),
+                    p1 = model::size(session.selected_bytes())
                 )
             },
         );
@@ -665,7 +674,7 @@ impl Ui {
             if children.is_empty() {
                 continue;
             }
-            let builder = gtk::Builder::from_string(FOLDER_ROW);
+            let builder = crate::i18n::builder(FOLDER_ROW);
             object::<gtk::Label>(&builder, "name").set_text(folder);
             object::<gtk::Label>(&builder, "count").set_text(&format!("{}", children.len()));
             let check: gtk::CheckButton = object(&builder, "check");
@@ -697,9 +706,9 @@ impl Ui {
             expand.set_tooltip_text(Some(&format!(
                 "{} {folder}",
                 if collapsed.contains(folder) {
-                    "Expand"
+                    tr("Expand")
                 } else {
-                    "Collapse"
+                    tr("Collapse")
                 }
             )));
             let weak = Rc::downgrade(self);
@@ -716,18 +725,21 @@ impl Ui {
                 continue;
             }
             for entry in children {
-                let builder = gtk::Builder::from_string(FILE_ROW);
+                let builder = crate::i18n::builder(FILE_ROW);
                 object::<gtk::Label>(&builder, "name").set_text(entry.name);
                 object::<gtk::Label>(&builder, "size").set_text(&model::size(entry.bytes));
                 let status: gtk::Label = object(&builder, "status");
-                status.set_text(entry.status());
+                status.set_text(tr(entry.status()));
                 if entry.carved {
                     status.add_css_class("carved");
                 }
                 object::<gtk::Image>(&builder, "icon").set_icon_name(Some(entry.icon()));
                 let check: gtk::CheckButton = object(&builder, "check");
                 check.set_active(session.selected.contains(&entry.id));
-                check.set_tooltip_text(Some(&format!("Select {} for recovery", entry.name)));
+                check.set_tooltip_text(Some(&crate::trf!(
+                    "Select {p0} for recovery",
+                    p0 = entry.name
+                )));
                 let id = entry.id;
                 let weak = Rc::downgrade(self);
                 check.connect_toggled(move |check| {
@@ -747,9 +759,11 @@ impl Ui {
                 });
                 self.row_keys.borrow_mut().push(RowKey::File(id));
                 let row: gtk::ListBoxRow = object(&builder, "row");
-                row.set_tooltip_text(Some(&format!(
-                    "{}/{} · {}\nDiscovery does not guarantee recovery.",
-                    entry.folder, entry.name, entry.modified
+                row.set_tooltip_text(Some(&crate::trf!(
+                    "{p0}/{p1} · {p2}\nDiscovery does not guarantee recovery.",
+                    p0 = entry.folder,
+                    p1 = entry.name,
+                    p2 = entry.modified
                 )));
                 list.append(&row);
                 if focused == Some(id) {
@@ -772,34 +786,34 @@ impl Ui {
         self.label("result_count", &format!("{}", session.found.len()));
         self.label(
             "file_summary",
-            &format!(
-                "{} of {} files · {} · Sample results",
-                matching.len(),
-                session.found.len(),
-                model::size(matching.iter().map(|entry| entry.bytes).sum())
+            &crate::trf!(
+                "{p0} of {p1} files · {p2} · Sample results",
+                p0 = matching.len(),
+                p1 = session.found.len(),
+                p2 = model::size(matching.iter().map(|entry| entry.bytes).sum())
             ),
         );
         self.widget::<gtk::Box>("empty_state")
             .set_visible(matching.is_empty());
         let (title, detail) = if !query.is_empty() || filter != Filter::All {
             (
-                "No matching files",
-                "Try another search or choose All files.",
+                tr("No matching files"),
+                tr("Try another search or choose All files."),
             )
         } else if session.phase.busy() {
             (
-                "Looking for your files…",
-                "Candidates will appear as the simulated scan progresses.",
+                tr("Looking for your files…"),
+                tr("Candidates will appear as the simulated scan progresses."),
             )
         } else if session.phase == Phase::Cancelled {
             (
-                "Scan cancelled",
-                "Start another scan to find sample candidates.",
+                tr("Scan cancelled"),
+                tr("Start another scan to find sample candidates."),
             )
         } else {
             (
-                "Ready when you are",
-                "Choose a scan mode above, then start a sample scan.",
+                tr("Ready when you are"),
+                tr("Choose a scan mode above, then start a sample scan."),
             )
         };
         self.label("empty_title", title);
@@ -820,15 +834,15 @@ impl Ui {
             self.label("preview_name", entry.name);
             self.label("preview_path", &format!("/{}/{}", entry.folder, entry.name));
             self.label("preview_text", entry.preview);
-            self.label("preview_metadata", &format!("Size                 {}\nModified         {}\nDiscovery       {}\nIntegrity          Not verified", model::size(entry.bytes), entry.modified, entry.status()));
+            self.label("preview_metadata", &crate::trf!("Size                 {p0}\nModified         {p1}\nDiscovery       {p2}\nIntegrity          Not verified", p0 = model::size(entry.bytes), p1 = entry.modified, p2 = tr(entry.status())));
             self.widget::<gtk::Image>("preview_icon")
                 .set_icon_name(Some(entry.icon()));
         } else {
-            self.label("preview_name", "Choose a file");
+            self.label("preview_name", tr("Choose a file"));
             self.label("preview_path", "");
             self.label(
                 "preview_text",
-                "Select a candidate to inspect its contents and metadata.",
+                tr("Select a candidate to inspect its contents and metadata."),
             );
             self.label("preview_metadata", "");
             self.widget::<gtk::Image>("preview_icon")
@@ -881,7 +895,10 @@ impl Ui {
         self.render_status();
         self.refresh_source_highlights();
         self.event(
-            &format!("Selected {name}. Sample source only; no device opened."),
+            &crate::trf!(
+                "Selected {name}. Sample source only; no device opened.",
+                name = name
+            ),
             false,
         );
     }
@@ -901,13 +918,13 @@ impl Ui {
         self.render_files();
         self.render_status();
         self.event(
-            &format!(
-                "{} started (simulation).{}",
-                mode.name(),
-                if clone_first {
-                    " Simulating clone-first before scanning."
+            &crate::trf!(
+                "{p0} started (simulation).{p1}",
+                p0 = tr(mode.name()),
+                p1 = if clone_first {
+                    tr(" Simulating clone-first before scanning.")
                 } else {
-                    " Source access disabled."
+                    tr(" Source access disabled.")
                 }
             ),
             false,
@@ -929,7 +946,7 @@ impl Ui {
         self.render_status();
         if completed {
             let count = self.state.borrow().session.found.len();
-            self.event(&format!("Simulation complete. {count} sample candidates found. Review and select files to continue."), false);
+            self.event(&crate::trf!("Simulation complete. {count} sample candidates found. Review and select files to continue.", count = count), false);
         }
     }
 
@@ -938,9 +955,9 @@ impl Ui {
             self.render_status();
             self.event(
                 if self.state.borrow().session.phase == Phase::Paused {
-                    "Simulated scan paused. Progress and candidates retained."
+                    tr("Simulated scan paused. Progress and candidates retained.")
                 } else {
-                    "Simulated scan resumed."
+                    tr("Simulated scan resumed.")
                 },
                 false,
             );
@@ -952,7 +969,7 @@ impl Ui {
             self.render_status();
             self.render_files();
             self.event(
-                "Simulated scan cancelled. Partial candidates remain available.",
+                tr("Simulated scan cancelled. Partial candidates remain available."),
                 true,
             );
         }
@@ -973,7 +990,7 @@ impl Ui {
         drop(state);
         self.render_snapshots();
         self.event(
-            "Snapshot saved in memory for this demo session. Nothing was written to disk.",
+            tr("Snapshot saved in memory for this demo session. Nothing was written to disk."),
             false,
         );
     }
@@ -1002,7 +1019,7 @@ impl Ui {
         self.render_files();
         self.render_status();
         self.event(
-            "Reopened in-memory snapshot. An unfinished scan reopens paused.",
+            tr("Reopened in-memory snapshot. An unfinished scan reopens paused."),
             false,
         );
     }
@@ -1021,11 +1038,11 @@ impl Ui {
         self.render_snapshots();
         self.render_files();
         self.render_status();
-        self.event("Demo reset to the bundled Archive SSD scan.", false);
+        self.event(tr("Demo reset to the bundled Archive SSD scan."), false);
     }
 
     fn event(&self, message: &str, warning: bool) {
-        let builder = gtk::Builder::from_string(EVENT_ROW);
+        let builder = crate::i18n::builder(EVENT_ROW);
         let time = glib::DateTime::now_local()
             .and_then(|time| time.format("%H:%M:%S"))
             .map(|text| text.to_string())
@@ -1046,14 +1063,17 @@ impl Ui {
         if let Some(row) = list.row_at_index(200) {
             list.remove(&row);
         }
-        self.label("event_count", &format!("{count} events"));
+        self.label(
+            "event_count",
+            &crate::trf!("Events: {count}", count = count),
+        );
     }
 
     fn show_dialog(&self, xml: &str) -> gtk::Builder {
         if let Some(previous) = self.dialog.borrow_mut().take() {
             object::<gtk::Window>(&previous, "dialog").destroy();
         }
-        let builder = gtk::Builder::from_string(xml);
+        let builder = crate::i18n::builder(xml);
         let dialog: gtk::Window = object(&builder, "dialog");
         dialog.set_transient_for(Some(&self.window()));
         dialog.set_destroy_with_parent(true);
@@ -1091,19 +1111,20 @@ impl Ui {
     fn custom_scan(self: &Rc<Self>) {
         let b = self.show_dialog(include_str!("../ui/scan-options.ui"));
         object::<gtk::CheckButton>(&b, "consolidate").set_sensitive(false);
-        object::<gtk::CheckButton>(&b, "consolidate").set_tooltip_text(Some(
+        object::<gtk::CheckButton>(&b, "consolidate").set_tooltip_text(Some(tr(
             "Content consolidation is available for real scans; this demo uses sample data.",
-        ));
+        )));
         object::<gtk::DropDown>(&b, "mode")
             .set_selected(self.widget::<gtk::DropDown>("scan_mode").selected());
         object::<gtk::Entry>(&b, "workspace").set_text("/demo/recovery-workspace");
         object::<gtk::Entry>(&b, "workspace").set_sensitive(false);
         object::<gtk::Button>(&b, "browse").set_visible(false);
-        object::<gtk::Label>(&b, "validation")
-            .set_text("Demo settings only. No devices are opened or files written.");
+        object::<gtk::Label>(&b, "validation").set_text(tr(
+            "Demo settings only. No devices are opened or files written.",
+        ));
         engine_picker::setup_scan(&b);
         object::<gtk::Label>(&b, "engine_context")
-            .set_text("Fixture scan · no external engines run.");
+            .set_text(tr("Fixture scan · no external engines run."));
         for id in ["metadata", "carver", "clone_engine"] {
             object::<gtk::MenuButton>(&b, id).set_sensitive(false);
         }
@@ -1128,7 +1149,7 @@ impl Ui {
     }
     fn saved_scans(self: &Rc<Self>) {
         let b = self.show_dialog(include_str!("../ui/saved-scans.ui"));
-        object::<gtk::Entry>(&b, "workspace").set_text("Demo snapshots · in memory");
+        object::<gtk::Entry>(&b, "workspace").set_text(tr("Demo snapshots · in memory"));
         object::<gtk::Entry>(&b, "workspace").set_sensitive(false);
         for id in [
             "browse",
@@ -1142,17 +1163,17 @@ impl Ui {
         }
         let list: gtk::ListBox = object(&b, "scans");
         for snapshot in &self.state.borrow().snapshots {
-            let row = gtk::Builder::from_string(SOURCE_ROW);
+            let row = crate::i18n::builder(SOURCE_ROW);
             object::<gtk::Label>(&row, "name").set_text(&snapshot.title);
-            object::<gtk::Label>(&row, "detail").set_text(&format!(
-                "{} · {} sample candidates",
-                snapshot.session.mode.name(),
-                snapshot.session.found.len()
+            object::<gtk::Label>(&row, "detail").set_text(&crate::trf!(
+                "{p0} · {p1} sample candidates",
+                p0 = tr(snapshot.session.mode.name()),
+                p1 = snapshot.session.found.len()
             ));
             object::<gtk::Image>(&row, "icon").set_icon_name(Some("document-open-recent-symbolic"));
             list.append(&object::<gtk::ListBoxRow>(&row, "row"));
         }
-        object::<gtk::Label>(&b,"details").set_text("Demo snapshots disappear when the app closes. Production scans are saved automatically to SQLite and can retain a clone.");
+        object::<gtk::Label>(&b,"details").set_text(tr("Demo snapshots disappear when the app closes. Production scans are saved automatically to SQLite and can retain a clone."));
         let weak = Rc::downgrade(self);
         let dialog = b.downgrade();
         object::<gtk::Button>(&b, "confirm").connect_clicked(move |_| {
@@ -1162,7 +1183,7 @@ impl Ui {
                     object::<gtk::Window>(&b, "dialog").close();
                     ui.open_snapshot(index);
                 } else {
-                    object::<gtk::Label>(&b, "validation").set_text("Select a saved scan.");
+                    object::<gtk::Label>(&b, "validation").set_text(tr("Select a saved scan."));
                 }
             }
         });
@@ -1183,13 +1204,13 @@ impl Ui {
             .unwrap()
             .set_visible(false);
         object::<gtk::Button>(&builder, "browse").set_visible(false);
-        object::<gtk::Label>(&builder, "summary").set_text(&format!("Review {count} selected files ({}) from {name}.\nThe source must stay read-only throughout recovery.", model::size(bytes)));
+        object::<gtk::Label>(&builder, "summary").set_text(&crate::trf!("Review {count} selected files ({p0}) from {name}.\nThe source must stay read-only throughout recovery.", count = count, p0 = model::size(bytes), name = name));
         let confirm: gtk::Button = object(&builder, "confirm");
         let validation: gtk::Label = object(&builder, "validation");
         let confirm_weak = confirm.downgrade();
         object::<gtk::DropDown>(&builder, "destination").connect_selected_notify(move |destination| {
             let result = model::demo_destination(destination.selected());
-            validation.set_text(match result { Ok(()) => "Sample destination is on a separate drive with enough space. Demo mode uses simulated destination checks.", Err(message) => message });
+            validation.set_text(match result { Ok(()) => tr("Sample destination is on a separate drive with enough space. Demo mode uses simulated destination checks."), Err(message) => message });
             if let Some(confirm) = confirm_weak.upgrade() { confirm.set_sensitive(result.is_ok()); }
         });
         let weak = Rc::downgrade(self);
@@ -1200,13 +1221,13 @@ impl Ui {
             if model::demo_destination(destination.selected()).is_err() { return; }
             if let Some(ui) = weak.upgrade() {
                 if ui.state.borrow().session.phase.busy() { return; }
-                result_label.set_text(&format!("Simulation complete: {count} files ({}) would be recovered. No files were written or hashes computed.", model::size(bytes)));
+                result_label.set_text(&crate::trf!("Simulation complete: {count} files ({p0}) would be recovered. No files were written or hashes computed.", count = count, p0 = model::size(bytes)));
                 result_label.set_visible(true);
                 confirm.set_sensitive(false);
-                confirm.set_label("Simulation complete");
+                confirm.set_label(tr("Simulation complete"));
                 destination.set_sensitive(false);
-                close.set_label("Done");
-                ui.event(&format!("Recovery simulation reviewed: {count} files, {}. No files written.", model::size(bytes)), false);
+                close.set_label(tr("Done"));
+                ui.event(&crate::trf!("Recovery simulation reviewed: {count} files, {p0}. No files written.", count = count, p0 = model::size(bytes)), false);
             }
         });
     }
@@ -1239,7 +1260,7 @@ impl Ui {
                 }
                 let (detail, path, filesystem, mounted, carve_only, icon) = match kind.selected() {
                     1 => (
-                        "E01 image · NTFS",
+                        tr("E01 image · NTFS"),
                         "/demo/added.E01",
                         "NTFS",
                         false,
@@ -1247,7 +1268,7 @@ impl Ui {
                         "drive-optical-symbolic",
                     ),
                     2 => (
-                        "Mounted folder · ext4",
+                        tr("Mounted folder · ext4"),
                         "/demo/mounted/folder",
                         "ext4",
                         true,
@@ -1255,7 +1276,7 @@ impl Ui {
                         "folder-symbolic",
                     ),
                     3 => (
-                        "Unlocked mapper · btrfs",
+                        tr("Unlocked mapper · btrfs"),
                         "/dev/mapper/demo",
                         "btrfs",
                         true,
@@ -1263,7 +1284,7 @@ impl Ui {
                         "drive-harddisk-symbolic",
                     ),
                     4 => (
-                        "Sample volume · XFS",
+                        tr("Sample volume · XFS"),
                         "/dev/demo-xfs",
                         "XFS",
                         false,
@@ -1271,7 +1292,7 @@ impl Ui {
                         "drive-harddisk-symbolic",
                     ),
                     5 => (
-                        "Raw image · HFS+",
+                        tr("Raw image · HFS+"),
                         "/demo/hfs.dd",
                         "HFS+",
                         false,
@@ -1279,7 +1300,7 @@ impl Ui {
                         "drive-optical-symbolic",
                     ),
                     _ => (
-                        "Raw image · ext4",
+                        tr("Raw image · ext4"),
                         "/demo/added.dd",
                         "ext4",
                         false,
@@ -1400,7 +1421,7 @@ pub fn activate(app: &gtk::Application, smoke_test: bool) {
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
     let ui = Rc::new(Ui {
-        builder: gtk::Builder::from_string(WINDOW),
+        builder: crate::i18n::builder(WINDOW),
         state: RefCell::new(Workspace::default()),
         row_keys: RefCell::new(vec![]),
         source_keys: RefCell::new(vec![]),
@@ -1415,7 +1436,7 @@ pub fn activate(app: &gtk::Application, smoke_test: bool) {
     let bytes = glib::Bytes::from_static(include_bytes!("../ui/sample-landscape.svg"));
     let stream = gio::MemoryInputStream::from_bytes(&bytes);
     let pixbuf = gtk::gdk_pixbuf::Pixbuf::from_stream(&stream, gio::Cancellable::NONE)
-        .expect("Bundled sample illustration");
+        .expect(tr("Bundled sample illustration"));
     ui.widget::<gtk::Picture>("preview_picture")
         .set_paintable(Some(&gtk::gdk::Texture::for_pixbuf(&pixbuf)));
     ui.render_sources();
@@ -1423,11 +1444,11 @@ pub fn activate(app: &gtk::Application, smoke_test: bool) {
     ui.render_files();
     ui.render_status();
     ui.event(
-        "Loaded a sample full scan of Archive SSD. 14 candidate files across 4 folders.",
+        tr("Loaded a sample full scan of Archive SSD. 14 candidate files across 4 folders."),
         false,
     );
     ui.event(
-        "Sources, previews, and destinations are fictional. No device access or recovery writes.",
+        tr("Sources, previews, and destinations are fictional. No device access or recovery writes."),
         false,
     );
     ui.window().present();
@@ -1580,7 +1601,7 @@ mod smoke {
         );
         assert_eq!(
             ui.widget::<gtk::Button>("pause").label().as_deref(),
-            Some("Resume")
+            Some(tr("Resume"))
         );
         action(ui, "save");
         action(ui, "cancel");

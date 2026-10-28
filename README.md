@@ -35,6 +35,7 @@ Open Data Recovery (ODR) brings Sleuth Kit, TestDisk, PhotoRec and other recover
 - Search, file-type filters, folder selection, and image/text previews
 - Recovery options for folder structure, filename conflicts, timestamps and SHA-256 output verification
 - Native GTK4 interface with system light/dark themes, plus a CLI for scanning and recovery
+- Interface in English, French, Spanish, Simplified Chinese, Hindi, Arabic and Portuguese, with automatic system-language detection
 
 | Scan mode | What runs |
 | --- | --- |
@@ -93,6 +94,8 @@ Device and mounted-folder sources require workspace and destination storage on a
 The workspace can contain extracted files, a clone and consolidation caches; recovery writes separate selected copies to the destination. Some metadata engines already extract contents during Quick scanning. See [storage and cleanup](docs/wiki/storage.md) and [how recovery works](docs/wiki/recovery.md).
 
 For CLI options, run `open-data-recovery --help`. Report problems through [GitHub Issues](https://github.com/fossgap/open-data-recovery/issues), including your distribution, engine versions and steps to reproduce.
+
+The interface follows your system language, with English as the fallback. Use **View → Language…** to choose English, French, Spanish, Simplified Chinese, Hindi, Arabic or Portuguese; the choice applies on the next launch. Translations are included in every package and AppImage. See [language settings](docs/wiki/README.md#language-settings).
 
 ## Building from source
 

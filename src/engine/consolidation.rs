@@ -278,7 +278,7 @@ pub fn run(
     store.manifest.state = "consolidating".into();
     store.save()?;
     notify(Event::Stage {
-        text: "Consolidating identical files…".into(),
+        text: crate::i18n::tr("Consolidating identical files…").into(),
         fraction: Some(0.0),
     });
     let root = GuardedDir::existing(&store.directory)?;
@@ -330,9 +330,10 @@ pub fn run(
                     worker.add(file, unique_size)?;
                     if updated.elapsed() >= Duration::from_millis(100) {
                         notify(Event::Stage {
-                            text: format!(
-                                "Consolidating · {} of {total} findings checked",
-                                worker.summary.findings
+                            text: crate::trf!(
+                                "Consolidating · Checked: {checked} / {total}",
+                                checked = worker.summary.findings,
+                                total = total
                             ),
                             fraction: Some(worker.summary.findings as f64 / total.max(1) as f64),
                         });
@@ -380,15 +381,10 @@ pub fn run(
             store.log("consolidated", &summary)?;
             notify(Event::Candidates(summary.groups));
             notify(Event::Stage {
-                text: format!(
-                    "Consolidated {} findings into {} {}",
-                    summary.findings,
-                    summary.groups,
-                    if summary.groups == 1 {
-                        "group"
-                    } else {
-                        "groups"
-                    }
+                text: crate::trf!(
+                    "Consolidated · Findings: {findings} · Groups: {groups}",
+                    findings = summary.findings,
+                    groups = summary.groups
                 ),
                 fraction: Some(1.0),
             });

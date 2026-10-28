@@ -10,13 +10,13 @@
         <property name="spacing">8</property>
         <child>
           <object class="GtkCheckButton" id="check">
-            <property name="tooltip-text">Select matching files in this folder</property>
+            <property name="tooltip-text" translatable="yes">Select matching files in this folder</property>
           </object>
         </child>
         <child>
           <object class="GtkButton" id="expand">
             <property name="icon-name">pan-down-symbolic</property>
-            <property name="tooltip-text">Expand or collapse folder</property>
+            <property name="tooltip-text" translatable="yes">Expand or collapse folder</property>
             <style>
               <class name="flat" />
               <class name="expander" />

@@ -60,6 +60,13 @@ See [consolidation](wiki/consolidation.md) for behavior and storage costs.
 
 ## Documentation and screenshots
 
+Translations live in `src/i18n/*.json` and are embedded in the executable.
+Run `sh scripts/check-i18n.sh --catalogs-only` for coverage and named-field
+validation, or `sh scripts/check-i18n.sh` to exercise every language in GTK.
+The latter requires a built executable and Xvfb; `scripts/check.sh` includes it.
+The [translation guide](../src/i18n/README.md) explains message marking,
+dropdown identifiers, fallback rules and right-to-left layout.
+
 Keep workflow details in `docs/wiki/` and the README focused on getting started.
 Record checks actually performed, including limitations, in the local ignored
 `docs/validation.md` file. Published check results are available in

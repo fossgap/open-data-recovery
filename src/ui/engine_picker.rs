@@ -1,4 +1,5 @@
 //! Native popover selectors: multiple metadata engines, one carver or imager.
+use crate::i18n::tr;
 use gtk::{StringList, prelude::*};
 use std::{cell::Cell, rc::Rc};
 
@@ -58,7 +59,7 @@ pub fn unavailable(b: &gtk::Builder, id: &str) -> Option<String> {
             Some(check) => check
                 .tooltip_text()
                 .map(|reason| format!("{name}: {reason}")),
-            None => Some(format!("Unknown engine: {name}")),
+            None => Some(crate::trf!("Unknown engine: {name}", name = name)),
         }
     })
 }
@@ -73,7 +74,7 @@ fn sync(b: &gtk::Builder, id: &str, changing: &Cell<bool>) {
         );
     }
     let label = if selected == ["auto"] {
-        "Auto".into()
+        tr("Auto").into()
     } else {
         selected.join(", ")
     };
@@ -94,7 +95,7 @@ pub fn setup(b: &gtk::Builder, id: &'static str, names: &[&str], multiple: bool)
     let changing = Rc::new(Cell::new(false));
     let mut group: Option<gtk::CheckButton> = None;
     for &name in names {
-        let check = gtk::CheckButton::with_label(if name == "auto" { "Auto" } else { name });
+        let check = gtk::CheckButton::with_label(if name == "auto" { tr("Auto") } else { name });
         check.set_widget_name(name);
         if !multiple {
             if let Some(group) = &group {
@@ -104,7 +105,7 @@ pub fn setup(b: &gtk::Builder, id: &'static str, names: &[&str], multiple: bool)
             }
         }
         check.set_sensitive(false);
-        check.set_tooltip_text(Some("Checking installed engines…"));
+        check.set_tooltip_text(Some(tr("Checking installed engines…")));
         list.append(&check);
         if name == "auto" {
             list.append(&gtk::Separator::new(gtk::Orientation::Horizontal));

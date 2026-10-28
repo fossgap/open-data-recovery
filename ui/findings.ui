@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <object class="GtkWindow" id="dialog">
-    <property name="title">Consolidated findings</property>
+    <property name="title" translatable="yes">Consolidated findings</property>
     <property name="modal">true</property>
     <property name="default-width">680</property>
     <property name="default-height">440</property>
@@ -33,10 +33,10 @@
         </object></child>
         <child><object class="GtkBox">
           <property name="spacing">8</property>
-          <child><object class="GtkButton" id="first"><property name="label">First page</property></object></child>
-          <child><object class="GtkButton" id="next"><property name="label">Next 100 findings</property></object></child>
+          <child><object class="GtkButton" id="first"><property name="label" translatable="yes">First page</property></object></child>
+          <child><object class="GtkButton" id="next"><property name="label" translatable="yes">Next 100 findings</property></object></child>
           <child><object class="GtkLabel"><property name="hexpand">true</property></object></child>
-          <child><object class="GtkButton" id="close"><property name="label">Close</property></object></child>
+          <child><object class="GtkButton" id="close"><property name="label" translatable="yes">Close</property></object></child>
         </object></child>
       </object>
     </property>

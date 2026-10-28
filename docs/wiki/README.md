@@ -38,6 +38,34 @@ flowchart LR
 
 The optional clone is inside the workspace. When available, it can supply the source reads shown above without reconnecting the original source.
 
+## Language settings
+
+The interface supports English, French, Spanish, Simplified Chinese, Hindi,
+Arabic and Portuguese. On first launch it follows the desktop language; unsupported
+languages fall back to English. **View → Language…** lets you choose a language
+or return to **System language**. Apply the choice, then reopen the application
+when convenient. Changing this setting does not interrupt a running scan.
+
+The preference is stored in `$XDG_CONFIG_HOME/open-data-recovery/language`, or
+`~/.config/open-data-recovery/language` when XDG_CONFIG_HOME is unset. For one
+launch, use `ODR_LANGUAGE=fr open-data-recovery` (also `en`, `es`, `zh_CN`, `hi`,
+`ar`, `pt`). Without an override or saved preference, ODR considers `LANGUAGE`,
+then the first set value of `LC_ALL`, `LC_MESSAGES`, and `LANG`. The `C`/`POSIX`
+locale selects English. Regional variants such as `fr_CA` and `pt_BR` use their
+supported base language; `zh_CN`, `zh_SG` and `zh_Hans` use Simplified Chinese.
+
+Arabic mirrors the interface. Paths, extension patterns and numeric inputs keep
+left-to-right direction. Source names and file contents are never translated.
+Menus, dialogs, scan controls, progress and common validation messages are
+localized. CLI output, saved data identifiers, engine diagnostics and detailed
+technical reports retain their original language. System file chooser internals
+follow the desktop's GTK language.
+
+Catalogs are embedded, so language support also works offline and in AppImage.
+Text rendering uses system fonts. If Chinese or Hindi characters appear as boxes,
+install your distribution's Noto fonts (Debian/Ubuntu: `fonts-noto-core` and
+`fonts-noto-cjk`). See the [translation contributor guide](../../src/i18n/README.md).
+
 ## Terms used in the application
 
 | Term | Meaning |

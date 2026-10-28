@@ -900,7 +900,7 @@ pub fn copy_range(
         remaining -= count as u64;
         if last.elapsed().as_millis() > 200 {
             (notify)(Event::Stage {
-                text: "Copying source range".into(),
+                text: crate::i18n::tr("Copying source range").into(),
                 fraction: Some((length - remaining) as f64 / length as f64),
             });
             last = std::time::Instant::now();

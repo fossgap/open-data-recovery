@@ -1,5 +1,6 @@
 mod appearance;
 mod engine;
+mod i18n;
 mod live;
 mod model;
 mod ui;
@@ -387,7 +388,8 @@ fn main() -> gtk::glib::ExitCode {
     let smoke = args
         .first()
         .is_some_and(|a| a == "--smoke-test" || a == "--live-smoke-test");
-    if !args.is_empty() && !demo && !smoke {
+    let localization_smoke = args.first().is_some_and(|a| a == "--i18n-smoke-test");
+    if !args.is_empty() && !demo && !smoke && !localization_smoke {
         return match cli(&args) {
             Ok(()) => gtk::glib::ExitCode::SUCCESS,
             Err(error) => {
@@ -396,13 +398,17 @@ fn main() -> gtk::glib::ExitCode {
             }
         };
     }
+    i18n::init();
     let app = gtk::Application::builder()
         .application_id("org.opendatarecovery.App")
         .flags(gio::ApplicationFlags::NON_UNIQUE)
         .build();
     app.connect_activate(move |app| {
+        i18n::direction();
         gtk::Window::set_default_icon_name("org.opendatarecovery.App");
-        if demo {
+        if localization_smoke {
+            i18n::smoke::run(app);
+        } else if demo {
             ui::activate(app, smoke)
         } else {
             live::activate(app, smoke)

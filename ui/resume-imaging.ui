@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <interface>
   <object class="GtkWindow" id="dialog">
-    <property name="title">Resume imaging</property>
+    <property name="title" translatable="yes">Resume imaging</property>
     <property name="modal">true</property>
     <property name="default-width">680</property>
     <property name="default-height">530</property>
@@ -28,7 +28,7 @@
                 <property name="valign">start</property>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">Retry passes</property>
+                    <property name="label" translatable="yes">Retry passes</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                     <property name="max-width-chars">68</property>
@@ -51,7 +51,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">Reads</property>
+                    <property name="label" translatable="yes">Reads</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                     <property name="max-width-chars">68</property>
@@ -63,7 +63,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="dd_direct">
-                    <property name="label">Use direct reads (bypass cache)</property>
+                    <property name="label" translatable="yes">Use direct reads (bypass cache)</property>
                     <property name="active">false</property>
                     <layout>
                       <property name="column">1</property>
@@ -73,7 +73,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">Direction</property>
+                    <property name="label" translatable="yes">Direction</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                     <property name="max-width-chars">68</property>
@@ -85,7 +85,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="dd_reverse">
-                    <property name="label">Reverse pass direction</property>
+                    <property name="label" translatable="yes">Reverse pass direction</property>
                     <property name="active">false</property>
                     <layout>
                       <property name="column">1</property>
@@ -95,7 +95,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">Difficult regions</property>
+                    <property name="label" translatable="yes">Difficult regions</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                     <property name="max-width-chars">68</property>
@@ -107,7 +107,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="dd_scrape">
-                    <property name="label">Enable scraping</property>
+                    <property name="label" translatable="yes">Enable scraping</property>
                     <property name="active">false</property>
                     <layout>
                       <property name="column">1</property>
@@ -117,7 +117,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">Slow-read threshold (B/s)</property>
+                    <property name="label" translatable="yes">Slow-read threshold (B/s)</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                     <property name="max-width-chars">68</property>
@@ -129,7 +129,7 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="dd_min_rate">
-                    <property name="placeholder-text">0 = engine default</property>
+                    <property name="placeholder-text" translatable="yes">0 = engine default</property>
                     <property name="text">0</property>
                     <property name="hexpand">true</property>
                     <layout>
@@ -140,7 +140,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">Maximum read rate (B/s)</property>
+                    <property name="label" translatable="yes">Maximum read rate (B/s)</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                     <property name="max-width-chars">68</property>
@@ -152,7 +152,7 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="dd_max_rate">
-                    <property name="placeholder-text">0 = unlimited</property>
+                    <property name="placeholder-text" translatable="yes">0 = unlimited</property>
                     <property name="text">0</property>
                     <property name="hexpand">true</property>
                     <layout>
@@ -163,7 +163,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">No successful read timeout (s)</property>
+                    <property name="label" translatable="yes">No successful read timeout (s)</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                     <property name="max-width-chars">68</property>
@@ -175,7 +175,7 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="dd_timeout">
-                    <property name="placeholder-text">0 = unlimited</property>
+                    <property name="placeholder-text" translatable="yes">0 = unlimited</property>
                     <property name="text">0</property>
                     <property name="hexpand">true</property>
                     <layout>
@@ -186,7 +186,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">Maximum read errors</property>
+                    <property name="label" translatable="yes">Maximum read errors</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                     <property name="max-width-chars">68</property>
@@ -198,7 +198,7 @@
                 </child>
                 <child>
                   <object class="GtkEntry" id="dd_errors">
-                    <property name="placeholder-text">Empty = unlimited</property>
+                    <property name="placeholder-text" translatable="yes">Empty = unlimited</property>
                     <property name="text" />
                     <property name="hexpand">true</property>
                     <layout>
@@ -233,18 +233,18 @@
             <property name="halign">end</property>
             <child>
               <object class="GtkButton" id="close">
-                <property name="label">Cancel</property>
+                <property name="label" translatable="yes">Cancel</property>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="back">
-                <property name="label">Back</property>
+                <property name="label" translatable="yes">Back</property>
                 <property name="visible">false</property>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="confirm">
-                <property name="label">Resume imaging</property>
+                <property name="label" translatable="yes">Resume imaging</property>
                 <style>
                   <class name="suggested-action" />
                 </style>

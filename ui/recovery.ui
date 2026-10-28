@@ -9,7 +9,7 @@
     </items>
   </object>
   <object class="GtkWindow" id="dialog">
-    <property name="title">Review recovery</property>
+    <property name="title" translatable="yes">Review recovery</property>
     <property name="modal">true</property>
     <property name="resizable">false</property>
     <property name="default-width">530</property>
@@ -25,7 +25,7 @@
         </style>
         <child>
           <object class="GtkLabel">
-            <property name="label">A new home for your files.</property>
+            <property name="label" translatable="yes">A new home for your files.</property>
             <property name="xalign">0</property>
             <style>
               <class name="dialog-title" />
@@ -61,7 +61,7 @@
                 <property name="spacing">10</property>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">Destination folder</property>
+                    <property name="label" translatable="yes">Destination folder</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                   </object>
@@ -78,7 +78,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="browse">
-                        <property name="label">Browse destination…</property>
+                        <property name="label" translatable="yes">Browse destination…</property>
                       </object>
                     </child>
                   </object>
@@ -87,7 +87,7 @@
             </child>
             <child>
               <object class="GtkLabel" id="validation">
-                <property name="label">Choose where to save recovered files.</property>
+                <property name="label" translatable="yes">Choose where to save recovered files.</property>
                 <property name="xalign">0</property>
                 <property name="wrap">true</property>
                 <property name="max-width-chars">55</property>
@@ -105,15 +105,15 @@
             <property name="spacing">10</property>
             <child>
               <object class="GtkCheckButton" id="all_paths">
-                <property name="label">Recover every recorded path</property>
+                <property name="label" translatable="yes">Recover every recorded path</property>
                 <property name="active">false</property>
                 <property name="visible">false</property>
-                <property name="tooltip-text">Normally one copy is recovered per consolidated group. Enable to restore each distinct recorded path, including alternate names from other engines. This writes more copies and needs additional destination space.</property>
+                <property name="tooltip-text" translatable="yes">Normally one copy is recovered per consolidated group. Enable to restore each distinct recorded path, including alternate names from other engines. This writes more copies and needs additional destination space.</property>
               </object>
             </child>
             <child>
               <object class="GtkCheckButton" id="preserve_tree">
-                <property name="label">Preserve folder structure</property>
+                <property name="label" translatable="yes">Preserve folder structure</property>
                 <property name="active">true</property>
               </object>
             </child>
@@ -123,7 +123,7 @@
                 <property name="spacing">10</property>
                 <child>
                   <object class="GtkLabel">
-                    <property name="label">If a filename already exists</property>
+                    <property name="label" translatable="yes">If a filename already exists</property>
                     <property name="xalign">0</property>
                     <property name="wrap">true</property>
                   </object>
@@ -144,26 +144,26 @@
             </child>
             <child>
               <object class="GtkCheckButton" id="timestamps">
-                <property name="label">Preserve modification timestamps</property>
+                <property name="label" translatable="yes">Preserve modification timestamps</property>
                 <property name="active">true</property>
               </object>
             </child>
             <child>
               <object class="GtkCheckButton" id="linux_metadata">
-                <property name="label">Preserve Linux file metadata, links and sparse layout</property>
-                <property name="tooltip-text">Restore available captured file metadata. Unsupported permissions or attributes are reported in the recovery log.</property>
+                <property name="label" translatable="yes">Preserve Linux file metadata, links and sparse layout</property>
+                <property name="tooltip-text" translatable="yes">Restore available captured file metadata. Unsupported permissions or attributes are reported in the recovery log.</property>
                 <property name="active">false</property>
               </object>
             </child>
             <child>
               <object class="GtkCheckButton" id="verify">
-                <property name="label">Verify SHA-256 after writing</property>
+                <property name="label" translatable="yes">Verify SHA-256 after writing</property>
                 <property name="active">true</property>
               </object>
             </child>
             <child>
               <object class="GtkCheckButton" id="continue_errors">
-                <property name="label">Continue after individual file errors</property>
+                <property name="label" translatable="yes">Continue after individual file errors</property>
                 <property name="active">true</property>
               </object>
             </child>
@@ -171,7 +171,7 @@
         </child>
         <child>
           <object class="GtkLabel" id="notice">
-            <property name="label">This is a simulation. Destination identity and free space are sample data. No directories or recovered files will be created.</property>
+            <property name="label" translatable="yes">This is a simulation. Destination identity and free space are sample data. No directories or recovered files will be created.</property>
             <property name="xalign">0</property>
             <property name="wrap">true</property>
             <property name="max-width-chars">58</property>
@@ -197,12 +197,12 @@
             <property name="halign">end</property>
             <child>
               <object class="GtkButton" id="close">
-                <property name="label">Cancel</property>
+                <property name="label" translatable="yes">Cancel</property>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="confirm">
-                <property name="label">Simulate recovery</property>
+                <property name="label" translatable="yes">Simulate recovery</property>
                 <property name="sensitive">false</property>
                 <style>
                   <class name="suggested-action" />
@@ -215,9 +215,9 @@
     </property>
   </object>
   <object class="GtkFileChooserNative" id="chooser">
-    <property name="title">Choose a folder</property>
+    <property name="title" translatable="yes">Choose a folder</property>
     <property name="action">select-folder</property>
-    <property name="accept-label">Choose</property>
-    <property name="cancel-label">Cancel</property>
+    <property name="accept-label" translatable="yes">Choose</property>
+    <property name="cancel-label" translatable="yes">Cancel</property>
   </object>
 </interface>

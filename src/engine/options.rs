@@ -57,30 +57,40 @@ pub fn validate(o: &ScanOptions) -> Result<()> {
         ));
     }
     if !FILESYSTEMS.contains(&o.interpretation.filesystem.as_str()) {
-        return fail("Choose a supported filesystem interpretation.");
+        return fail(crate::i18n::tr(
+            "Choose a supported filesystem interpretation.",
+        ));
     }
     if o.interpretation
         .sector_size
         .is_some_and(|n| ![512, 1024, 2048, 4096].contains(&n))
     {
-        return fail("Sector size must be 512, 1024, 2048 or 4096 bytes.");
+        return fail(crate::i18n::tr(
+            "Sector size must be 512, 1024, 2048 or 4096 bytes.",
+        ));
     }
     if o.photorec
         .block_size
         .is_some_and(|n| n < 512 || !n.is_power_of_two() || n > 1024 * 1024)
     {
-        return fail("PhotoRec block size must be a power of two from 512 to 1048576 bytes.");
+        return fail(crate::i18n::tr(
+            "PhotoRec block size must be a power of two from 512 to 1048576 bytes.",
+        ));
     }
     if o.photorec.block_offset != 0 {
-        return fail(
+        return fail(crate::i18n::tr(
             "PhotoRec scripted runs do not expose block alignment; use the source byte range instead.",
-        );
+        ));
     }
     if o.ddrescue.max_read_rate != 0 && o.ddrescue.min_read_rate > o.ddrescue.max_read_rate {
-        return fail("The slow-read threshold cannot exceed the maximum read rate.");
+        return fail(crate::i18n::tr(
+            "The slow-read threshold cannot exceed the maximum read rate.",
+        ));
     }
     if o.ddrescue.import_image.is_some() != o.ddrescue.import_map.is_some() {
-        return fail("Select both the existing image and its ddrescue map.");
+        return fail(crate::i18n::tr(
+            "Select both the existing image and its ddrescue map.",
+        ));
     }
     if o.ddrescue
         .import_image
@@ -88,49 +98,65 @@ pub fn validate(o: &ScanOptions) -> Result<()> {
         .chain(o.ddrescue.import_map.iter())
         .any(|p| !p.is_absolute())
     {
-        return fail("Imported image and map paths must be absolute.");
+        return fail(crate::i18n::tr(
+            "Imported image and map paths must be absolute.",
+        ));
     }
     if !["all", "file", "directory", "inode"].contains(&o.ext.target_kind.as_str()) {
-        return fail("Invalid ext recovery target type.");
+        return fail(crate::i18n::tr("Invalid ext recovery target type."));
     }
     if o.ext.target_kind == "inode" && !inode_list(&o.ext.target, false) {
-        return fail("Enter positive inode numbers separated by commas.");
+        return fail(crate::i18n::tr(
+            "Enter positive inode numbers separated by commas.",
+        ));
     }
     if matches!(o.ext.target_kind.as_str(), "file" | "directory") && !relative_target(&o.ext.target)
     {
-        return fail(
+        return fail(crate::i18n::tr(
             "The ext target must be a path relative to the filesystem root, without traversal.",
-        );
+        ));
     }
     if o.ext.after.zip(o.ext.before).is_some_and(|(a, b)| a >= b) {
-        return fail("The start time must precede the end time.");
+        return fail(crate::i18n::tr("The start time must precede the end time."));
     }
     if o.ext.journal.as_ref().is_some_and(|p| !p.is_absolute()) {
-        return fail("Use an absolute path for the saved journal.");
+        return fail(crate::i18n::tr(
+            "Use an absolute path for the saved journal.",
+        ));
     }
     if o.ext
         .block_size
         .is_some_and(|n| ![1024, 2048, 4096, 8192, 16384, 32768, 65536].contains(&n))
     {
-        return fail("Invalid ext filesystem block size.");
+        return fail(crate::i18n::tr("Invalid ext filesystem block size."));
     }
     if o.btrfs.superblock > 2 {
-        return fail("Btrfs superblock mirror must be 0, 1 or 2.");
+        return fail(crate::i18n::tr(
+            "Btrfs superblock mirror must be 0, 1 or 2.",
+        ));
     }
     if o.btrfs.subvolume.is_some() && o.btrfs.subvolume_root.is_some() {
-        return fail("Choose a Btrfs subvolume ID or subvolume root address, not both.");
+        return fail(crate::i18n::tr(
+            "Choose a Btrfs subvolume ID or subvolume root address, not both.",
+        ));
     }
     if !o.btrfs.path.is_empty() && !relative_target(&o.btrfs.path) {
-        return fail("Enter a Btrfs directory relative to its filesystem root.");
+        return fail(crate::i18n::tr(
+            "Enter a Btrfs directory relative to its filesystem root.",
+        ));
     }
     if o.ntfs.minimum_percent > 100 {
-        return fail("NTFS recoverable percentage must be between 0 and 100.");
+        return fail(crate::i18n::tr(
+            "NTFS recoverable percentage must be between 0 and 100.",
+        ));
     }
     if !o.ntfs.inodes.is_empty() && !inode_list(&o.ntfs.inodes, true) {
-        return fail("NTFS inodes must be numbers or ranges, for example 42,70-80.");
+        return fail(crate::i18n::tr(
+            "NTFS inodes must be numbers or ranges, for example 42,70-80.",
+        ));
     }
     if o.ntfs.pattern.contains(['\0', '\n', '\r']) || o.ntfs.pattern.len() > 1024 {
-        return fail("Invalid NTFS filename pattern.");
+        return fail(crate::i18n::tr("Invalid NTFS filename pattern."));
     }
     let mut seen = BTreeSet::new();
     for name in &o.metadata_sequence {
@@ -138,7 +164,9 @@ pub fn validate(o: &ScanOptions) -> Result<()> {
             || !super::adapters::METADATA.contains(&name.as_str())
             || !seen.insert(name)
         {
-            return fail("The metadata sequence must contain distinct engine names.");
+            return fail(crate::i18n::tr(
+                "The metadata sequence must contain distinct engine names.",
+            ));
         }
     }
     Ok(())

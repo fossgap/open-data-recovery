@@ -2,8 +2,8 @@ FROM rust:1.90-bookworm
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       build-essential pkg-config libgtk-4-dev libgtk-4-bin \
-       xvfb xauth dbus-x11 xdotool imagemagick \
+       build-essential python3 pkg-config libgtk-4-dev libgtk-4-bin \
+       xvfb xauth dbus-x11 xdotool imagemagick fonts-noto-core fonts-noto-cjk \
        curl file rpm zstd desktop-file-utils \
        sleuthkit testdisk gddrescue ext4magic extundelete ntfs-3g btrfs-progs \
        e2fsprogs ewf-tools scalpel foremost safecopy magicrescue recoverjpeg \

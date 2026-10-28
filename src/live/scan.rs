@@ -1,4 +1,5 @@
 use super::*;
+use crate::i18n::tr;
 use crate::ui::engine_picker;
 
 fn set_choice(b: &gtk::Builder, id: &str, value: &str) {
@@ -29,10 +30,9 @@ fn optional_number(b: &gtk::Builder, id: &str) -> engine::Result<Option<u64>> {
     if !active(b, id) || value(b, id).is_empty() {
         return Ok(None);
     }
-    value(b, id)
-        .parse()
-        .map(Some)
-        .map_err(|_| engine::Error::Message(format!("{id}: enter a nonnegative integer.")))
+    value(b, id).parse().map(Some).map_err(|_| {
+        engine::Error::Message(crate::trf!("{id}: enter a nonnegative integer.", id = id))
+    })
 }
 fn numeric(b: &gtk::Builder, id: &str) -> engine::Result<u64> {
     Ok(optional_number(b, id)?.unwrap_or(0))
@@ -40,7 +40,8 @@ fn numeric(b: &gtk::Builder, id: &str) -> engine::Result<u64> {
 fn optional_u32(b: &gtk::Builder, id: &str) -> engine::Result<Option<u32>> {
     optional_number(b, id)?
         .map(|n| {
-            u32::try_from(n).map_err(|_| engine::Error::Message(format!("{id} is too large.")))
+            u32::try_from(n)
+                .map_err(|_| engine::Error::Message(crate::trf!("{id} is too large.", id = id)))
         })
         .transpose()
 }
@@ -120,7 +121,7 @@ pub(super) fn read(b: &gtk::Builder, o: &mut ScanOptions) -> engine::Result<()> 
             "auto" => None,
             n => Some(
                 n.parse()
-                    .map_err(|_| engine::Error::Message("Invalid sector size.".into()))?,
+                    .map_err(|_| engine::Error::Message(tr("Invalid sector size.").into()))?,
             ),
         },
         directory_inode: optional_number(b, "directory_inode")?,
@@ -130,7 +131,7 @@ pub(super) fn read(b: &gtk::Builder, o: &mut ScanOptions) -> engine::Result<()> 
             pattern: enabled_value(b, "ntfs_pattern"),
             inodes: enabled_value(b, "ntfs_inodes"),
             minimum_percent: u8::try_from(numeric(b, "ntfs_percent")?)
-                .map_err(|_| engine::Error::Message("NTFS percentage must be 0–100.".into()))?,
+                .map_err(|_| engine::Error::Message(tr("NTFS percentage must be 0–100.").into()))?,
             case_sensitive: checked(b, "ntfs_case"),
         };
     }
@@ -290,10 +291,10 @@ fn refresh_engine_availability(
         for &name in names {
             let reason = (|| -> Option<String> {
                 let Some(versions) = versions else {
-                    return Some("Checking installed engines…".into());
+                    return Some(tr("Checking installed engines…").into());
                 };
                 let Some(source) = source else {
-                    return Some("Select a source first.".into());
+                    return Some(tr("Select a source first.").into());
                 };
                 if name == "auto" {
                     return if id == "metadata" {
@@ -312,11 +313,11 @@ fn refresh_engine_availability(
                 if !versions.contains_key(program)
                     || name == "tsk" && !versions.contains_key("icat")
                 {
-                    return Some("Not installed. See Help → Backend availability.".into());
+                    return Some(tr("Not installed. See Help → Backend availability.").into());
                 }
                 if id == "metadata" {
                     if source.scope.is_some() && name != "tsk" {
-                        return Some("Folder-scoped scanning uses TSK.".into());
+                        return Some(tr("Folder-scoped scanning uses TSK.").into());
                     }
                     let applicable = match name {
                         "ext4magic" | "extundelete" | "ext4rescue" => {
@@ -339,7 +340,7 @@ fn refresh_engine_availability(
                     };
                     if !applicable {
                         return Some(
-                            "Unavailable for the selected filesystem interpretation.".into(),
+                            tr("Unavailable for the selected filesystem interpretation.").into(),
                         );
                     }
                     if name == "ext4rescue"
@@ -350,14 +351,14 @@ fn refresh_engine_availability(
                             || source.partition.is_some())
                     {
                         return Some(
-                            "Requires clone-first with ddrescue and a complete filesystem source."
+                            tr("Requires clone-first with ddrescue and a complete filesystem source.")
                                 .into(),
                         );
                     }
                 }
                 if id == "carver" && source.scope.is_some() {
                     return Some(
-                        "Content carving requires a filesystem source, not a folder.".into(),
+                        tr("Content carving requires a filesystem source, not a folder.").into(),
                     );
                 }
                 None
@@ -491,14 +492,14 @@ pub(super) fn context(ui: &Live, b: &gtk::Builder) {
     text(
         b,
         "engine_context",
-        &format!(
-            "Metadata: {}\nCarver: {}",
-            if metadata.is_empty() {
-                "none / unavailable".into()
+        &crate::trf!(
+            "Metadata: {p0}\nCarver: {p1}",
+            p0 = if metadata.is_empty() {
+                tr("none / unavailable").into()
             } else {
                 metadata.join(" → ")
             },
-            carver.unwrap_or("none / unavailable".into())
+            p1 = carver.unwrap_or(tr("none / unavailable").into())
         ),
     );
     let unavailable = unavailable_selection(b);
@@ -577,15 +578,15 @@ impl Live {
                     .selected
                     .get()
                     .and_then(|i| ui.sources.borrow().get(i).cloned())
-                    .ok_or_else(|| engine::Error::Message("Select a source first.".into()))?;
+                    .ok_or_else(|| engine::Error::Message(tr("Select a source first.").into()))?;
                 let mut options = scan_options(&b)?;
                 if let Some(error) = unavailable_selection(&b) {
                     return engine::fail(error);
                 }
                 let versions = ui.custom_versions.borrow();
-                let versions = versions
-                    .as_ref()
-                    .ok_or_else(|| engine::Error::Message("Checking installed engines…".into()))?;
+                let versions = versions.as_ref().ok_or_else(|| {
+                    engine::Error::Message(tr("Checking installed engines…").into())
+                })?;
                 let plan = engine::plan::resolve(&source, &options, versions)?;
                 options.metadata_sequence = plan.metadata;
                 if let Some(carver) = plan.carver {
@@ -620,7 +621,7 @@ impl Live {
                 match scan_options(&b) {
                     Ok(o) => {
                         let generation = ui.dialog_generation.get();
-                        text(&b, "inspection_report", "Inspecting Btrfs…");
+                        text(&b, "inspection_report", tr("Inspecting Btrfs…"));
                         ui.submit(move || {
                             Message::BtrfsInspection(
                                 generation,
@@ -642,10 +643,10 @@ impl Live {
         text(
             &b,
             "summary",
-            &format!(
-                "{}\n{}\nContinue the saved acquisition using its existing clone and map. Scanning remains a separate action.",
-                scan.manifest.source.path.display(),
-                scan.directory.display()
+            &crate::trf!(
+                "{p0}\n{p1}\nContinue the saved acquisition using its existing clone and map. Scanning remains a separate action.",
+                p0 = scan.manifest.source.path.display(),
+                p1 = scan.directory.display()
             ),
         );
         let weak = Rc::downgrade(self);
@@ -657,7 +658,7 @@ impl Live {
             let result = (|| -> engine::Result<_> {
                 let tuning = read_imaging(&b)?;
                 let retries = u32::try_from(numeric(&b, "retries")?)
-                    .map_err(|_| engine::Error::Message("Too many retries.".into()))?;
+                    .map_err(|_| engine::Error::Message(tr("Too many retries.").into()))?;
                 let mut o = scan.manifest.options.clone();
                 o.ddrescue = tuning.clone();
                 o.retry_passes = retries;
@@ -679,7 +680,7 @@ impl Live {
                     ui.pulse.set(true);
                     ui.paused.set(false);
                     ui.label("progress_text", "");
-                    ui.label("status_text", "Resuming imaging…");
+                    ui.label("status_text", tr("Resuming imaging…"));
                     ui.render_files();
                     ui.controls();
                 }

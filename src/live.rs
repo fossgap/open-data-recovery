@@ -1,4 +1,5 @@
 //! Production GTK controller. All blocking discovery, database and engine work runs off the UI thread.
+use crate::i18n::tr;
 mod partitions;
 mod partitions_smoke;
 mod scan;
@@ -110,6 +111,13 @@ fn mode(index: u32) -> Mode {
         _ => Mode::Full,
     }
 }
+fn mode_name(mode: Mode) -> &'static str {
+    match mode {
+        Mode::Quick => "Quick scan",
+        Mode::Deep => "Deep scan",
+        Mode::Full => "Full scan",
+    }
+}
 fn index(mode: Mode) -> u32 {
     match mode {
         Mode::Quick => 0,
@@ -121,7 +129,7 @@ fn date(seconds: i64) -> String {
     glib::DateTime::from_unix_local(seconds)
         .and_then(|d| d.format("%Y-%m-%d %H:%M"))
         .map(|s| s.to_string())
-        .unwrap_or_else(|_| "Unknown".into())
+        .unwrap_or_else(|_| tr("Unknown").into())
 }
 fn source_icon(source: &SourceDescriptor) -> &'static str {
     match source.kind {
@@ -183,6 +191,7 @@ impl Live {
         }
     }
     fn connect(self: &Rc<Self>, app: &gtk::Application) {
+        crate::i18n::language_action(&self.window());
         for (name, handler) in [
             ("start", Self::start as fn(&Rc<Self>)),
             ("custom-scan", Self::custom_scan),
@@ -200,12 +209,12 @@ impl Live {
         self.action("search", |ui| {
             ui.widget::<gtk::SearchEntry>("search").grab_focus();
         });
-        self.action("about",|ui|ui.info("Open Data Recovery","Native Linux recovery workspace · 0.1.0\n\nRead-only source access, isolated recovery engines, persistent SQLite scans, and verified recovery to validated output storage.\n\nSource discovery does not unmount live filesystems. Recovery results depend on filesystem damage and the installed backend versions."));
-        self.action("shortcuts",|ui|ui.info("Keyboard shortcuts","Ctrl+O  Add source\nCtrl+R  Start default scan\nCtrl+S  Saved scans\nCtrl+F  Search files\nCtrl+P  Toggle preview\nCtrl+L  Toggle activity\nCtrl+Q  Quit\n\nSelection controls apply to the current page. Selections persist across pages and filters."));
+        self.action("about",|ui|ui.info("Open Data Recovery",&crate::trf!("Native Linux recovery workspace · {version}\n\nRead-only source access, isolated recovery engines, persistent SQLite scans, and verified recovery to validated output storage.\n\nSource discovery does not unmount live filesystems. Recovery results depend on filesystem damage and the installed backend versions.", version = env!("CARGO_PKG_VERSION"))));
+        self.action("shortcuts",|ui|ui.info(tr("Keyboard shortcuts"),tr("Ctrl+O  Add source\nCtrl+R  Start default scan\nCtrl+S  Saved scans\nCtrl+F  Search files\nCtrl+P  Toggle preview\nCtrl+L  Toggle activity\nCtrl+Q  Quit\n\nSelection controls apply to the current page. Selections persist across pages and filters.")));
         self.action("backends", |ui| {
             ui.submit(|| {
                 Message::Info(
-                    "Backend availability".into(),
+                    tr("Backend availability").into(),
                     Ok(adapters::versions()
                         .into_iter()
                         .map(|(name, version)| format!("{name}: {version}"))
@@ -256,9 +265,9 @@ impl Live {
                     ui.label(
                         "status_text",
                         if ui.deleting.get() {
-                            "Finishing saved-scan deletion before closing…"
+                            tr("Finishing saved-scan deletion before closing…")
                         } else {
-                            "Stopping the running job and saving partial results…"
+                            tr("Stopping the running job and saving partial results…")
                         },
                     );
                     return glib::Propagation::Stop;
@@ -355,7 +364,7 @@ impl Live {
             .connect_clicked(move |_| {
                 if let Some(ui) = weak.upgrade() {
                     clear(&ui.widget("events"));
-                    ui.label("event_count", "0 events");
+                    ui.label("event_count", tr("0 events"));
                 }
             });
         let weak = Rc::downgrade(self);
@@ -384,7 +393,7 @@ impl Live {
         if self.busy() {
             return;
         }
-        self.label("status_text", "Discovering disks and partitions…");
+        self.label("status_text", tr("Discovering disks and partitions…"));
         self.submit(|| Message::Sources(sources::discover()));
     }
     fn controls(&self) {
@@ -419,9 +428,13 @@ impl Live {
             .set_sensitive(!busy);
         self.widget::<gtk::MenuButton>("scan_dropdown")
             .set_sensitive(!busy);
-        self.widget::<gtk::Button>("start").set_label("Scan");
+        self.widget::<gtk::Button>("start").set_label(tr("Scan"));
         self.widget::<gtk::Button>("pause")
-            .set_label(if self.paused.get() { "Resume" } else { "Pause" });
+            .set_label(if self.paused.get() {
+                tr("Resume")
+            } else {
+                tr("Pause")
+            });
         self.widget::<gtk::CheckButton>("select_all")
             .set_sensitive(!busy && !self.page.borrow().files.is_empty());
         if let Some(source) = source {
@@ -435,7 +448,7 @@ impl Live {
             self.label(
                 "source_title",
                 &if different {
-                    format!("Next scan: {}", source.name)
+                    crate::trf!("Next scan: {p0}", p0 = source.name)
                 } else {
                     source.name.clone()
                 },
@@ -446,7 +459,7 @@ impl Live {
                     "{} · {} · {}{}",
                     source.path.display(),
                     if source.filesystem.is_empty() {
-                        "Disk / unknown filesystem"
+                        tr("Disk / unknown filesystem")
                     } else {
                         &source.filesystem
                     },
@@ -454,48 +467,53 @@ impl Live {
                     source
                         .partition
                         .as_ref()
-                        .map(|p| format!(" · discovered range at byte {}", p.offset_bytes))
+                        .map(|p| crate::trf!(
+                            " · discovered range at byte {p0}",
+                            p0 = p.offset_bytes
+                        ))
                         .unwrap_or_default()
                         + &source
                             .scope
                             .as_ref()
-                            .map(|s| format!(" · folder {s}"))
+                            .map(|s| crate::trf!(" · folder {s}", s = s))
                             .unwrap_or_default()
                 ),
             );
             self.label(
                 "source_state",
                 if source.mounted {
-                    "Read-only source · mounted"
+                    tr("Read-only source · mounted")
                 } else {
-                    "Read-only source"
+                    tr("Read-only source")
                 },
             );
             self.label(
                 "mode_hint",
                 if source.mounted {
-                    "Live filesystem: files can change during a scan. Clone-first is available."
+                    tr("Live filesystem: files can change during a scan. Clone-first is available.")
                 } else {
                     match mode(self.widget::<gtk::DropDown>("scan_mode").selected()) {
-                        Mode::Quick => "Search filesystem metadata. Original names may survive.",
+                        Mode::Quick => {
+                            tr("Search filesystem metadata. Original names may survive.")
+                        }
                         Mode::Deep => {
-                            "Search file contents. Original names and folders may be lost."
+                            tr("Search file contents. Original names and folders may be lost.")
                         }
                         Mode::Full => {
-                            "Search filesystem metadata, then carve for additional files."
+                            tr("Search filesystem metadata, then carve for additional files.")
                         }
                     }
                 },
             );
         } else {
-            self.label("source_title", "Choose a source");
+            self.label("source_title", tr("Choose a source"));
             self.label(
                 "source_detail",
-                "Add an image, or select a discovered disk or partition.",
+                tr("Add an image, or select a discovered disk or partition."),
             );
             self.label(
                 "mode_hint",
-                "Sources are opened read-only. Images and output folders may share a drive; devices require a separate drive.",
+                tr("Sources are opened read-only. Images and output folders may share a drive; devices require a separate drive."),
             );
         }
         let page = self.page.borrow();
@@ -503,16 +521,20 @@ impl Live {
         let view_source = self.view_source.borrow();
         result_source.set_visible(view_source.is_some());
         if let Some(source) = view_source.as_ref() {
-            let caption = format!("Results from {} · {}", source.name, source.path.display());
+            let caption = crate::trf!(
+                "Results from {p0} · {p1}",
+                p0 = source.name,
+                p1 = source.path.display()
+            );
             result_source.set_text(&caption);
             result_source.set_tooltip_text(Some(&caption));
         }
         self.label(
             "selection_summary",
-            &format!(
-                "{} selected · {}",
-                page.selected,
-                model::size(page.selected_bytes)
+            &crate::trf!(
+                "Selected: {p0} · {p1}",
+                p0 = page.selected,
+                p1 = model::size(page.selected_bytes)
             ),
         );
     }
@@ -570,7 +592,7 @@ impl Live {
             } else {
                 include_str!("../ui/source-row.ui")
             };
-            let b = gtk::Builder::from_string(xml);
+            let b = crate::i18n::builder(xml);
             text(&b, "name", &source.name);
             text(
                 &b,
@@ -579,16 +601,16 @@ impl Live {
                     "{} · {}{}",
                     source.path.display(),
                     if source.filesystem.is_empty() {
-                        "Disk"
+                        tr("Disk")
                     } else {
                         &source.filesystem
                     },
                     source
                         .partition
                         .as_ref()
-                        .map(|p| format!(" · byte {}", p.offset_bytes))
+                        .map(|p| crate::trf!(" · byte {p0}", p0 = p.offset_bytes))
                         .unwrap_or_else(|| if source.mounted {
-                            " · mounted".into()
+                            tr(" · mounted").into()
                         } else {
                             String::new()
                         })
@@ -677,12 +699,12 @@ impl Live {
             .set(self.preview_generation.get() + 1);
         self.widget::<gtk::Picture>("preview_picture")
             .set_visible(false);
-        self.label("preview_name", "Choose a file");
+        self.label("preview_name", tr("Choose a file"));
         self.label("preview_path", "");
         self.label("preview_metadata", "");
         self.label(
             "preview_text",
-            "Select a candidate to inspect its contents and metadata.",
+            tr("Select a candidate to inspect its contents and metadata."),
         );
     }
     fn select(&self, ids: Vec<i64>, selected: bool) {
@@ -711,9 +733,13 @@ impl Live {
             folders.entry(folder).or_default().push(file.clone());
         }
         for (folder, files) in folders {
-            let b = gtk::Builder::from_string(include_str!("../ui/folder-row.ui"));
+            let b = crate::i18n::builder(include_str!("../ui/folder-row.ui"));
             text(&b, "name", &folder);
-            text(&b, "count", &format!("{} on this page", files.len()));
+            text(
+                &b,
+                "count",
+                &crate::trf!("On this page: {p0}", p0 = files.len()),
+            );
             let selected = files.iter().filter(|f| f.selected).count();
             let check: gtk::CheckButton = obj(&b, "check");
             check.set_active(selected == files.len());
@@ -751,7 +777,7 @@ impl Live {
                 continue;
             }
             for file in files {
-                let b = gtk::Builder::from_string(include_str!("../ui/file-row.ui"));
+                let b = crate::i18n::builder(include_str!("../ui/file-row.ui"));
                 text(
                     &b,
                     "name",
@@ -766,11 +792,11 @@ impl Live {
                     &b,
                     "status",
                     if file.carved {
-                        "Carved"
+                        tr("Carved")
                     } else if file.deleted {
-                        "Deleted"
+                        tr("Deleted")
                     } else {
-                        "Existing"
+                        tr("Existing")
                     },
                 );
                 obj::<gtk::Image>(&b, "icon").set_icon_name(Some(file_icon(&file.path)));
@@ -792,9 +818,9 @@ impl Live {
                     page.consolidated && (file.findings > 1 || file.consolidation_error.is_some()),
                 );
                 findings.set_label(&if file.consolidation_error.is_some() {
-                    "Not verified".into()
+                    tr("Not verified").into()
                 } else {
-                    format!("{} findings…", file.findings)
+                    crate::trf!("Findings: {p0}…", p0 = file.findings)
                 });
                 let weak = Rc::downgrade(self);
                 let group = file.clone();
@@ -804,7 +830,9 @@ impl Live {
                     }
                 });
                 if page.consolidated {
-                    check.set_tooltip_text(Some("Select this group; recover one copy by default"));
+                    check.set_tooltip_text(Some(tr(
+                        "Select this group; recover one copy by default",
+                    )));
                 }
                 row.set_tooltip_text(Some(&format!(
                     "{}\n{} · {}{}",
@@ -812,13 +840,14 @@ impl Live {
                     file.backend,
                     file.backend_version,
                     if page.consolidated {
-                        format!(
-                            "\n{} findings · {} recorded paths{}",
-                            file.findings,
-                            file.paths,
-                            file.consolidation_error
+                        crate::trf!(
+                            "\n{p0} findings · {p1} recorded paths{p2}",
+                            p0 = file.findings,
+                            p1 = file.paths,
+                            p2 = file
+                                .consolidation_error
                                 .as_ref()
-                                .map(|e| format!("\nNot verified: {e}"))
+                                .map(|e| crate::trf!("\nNot verified: {e}", e = e))
                                 .unwrap_or_default()
                         )
                     } else {
@@ -833,21 +862,24 @@ impl Live {
         let all: gtk::CheckButton = self.widget("select_all");
         all.set_active(!page.files.is_empty() && selected == page.files.len());
         all.set_inconsistent(selected > 0 && selected < page.files.len());
-        all.set_tooltip_text(Some(
+        all.set_tooltip_text(Some(tr(
             "Select matching files on this page; selection persists across pages",
-        ));
+        )));
         self.label("result_count", &page.total.to_string());
         self.label(
             "file_summary",
             &if page.consolidated {
-                format!(
-                    "{} matching groups · {} groups from {} findings · Saved automatically",
-                    page.matched, page.total, page.findings
+                crate::trf!(
+                    "{p0} matching groups · {p1} groups from {p2} findings · Saved automatically",
+                    p0 = page.matched,
+                    p1 = page.total,
+                    p2 = page.findings
                 )
             } else {
-                format!(
-                    "{} matching · {} total · Results and selections are saved automatically",
-                    page.matched, page.total
+                crate::trf!(
+                    "{p0} matching · {p1} total · Results and selections are saved automatically",
+                    p0 = page.matched,
+                    p1 = page.total
                 )
             },
         );
@@ -856,11 +888,11 @@ impl Live {
             .set_visible(page.matched > 250);
         self.label(
             "page_info",
-            &format!(
-                "{}–{} of {}",
-                if page.matched == 0 { 0 } else { offset + 1 },
-                offset + page.files.len(),
-                page.matched
+            &crate::trf!(
+                "{p0}–{p1} of {p2}",
+                p0 = if page.matched == 0 { 0 } else { offset + 1 },
+                p1 = offset + page.files.len(),
+                p2 = page.matched
             ),
         );
         self.widget::<gtk::Button>("previous_page")
@@ -872,14 +904,14 @@ impl Live {
         self.label(
             "empty_title",
             if self.busy() {
-                "Looking for your files…"
+                tr("Looking for your files…")
             } else {
-                "No candidates to display"
+                tr("No candidates to display")
             },
         );
         self.label(
             "empty_detail",
-            "Choose a source and start a scan, open a saved scan, or adjust your filters.",
+            tr("Choose a source and start a scan, open a saved scan, or adjust your filters."),
         );
         self.rendering.set(false);
         self.controls();
@@ -909,9 +941,8 @@ impl Live {
                 .unwrap_or(&file.path),
         );
         self.label("preview_path", &file.path);
-        self.label("preview_text", "Loading preview…");
-        self.label("preview_metadata",&format!("Size                 {}\nModified         {}\nEngine             {}\nAddress           {}\nByte range       {} + {}\nFindings           {} · {} recorded paths\nContent            {}\nRecovery integrity  Not verified",model::size(file.bytes),date(file.modified),file.backend,file.locator,file.offset_bytes,file.length_bytes,file.findings,file.paths,
-            if file.sha256.is_some() { "Verified for consolidation" } else { "Not compared" }));
+        self.label("preview_text", tr("Loading preview…"));
+        self.label("preview_metadata",&crate::trf!("Size                 {p0}\nModified         {p1}\nEngine             {p2}\nAddress           {p3}\nByte range       {p4} + {p5}\nFindings           {p6} · {p7} recorded paths\nContent            {p8}\nRecovery integrity  Not verified", p0 = model::size(file.bytes), p1 = date(file.modified), p2 = file.backend, p3 = file.locator, p4 = file.offset_bytes, p5 = file.length_bytes, p6 = file.findings, p7 = file.paths, p8 = if file.sha256.is_some() { tr("Verified for consolidation") } else { tr("Not compared") }));
         self.widget::<gtk::Image>("preview_icon")
             .set_icon_name(Some(file_icon(&file.path)));
         let generation = self.preview_generation.get() + 1;
@@ -920,9 +951,8 @@ impl Live {
     }
     fn show_findings(self: &Rc<Self>, group: Candidate) {
         let b = self.show(include_str!("../ui/findings.ui"));
-        text(&b,"summary",&format!("{}\n{} findings · {} recorded paths\n{}",group.path,group.findings,group.paths,
-            group.consolidation_error.as_ref().map(|e|format!("Kept separate: {e}")).unwrap_or_else(||
-                "Contents were verified as identical. Recovery saves one copy by default; enable Recover every recorded path to restore all names.".into())));
+        text(&b,"summary",&crate::trf!("{p0}\n{p1} findings · {p2} recorded paths\n{p3}", p0 = group.path, p1 = group.findings, p2 = group.paths, p3 = group.consolidation_error.as_ref().map(|e|crate::trf!("Kept separate: {e}", e = e)).unwrap_or_else(||
+                tr("Contents were verified as identical. Recovery saves one copy by default; enable Recover every recorded path to restore all names.").into())));
         for (button, first) in [("first", true), ("next", false)] {
             let weak = Rc::downgrade(self);
             let id = group.id;
@@ -941,7 +971,7 @@ impl Live {
         if let Some(b) = self.dialog.borrow().as_ref() {
             obj::<gtk::TextView>(b, "body")
                 .buffer()
-                .set_text("Loading findings…");
+                .set_text(tr("Loading findings…"));
             obj::<gtk::Button>(b, "next").set_sensitive(false);
             obj::<gtk::Button>(b, "first").set_sensitive(false);
         }
@@ -955,7 +985,7 @@ impl Live {
         });
     }
     fn event(&self, message: &str) {
-        let b = gtk::Builder::from_string(include_str!("../ui/event-row.ui"));
+        let b = crate::i18n::builder(include_str!("../ui/event-row.ui"));
         text(
             &b,
             "time",
@@ -972,14 +1002,14 @@ impl Live {
         if let Some(row) = list.row_at_index(200) {
             list.remove(&row);
         }
-        self.label("event_count", "Recent events");
+        self.label("event_count", tr("Recent events"));
     }
     fn show(&self, xml: &str) -> gtk::Builder {
         if let Some(old) = self.dialog.borrow_mut().take() {
             obj::<gtk::Window>(&old, "dialog").destroy();
         }
         self.dialog_generation.set(self.dialog_generation.get() + 1);
-        let b = gtk::Builder::from_string(xml);
+        let b = crate::i18n::builder(xml);
         let window: gtk::Window = obj(&b, "dialog");
         window.set_transient_for(Some(&self.window()));
         window.set_destroy_with_parent(true);
@@ -1047,11 +1077,11 @@ impl Live {
             if let Some(ui) = weak.upgrade() {
                 let path = PathBuf::from(value(&dialog, "path"));
                 if !path.is_absolute() {
-                    text(&dialog, "validation", "Enter an absolute source path.");
+                    text(&dialog, "validation", tr("Enter an absolute source path."));
                     return;
                 }
                 button.set_sensitive(false);
-                text(&dialog, "validation", "Inspecting source…");
+                text(&dialog, "validation", tr("Inspecting source…"));
                 let generation = ui.dialog_generation.get();
                 ui.submit(move || Message::Added(generation, sources::inspect(&path)));
             }
@@ -1086,11 +1116,11 @@ impl Live {
         self.paused.set(false);
         self.pulse.set(true);
         self.label("progress_text", "");
-        self.label("status_text", "Preparing scan…");
-        self.event(&format!(
-            "Requested {:?} scan of {}",
-            options.mode,
-            source.path.display()
+        self.label("status_text", tr("Preparing scan…"));
+        self.event(&crate::trf!(
+            "Requested {p0} scan of {p1}",
+            p0 = tr(mode_name(options.mode)),
+            p1 = source.path.display()
         ));
         self.job.replace(Some(jobs::start_scan(source, options)));
         self.render_files();
@@ -1106,9 +1136,9 @@ impl Live {
             self.label(
                 "status_text",
                 if self.paused.get() {
-                    "Paused · source and partial results retained"
+                    tr("Paused · source and partial results retained")
                 } else {
-                    "Resuming…"
+                    tr("Resuming…")
                 },
             );
             if self.paused.get() {
@@ -1127,7 +1157,7 @@ impl Live {
         }
         if let Some(job) = self.job.borrow().as_ref() {
             job.control.cancel();
-            self.label("status_text", "Cancelling · saving partial results…");
+            self.label("status_text", tr("Cancelling · saving partial results…"));
         }
     }
     fn recovery(self: &Rc<Self>) {
@@ -1143,18 +1173,29 @@ impl Live {
             .view_source
             .borrow()
             .as_ref()
-            .map(|source| format!("From: {} · {}\n", source.name, source.path.display()))
+            .map(|source| {
+                crate::trf!(
+                    "From: {p0} · {p1}\n",
+                    p0 = source.name,
+                    p1 = source.path.display()
+                )
+            })
             .unwrap_or_default();
         text(
             &b,
             "summary",
-            &format!(
-                "{recovery_source}{} selected {} · {}\n{}Each output path, error, and SHA-256 is recorded with this scan.",
-                page.selected,
-                if page.consolidated { "groups" } else { "files" },
-                model::size(page.selected_bytes),
-                if page.consolidated {
-                    "One copy per group. "
+            &crate::trf!(
+                "{recovery_source}Selected ({p1}): {p0} · {p2}\n{p3}Each output path, error, and SHA-256 is recorded with this scan.",
+                recovery_source = recovery_source,
+                p0 = page.selected,
+                p1 = if page.consolidated {
+                    tr("groups")
+                } else {
+                    tr("files")
+                },
+                p2 = model::size(page.selected_bytes),
+                p3 = if page.consolidated {
+                    tr("One copy per group. ")
                 } else {
                     ""
                 }
@@ -1163,8 +1204,8 @@ impl Live {
         let dialog = b.downgrade();
         obj::<gtk::CheckButton>(&b,"all_paths").connect_toggled(move |button| {
             if let Some(b)=dialog.upgrade() {
-                text(&b,"summary",&if button.is_active() { format!("{recovery_source}{} recorded paths · {}\nEach distinct recorded path will receive a copy.",page.selected_paths,model::size(page.selected_path_bytes)) }
-                    else { format!("{recovery_source}{} selected groups · {}\nOne copy per group; all findings remain saved.",page.selected,model::size(page.selected_bytes)) });
+                text(&b,"summary",&if button.is_active() { crate::trf!("{recovery_source}{p0} recorded paths · {p1}\nEach distinct recorded path will receive a copy.", recovery_source = recovery_source, p0 = page.selected_paths, p1 = model::size(page.selected_path_bytes)) }
+                    else { crate::trf!("{recovery_source}{p0} selected groups · {p1}\nOne copy per group; all findings remain saved.", recovery_source = recovery_source, p0 = page.selected, p1 = model::size(page.selected_bytes)) });
                 obj::<gtk::Entry>(&b,"destination_path").emit_by_name::<()>("changed",&[]);
             }
         });
@@ -1177,13 +1218,17 @@ impl Live {
                 .as_ref()
                 .is_some_and(SourceDescriptor::is_image_file)
             {
-                "The destination may share the image's drive, but must be outside the saved scan folder and must not contain the source image or its segments."
+                tr(
+                    "The destination may share the image's drive, but must be outside the saved scan folder and must not contain the source image or its segments.",
+                )
             } else {
-                "Keep the destination outside the saved scan folder and on a different physical drive from the original source."
+                tr(
+                    "Keep the destination outside the saved scan folder and on a different physical drive from the original source.",
+                )
             },
         );
         Self::browse(&b, "browse", "destination_path", "chooser");
-        obj::<gtk::Button>(&b, "confirm").set_label("Recover files");
+        obj::<gtk::Button>(&b, "confirm").set_label(tr("Recover files"));
         obj::<gtk::Button>(&b, "confirm").set_sensitive(false);
         let weak = Rc::downgrade(self);
         let dialog = b.downgrade();
@@ -1197,7 +1242,7 @@ impl Live {
             text(
                 &b,
                 "validation",
-                "Checking destination identity and free space…",
+                tr("Checking destination identity and free space…"),
             );
             let generation = ui.dialog_generation.get();
             let all_paths = checked(&b, "all_paths");
@@ -1224,9 +1269,9 @@ impl Live {
                         jobs::validate_recovery(&store, &options)?;
                         let existing = engine::safety::existing_parent(&options.destination)?;
                         let free = engine::safety::free_bytes(&existing)?;
-                        Ok(format!(
-                            "Destination verified · {} available",
-                            model::size(free)
+                        Ok(crate::trf!(
+                            "Destination verified · {p0} available",
+                            p0 = model::size(free)
                         ))
                     });
                     Message::RecoveryValidation(generation, entered, all_paths, result)
@@ -1258,7 +1303,7 @@ impl Live {
                     text(
                         &dialog,
                         "validation",
-                        "Choose an absolute destination directory path.",
+                        tr("Choose an absolute destination directory path."),
                     );
                     return;
                 }
@@ -1267,7 +1312,7 @@ impl Live {
                     .replace(Some(jobs::start_recovery(dir.clone(), options)));
                 ui.pulse.set(true);
                 ui.label("progress_text", "");
-                ui.label("status_text", "Validating recovery destination…");
+                ui.label("status_text", tr("Validating recovery destination…"));
                 ui.render_files();
             }
         });
@@ -1305,26 +1350,16 @@ impl Live {
                     text(
                         &dialog,
                         "details",
-                        &format!(
-                            "{}\n{} · {:?} · {} candidates\nSource: {}\nSaved: {}\nEngines: {}{}",
-                            scan.directory.display(),
-                            scan.manifest.state,
-                            scan.manifest.options.mode,
-                            scan.manifest.candidate_count,
-                            scan.manifest.source.path.display(),
-                            date(scan.manifest.updated_at as i64),
-                            scan.manifest
+                        &crate::trf!("{p0}\n{p1} · {p2} · {p3} candidates\nSource: {p4}\nSaved: {p5}\nEngines: {p6}{p7}", p0 = scan.directory.display(), p1 = crate::i18n::state(&scan.manifest.state), p2 = tr(mode_name(scan.manifest.options.mode)), p3 = scan.manifest.candidate_count, p4 = scan.manifest.source.path.display(), p5 = date(scan.manifest.updated_at as i64), p6 = scan.manifest
                                 .engines
                                 .iter()
                                 .map(|(name, version)| format!("{name} ({version})"))
                                 .collect::<Vec<_>>()
-                                .join(", "),
-                            if let Some(progress)=&scan.manifest.imaging {
-                                format!("\nImage: {} rescued · {} pending · {} bad. {}",model::size(progress.rescued),model::size(progress.pending),model::size(progress.bad),if progress.complete {"Acquisition complete."} else {"Original source is needed to resume imaging."})
+                                .join(", "), p7 = if let Some(progress)=&scan.manifest.imaging {
+                                crate::trf!("\nImage: {p0} rescued · {p1} pending · {p2} bad. {p3}", p0 = model::size(progress.rescued), p1 = model::size(progress.pending), p2 = model::size(progress.bad), p3 = if progress.complete {tr("Acquisition complete.")} else {tr("Original source is needed to resume imaging.")})
                             } else if scan.manifest.clone.is_some() {
-                                "\nRetained image available; check the acquisition log for unread regions.".into()
-                            } else {String::new()}
-                        ),
+                                tr("\nRetained image available; check the acquisition log for unread regions.").into()
+                            } else {String::new()}),
                     );
                 }
             }
@@ -1345,7 +1380,11 @@ impl Live {
                 return;
             };
             button.set_sensitive(false);
-            text(&dialog, "validation", "Checking the selected saved scan…");
+            text(
+                &dialog,
+                "validation",
+                tr("Checking the selected saved scan…"),
+            );
             let generation = ui.dialog_generation.get();
             ui.submit(move || Message::DeletePrepared(generation, Deletion::prepare(scan)));
         });
@@ -1365,7 +1404,7 @@ impl Live {
         for (id, operation) in [("confirm", 0), ("resume", 1), ("compare", 2)] {
             let weak = Rc::downgrade(self);
             let dialog = b.downgrade();
-            obj::<gtk::Button>(&b,id).connect_clicked(move |_|{let Some(dialog)=dialog.upgrade()else{return;};if let Some(ui)=weak.upgrade(){let Some(row)=obj::<gtk::ListBox>(&dialog,"scans").selected_row()else{text(&dialog,"validation","Select a saved scan first.");return;};let Some(scan)=ui.saved.borrow().get(row.index()as usize).cloned()else{return;};match operation{0=>{obj::<gtk::Window>(&dialog,"dialog").close();ui.open(scan.directory);},1=>{obj::<gtk::Window>(&dialog,"dialog").close();ui.restart(scan);},_=>{let Some(current)=ui.directory.borrow().clone()else{text(&dialog,"validation","Open a scan in the workspace first, then select another scan to compare.");return;};ui.submit(move||Message::Info("Saved scan comparison".into(),Store::open(&current).and_then(|a|Store::open(&scan.directory).and_then(|b|store::compare_recorded(&a,&b)))));}}}});
+            obj::<gtk::Button>(&b,id).connect_clicked(move |_|{let Some(dialog)=dialog.upgrade()else{return;};if let Some(ui)=weak.upgrade(){let Some(row)=obj::<gtk::ListBox>(&dialog,"scans").selected_row()else{text(&dialog,"validation",tr("Select a saved scan first."));return;};let Some(scan)=ui.saved.borrow().get(row.index()as usize).cloned()else{return;};match operation{0=>{obj::<gtk::Window>(&dialog,"dialog").close();ui.open(scan.directory);},1=>{obj::<gtk::Window>(&dialog,"dialog").close();ui.restart(scan);},_=>{let Some(current)=ui.directory.borrow().clone()else{text(&dialog,"validation",tr("Open a scan in the workspace first, then select another scan to compare."));return;};ui.submit(move||Message::Info(tr("Saved scan comparison").into(),Store::open(&current).and_then(|a|Store::open(&scan.directory).and_then(|b|store::compare_recorded(&a,&b)))));}}}});
         }
         let workspace = self.options.borrow().workspace.clone();
         self.load_saved(workspace);
@@ -1397,11 +1436,11 @@ impl Live {
         text(
             &b,
             "details",
-            &format!(
-                "{}\nSaved: {}\n\n{}",
-                plan.scan.manifest.source.name,
-                date(plan.scan.manifest.updated_at as i64),
-                plan.scan.directory.display()
+            &crate::trf!(
+                "{p0}\nSaved: {p1}\n\n{p2}",
+                p0 = plan.scan.manifest.source.name,
+                p1 = date(plan.scan.manifest.updated_at as i64),
+                p2 = plan.scan.directory.display()
             ),
         );
         let weak = Rc::downgrade(self);
@@ -1431,7 +1470,7 @@ impl Live {
             ui.deleting.set(true);
             button.set_sensitive(false);
             obj::<gtk::Button>(&dialog, "close").set_sensitive(false);
-            text(&dialog, "validation", "Deleting the saved-scan folder…");
+            text(&dialog, "validation", tr("Deleting the saved-scan folder…"));
             let plan = plan.clone();
             ui.submit(move || {
                 let result = plan.execute();
@@ -1457,7 +1496,10 @@ impl Live {
         self.job.replace(Some(jobs::restart(scan.directory)));
         self.pulse.set(true);
         self.label("progress_text", "");
-        self.label("status_text", "Starting a new attempt from the saved scan…");
+        self.label(
+            "status_text",
+            tr("Starting a new attempt from the saved scan…"),
+        );
         self.render_files();
     }
     fn tick(self: &Rc<Self>) {
@@ -1492,9 +1534,11 @@ impl Live {
                     bar.set_fraction(fraction.clamp(0.0, 1.0));
                     self.label("progress_text", &format!("{:.0}%", fraction * 100.0));
                     let status = if progress.complete {
-                        "Imaging complete · use Saved scans → Scan again to scan the retained image"
+                        tr(
+                            "Imaging complete · use Saved scans → Scan again to scan the retained image",
+                        )
                     } else {
-                        "Imaging stopped with unread regions · progress retained"
+                        tr("Imaging stopped with unread regions · progress retained")
                     };
                     self.label("status_text", status);
                     self.event(status);
@@ -1527,11 +1571,11 @@ impl Live {
                     self.widget::<gtk::ProgressBar>("progress")
                         .remove_css_class("paused");
                     let status = if cancelled {
-                        "Cancelled · partial results retained"
+                        tr("Cancelled · partial results retained")
                     } else if error.is_some() {
-                        "Stopped with errors · inspect Activity"
+                        tr("Stopped with errors · inspect Activity")
                     } else {
-                        "Scan complete · results saved"
+                        tr("Scan complete · results saved")
                     };
                     self.label("status_text", status);
                     self.event(status);
@@ -1539,9 +1583,9 @@ impl Live {
                         self.event(&error);
                         self.info(
                             if cancelled {
-                                "Job cancelled"
+                                tr("Job cancelled")
                             } else {
-                                "Scan / recovery details"
+                                tr("Scan / recovery details")
                             },
                             &error,
                         );
@@ -1567,12 +1611,15 @@ impl Live {
                     self.job.replace(None);
                     self.pulse.set(false);
                     self.label("progress_text", "100%");
-                    let summary = format!(
-                        "Recovery finished · {successful} saved · {failed} failed · {skipped} skipped"
+                    let summary = crate::trf!(
+                        "Recovery finished · {successful} saved · {failed} failed · {skipped} skipped",
+                        successful = successful,
+                        failed = failed,
+                        skipped = skipped
                     );
                     self.label("status_text", &summary);
                     self.event(&summary);
-                    self.info("Recovery results",&format!("{summary}\n\nOutput paths, hashes, verification results, and individual errors are in this scan's events.log."));
+                    self.info(tr("Recovery results"),&crate::trf!("{summary}\n\nOutput paths, hashes, verification results, and individual errors are in this scan's events.log.", summary = summary));
                     self.controls();
                     if self.quitting.get() {
                         self.window().close();
@@ -1604,9 +1651,9 @@ impl Live {
                                         .set(files.last().map_or(after, |f| f.id));
                                     next = files.len() == 100;
                                     if files.is_empty() {
-                                        "No more findings.".into()
+                                        tr("No more findings.").into()
                                     } else {
-                                        files.iter().map(|f|format!("{}\n{} · {} · {}\nAddress: {} · Range: {} + {}\n",f.path,f.backend,f.backend_version,model::size(f.bytes),f.locator,f.offset_bytes,f.length_bytes)).collect::<Vec<_>>().join("\n")
+                                        files.iter().map(|f|crate::trf!("{p0}\n{p1} · {p2} · {p3}\nAddress: {p4} · Range: {p5} + {p6}\n", p0 = f.path, p1 = f.backend, p2 = f.backend_version, p3 = model::size(f.bytes), p4 = f.locator, p5 = f.offset_bytes, p6 = f.length_bytes)).collect::<Vec<_>>().join("\n")
                                     }
                                 }
                                 Err(error) => error.to_string(),
@@ -1672,13 +1719,13 @@ impl Live {
                         self.label(
                             "status_text",
                             if self.directory.borrow().is_some() {
-                                "Sources refreshed · current scan kept open"
+                                tr("Sources refreshed · current scan kept open")
                             } else {
-                                "Ready · choose a source and scan mode"
+                                tr("Ready · choose a source and scan mode")
                             },
                         );
                     }
-                    Err(e) => self.info("Source discovery", &e.to_string()),
+                    Err(e) => self.info(tr("Source discovery"), &e.to_string()),
                 },
                 Message::Added(generation, result) => match result {
                     Ok(source) => {
@@ -1721,7 +1768,7 @@ impl Live {
                 }
                 Message::Selected(result) => {
                     if let Err(error) = result {
-                        self.info("Selection", &error.to_string());
+                        self.info(tr("Selection"), &error.to_string());
                     }
                     self.reload();
                 }
@@ -1758,7 +1805,11 @@ impl Live {
                                 .set_selected(index(manifest.options.mode));
                             self.label(
                                 "status_text",
-                                &format!("Saved scan · {} · {}", manifest.state, dir.display()),
+                                &crate::trf!(
+                                    "Saved scan · {p0} · {p1}",
+                                    p0 = crate::i18n::state(&manifest.state),
+                                    p1 = dir.display()
+                                ),
                             );
                             self.label(
                                 "progress_text",
@@ -1769,7 +1820,7 @@ impl Live {
                             self.render_sources();
                             self.render_files();
                         }
-                        Err(error) => self.info("Open saved scan", &error.to_string()),
+                        Err(error) => self.info(tr("Open saved scan"), &error.to_string()),
                     }
                 }
                 Message::DeletePrepared(generation, result) => {
@@ -1803,15 +1854,18 @@ impl Live {
                     }
                     match result {
                         Ok(()) => {
-                            self.label("status_text", "Saved scan deleted");
-                            self.event(&format!("Deleted saved scan: {}", directory.display()));
+                            self.label("status_text", tr("Saved scan deleted"));
+                            self.event(&crate::trf!(
+                                "Deleted saved scan: {p0}",
+                                p0 = directory.display()
+                            ));
                             if !self.quitting.get() {
                                 self.saved_scans();
                             }
                         }
                         Err(error) => {
                             self.event(&error.to_string());
-                            self.info("Could not delete saved scan", &error.to_string());
+                            self.info(tr("Could not delete saved scan"), &error.to_string());
                             let root = self.options.borrow().workspace.clone();
                             self.load_saved(root);
                         }
@@ -1833,7 +1887,7 @@ impl Live {
                                     picture.set_visible(true);
                                     self.label(
                                         "preview_text",
-                                        "Image preview · recovery integrity has not been verified.",
+                                        tr("Image preview · recovery integrity has not been verified."),
                                     );
                                 } else {
                                     use std::io::Read;
@@ -1841,7 +1895,7 @@ impl Live {
                                     if let Ok(file) = std::fs::File::open(path) {
                                         let _ = file.take(65536).read_to_end(&mut bytes);
                                     }
-                                    self.label("preview_text",if bytes.contains(&0){"Binary content. Recover the file to view it in its native application."}else{std::str::from_utf8(&bytes).unwrap_or("Binary content. Recover the file to inspect it.")});
+                                    self.label("preview_text",if bytes.contains(&0){tr("Binary content. Recover the file to view it in its native application.")}else{std::str::from_utf8(&bytes).unwrap_or(tr("Binary content. Recover the file to inspect it."))});
                                 }
                             }
                             Err(error) => self.label("preview_text", &error.to_string()),
@@ -1867,20 +1921,19 @@ impl Live {
                         for scan in self.saved.borrow().iter() {
                             for list in [Some(sidebar.clone()), list.clone()].into_iter().flatten()
                             {
-                                let b =
-                                    gtk::Builder::from_string(include_str!("../ui/source-row.ui"));
+                                let b = crate::i18n::builder(include_str!("../ui/source-row.ui"));
                                 text(&b, "name", &scan.manifest.source.name);
                                 text(
                                     &b,
                                     "detail",
                                     &format!(
                                         "{} · {} {} · {}",
-                                        scan.manifest.state,
+                                        crate::i18n::state(&scan.manifest.state),
                                         scan.manifest.candidate_count,
                                         if scan.manifest.consolidation.is_some() {
-                                            "groups"
+                                            tr("groups")
                                         } else {
-                                            "files"
+                                            tr("files")
                                         },
                                         date(scan.manifest.updated_at as i64)
                                     ),
@@ -1893,14 +1946,14 @@ impl Live {
                         if let Some(dialog) = dialog {
                             if let Some(label) = dialog.object::<gtk::Label>("validation") {
                                 label.set_text(if self.saved.borrow().is_empty() {
-                                    "No saved scans in this workspace."
+                                    tr("No saved scans in this workspace.")
                                 } else {
-                                    "Select a scan to open, compare, scan again, or delete."
+                                    tr("Select a scan to open, compare, scan again, or delete.")
                                 });
                             }
                         }
                     }
-                    Err(error) => self.info("Saved scans", &error.to_string()),
+                    Err(error) => self.info(tr("Saved scans"), &error.to_string()),
                 },
                 Message::CustomEngines(generation, versions) => {
                     if generation == self.dialog_generation.get() {
@@ -1938,9 +1991,12 @@ impl Live {
 
 fn scan_options(b: &gtk::Builder) -> engine::Result<ScanOptions> {
     fn number(b: &gtk::Builder, id: &str) -> engine::Result<u64> {
-        value(b, id)
-            .parse()
-            .map_err(|_| engine::Error::Message(format!("{id}: enter a nonnegative whole number.")))
+        value(b, id).parse().map_err(|_| {
+            engine::Error::Message(crate::trf!(
+                "{id}: enter a nonnegative whole number.",
+                id = id
+            ))
+        })
     }
     fn optional(b: &gtk::Builder, id: &str) -> engine::Result<Option<u64>> {
         if value(b, id).is_empty() {
@@ -1955,7 +2011,7 @@ fn scan_options(b: &gtk::Builder) -> engine::Result<ScanOptions> {
         ScanOptions::default().retry_passes as u64
     };
     if retries > 20 {
-        return engine::fail("Retry passes must be between 0 and 20.");
+        return engine::fail(tr("Retry passes must be between 0 and 20."));
     }
     let mut options = ScanOptions {
         mode: mode(obj::<gtk::DropDown>(b, "mode").selected()),
@@ -2005,7 +2061,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         }
     });
     let ui = Rc::new(Live {
-        builder: gtk::Builder::from_string(include_str!("../ui/window.ui")),
+        builder: crate::i18n::builder(include_str!("../ui/window.ui")),
         dialog: RefCell::new(None),
         dialog_generation: Cell::new(0),
         finding_cursor: Cell::new(0),
@@ -2048,7 +2104,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
     ui.widget::<gtk::Box>("demo_banner").set_visible(false);
     ui.label(
         "snapshot_notice",
-        "Scans are saved automatically in your workspace.",
+        tr("Scans are saved automatically in your workspace."),
     );
     ui.widget::<gtk::Label>("demo_indicator").set_visible(false);
     ui.label("progress_text", "0%");
@@ -2056,12 +2112,12 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
     ui.widget::<gtk::Picture>("preview_picture")
         .set_visible(false);
     ui.widget::<gtk::Button>("add_source")
-        .set_tooltip_text(Some("Add an image, device or mounted folder"));
+        .set_tooltip_text(Some(tr("Add an image, device or mounted folder")));
     ui.connect(app);
     ui.render_files();
     ui.refresh();
     ui.load_saved(engine::types::default_workspace());
-    ui.event("Source access is read-only. Image files and output folders may share a drive; device sources require a separate drive.");
+    ui.event(tr("Source access is read-only. Image files and output folders may share a drive; device sources require a separate drive."));
     ui.window().present();
     let lifetime = Rc::new(RefCell::new(Some(ui.clone())));
     ui.window().connect_destroy(move |_| {

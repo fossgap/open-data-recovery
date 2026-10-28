@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <object class="GtkWindow" id="dialog">
-    <property name="title">Delete saved scan?</property>
+    <property name="title" translatable="yes">Delete saved scan?</property>
     <property name="modal">true</property>
     <property name="default-width">560</property>
     <property name="resizable">false</property>
@@ -14,7 +14,7 @@
       <property name="margin-start">20</property>
       <property name="margin-end">20</property>
       <child><object class="GtkLabel">
-        <property name="label">Permanently delete this saved scan?</property>
+        <property name="label" translatable="yes">Permanently delete this saved scan?</property>
         <property name="xalign">0</property>
         <style><class name="heading" /></style>
       </object></child>
@@ -23,7 +23,7 @@
         <property name="max-width-chars">65</property><property name="selectable">true</property>
       </object></child>
       <child><object class="GtkLabel">
-        <property name="label">This removes the entire folder, including scan results, selections, logs, extracted files, caches and any retained clone. It cannot be undone.&#10;&#10;The original source and recovered files outside this folder are kept.</property>
+        <property name="label" translatable="yes">This removes the entire folder, including scan results, selections, logs, extracted files, caches and any retained clone. It cannot be undone.&#10;&#10;The original source and recovered files outside this folder are kept.</property>
         <property name="xalign">0</property><property name="wrap">true</property><property name="max-width-chars">65</property>
       </object></child>
       <child><object class="GtkLabel" id="validation">
@@ -31,9 +31,9 @@
       </object></child>
       <child><object class="GtkBox">
         <property name="halign">end</property><property name="spacing">8</property>
-        <child><object class="GtkButton" id="close"><property name="label">Cancel</property></object></child>
+        <child><object class="GtkButton" id="close"><property name="label" translatable="yes">Cancel</property></object></child>
         <child><object class="GtkButton" id="confirm">
-          <property name="label">Delete saved scan</property>
+          <property name="label" translatable="yes">Delete saved scan</property>
           <style><class name="destructive-action" /></style>
         </object></child>
       </object></child>

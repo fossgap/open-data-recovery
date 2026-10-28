@@ -11,7 +11,7 @@
     </items>
   </object>
   <object class="GtkWindow" id="dialog">
-    <property name="title">Add sample source</property>
+    <property name="title" translatable="yes">Add sample source</property>
     <property name="modal">true</property>
     <property name="resizable">false</property>
     <property name="default-width">470</property>
@@ -27,7 +27,7 @@
         </style>
         <child>
           <object class="GtkLabel">
-            <property name="label">Where should we look?</property>
+            <property name="label" translatable="yes">Where should we look?</property>
             <property name="xalign">0</property>
             <style>
               <class name="dialog-title" />
@@ -37,7 +37,7 @@
         </child>
         <child>
           <object class="GtkLabel">
-            <property name="label">Add a sample source to explore the scan workflow.</property>
+            <property name="label" translatable="yes">Add a sample source to explore the scan workflow.</property>
             <property name="xalign">0</property>
             <style>
               <class name="dialog-copy" />
@@ -51,7 +51,7 @@
             <property name="spacing">8</property>
             <child>
               <object class="GtkLabel">
-                <property name="label">Source type</property>
+                <property name="label" translatable="yes">Source type</property>
                 <property name="xalign">0</property>
                 <style>
                   <class name="strong" />
@@ -72,7 +72,7 @@
             <property name="spacing">8</property>
             <child>
               <object class="GtkLabel">
-                <property name="label">Source name</property>
+                <property name="label" translatable="yes">Source name</property>
                 <property name="xalign">0</property>
                 <style>
                   <class name="strong" />
@@ -91,7 +91,7 @@
         </child>
         <child>
           <object class="GtkLabel">
-            <property name="label">All sources in this preview are fictional. Device discovery, image selection, and permission prompts belong to the full implementation.</property>
+            <property name="label" translatable="yes">All sources in this preview are fictional. Device discovery, image selection, and permission prompts belong to the full implementation.</property>
             <property name="xalign">0</property>
             <property name="wrap">true</property>
             <property name="max-width-chars">52</property>
@@ -106,12 +106,12 @@
             <property name="halign">end</property>
             <child>
               <object class="GtkButton" id="close">
-                <property name="label">Cancel</property>
+                <property name="label" translatable="yes">Cancel</property>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="confirm">
-                <property name="label">Add sample source</property>
+                <property name="label" translatable="yes">Add sample source</property>
                 <style>
                   <class name="suggested-action" />
                 </style>

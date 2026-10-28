@@ -235,9 +235,9 @@ pub fn acquire(
         .arg(&map);
     notify(Event::Stage {
         text: if resume {
-            "Resuming ddrescue imaging"
+            crate::i18n::tr("Resuming ddrescue imaging")
         } else {
-            "Imaging source with ddrescue"
+            crate::i18n::tr("Imaging source with ddrescue")
         }
         .into(),
         fraction: None,

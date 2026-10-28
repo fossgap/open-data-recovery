@@ -46,7 +46,7 @@
         </child>
         <child>
           <object class="GtkButton" id="close">
-            <property name="label">Got it</property>
+            <property name="label" translatable="yes">Got it</property>
             <property name="halign">end</property>
             <style>
               <class name="suggested-action" />

@@ -182,7 +182,7 @@ fn scan_attempt(
         return fail("The custom byte range is outside the source.");
     }
     notify(Event::Stage {
-        text: "Checking source and installed engines".into(),
+        text: crate::i18n::tr("Checking source and installed engines").into(),
         fraction: None,
     });
     // Validation precedes creating a log, cache, database or output directory.
@@ -242,7 +242,7 @@ fn scan_attempt(
         diagnostics(&store, &input, control, notify)?;
         for engine in metadata {
             notify(Event::Stage {
-                text: format!("Searching filesystem metadata · {engine}"),
+                text: crate::trf!("Searching filesystem metadata · {engine}", engine = engine),
                 fraction: None,
             });
             let work = store.directory.join("artifacts/partition-table");
@@ -275,7 +275,7 @@ fn scan_attempt(
         if let Some(engine) = carver {
             control.checkpoint()?;
             notify(Event::Stage {
-                text: format!("Searching file contents · {engine}"),
+                text: crate::trf!("Searching file contents · {engine}", engine = engine),
                 fraction: None,
             });
             let mut context = ScanContext {
@@ -348,7 +348,7 @@ fn prepare(
         let target = store.directory.join("ewf.raw");
         let output = new_file(&target)?;
         notify(Event::Stage {
-            text: "Reading E01 segments into the workspace".into(),
+            text: crate::i18n::tr("Reading E01 segments into the workspace").into(),
             fraction: None,
         });
         let mut spec = Spec::new("ewfexport", &work);
@@ -411,7 +411,7 @@ fn prepare(
         let target = work.join("clone.img");
         let map = work.join("clone.badblocks");
         notify(Event::Stage {
-            text: format!("Cloning source · {}", options.clone_backend),
+            text: crate::trf!("Cloning source · {engine}", engine = options.clone_backend),
             fraction: None,
         });
         let mut spec = Spec::new(&options.clone_backend, &work);
@@ -532,7 +532,7 @@ pub fn validate_recovery(store: &Store, options: &RecoveryOptions) -> Result<()>
         ..Default::default()
     })?;
     if page.selected == 0 {
-        return fail("Select at least one file for recovery.");
+        return fail(crate::i18n::tr("Select at least one file for recovery."));
     }
     safety::validate_storage(
         &source,
@@ -548,7 +548,9 @@ pub fn validate_recovery(store: &Store, options: &RecoveryOptions) -> Result<()>
     if options.destination.starts_with(&store.directory)
         || store.directory.starts_with(&options.destination)
     {
-        return fail("Choose a recovery destination outside the saved scan directory.");
+        return fail(crate::i18n::tr(
+            "Choose a recovery destination outside the saved scan directory.",
+        ));
     }
     Ok(())
 }
@@ -850,8 +852,11 @@ pub fn recover(
                     }
                     store.record_recovery(&record)?;
                     notify(Event::Stage {
-                        text: format!(
-                            "Recovering · {successful} saved · {failed} failed · {skipped} skipped"
+                        text: crate::trf!(
+                            "Recovering · {successful} saved · {failed} failed · {skipped} skipped",
+                            successful = successful,
+                            failed = failed,
+                            skipped = skipped
                         ),
                         fraction: Some(
                             (successful + failed + skipped) as f64 / output_count.max(1) as f64,
