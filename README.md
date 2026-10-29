@@ -79,7 +79,7 @@ chmod +x OpenDataRecovery-x86_64.AppImage
 ./OpenDataRecovery-x86_64.AppImage
 ```
 
-Optional `open-data-recovery-engines` packages provide pinned RecuperaBit, Digler and ext4rescue builds. See [packaging](docs/packaging.md) for dependencies, additional packages and running AppImage without FUSE.
+Optional `open-data-recovery-engines` packages provide pinned RecuperaBit and Digler builds. See [packaging](docs/packaging.md) for dependencies, additional packages and running AppImage without FUSE.
 
 ## Usage
 
@@ -138,7 +138,6 @@ ODR integrates these outstanding recovery, carving, imaging and forensic tools:
 - [RecuperaBit](https://github.com/Lazza/RecuperaBit) [![RecuperaBit stars](https://img.shields.io/github/stars/Lazza/RecuperaBit?style=social)](https://github.com/Lazza/RecuperaBit) — NTFS reconstruction and file extraction
 - [recoverjpeg](https://github.com/samueltardieu/recoverjpeg) [![recoverjpeg stars](https://img.shields.io/github/stars/samueltardieu/recoverjpeg?style=social)](https://github.com/samueltardieu/recoverjpeg) — JPEG-focused extraction
 - [Magic Rescue](https://github.com/jbj/magicrescue) [![Magic Rescue stars](https://img.shields.io/github/stars/jbj/magicrescue?style=social)](https://github.com/jbj/magicrescue) — Recipe-based file extraction
-- [ext4rescue](https://github.com/epi/ext4rescue) [![ext4rescue stars](https://img.shields.io/github/stars/epi/ext4rescue?style=social)](https://github.com/epi/ext4rescue) — ext4 recovery from a ddrescue clone and map
 - [GNU ddrescue](https://www.gnu.org/software/ddrescue/) — Resumable source imaging with a retained recovery map
 - [safecopy](https://safecopy.sourceforge.net/) — Alternative source imaging with a bad-block report
 - [ext4magic](https://sourceforge.net/projects/ext4magic/) — ext3/ext4 journal-based recovery

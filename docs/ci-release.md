@@ -6,7 +6,7 @@
 
 [Test CI](../.github/workflows/test-ci.yml) runs for pushes to `main`, pull requests
 and manual dispatches. It builds the Debian Bookworm GTK 4.8 environment and the
-pinned RecuperaBit, Digler and ext4rescue toolchain. Checks cover Rust formatting,
+pinned RecuperaBit and Digler toolchain. Checks cover Rust formatting,
 unit tests, every GtkBuilder layout, GTK smoke checks, all eleven real-engine
 integration cases, advanced scan controls, consolidation/recovery/saved-scan management, and partition
 discovery through the CLI and production UI.
@@ -41,8 +41,8 @@ Keep `packaging/PKGBUILD` in sync when changing the application version. The
 optional-engine bundle has its own version and pinned upstream revisions.
 
 ```sh
-git tag -a v0.1.1 -m "Open Data Recovery 0.1.1"
-git push origin v0.1.1
+git tag -a v0.1.2 -m "Open Data Recovery 0.1.2"
+git push origin v0.1.2
 ```
 
 The workflow rejects tags that do not equal `v` plus the Cargo version. After

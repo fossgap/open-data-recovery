@@ -23,7 +23,6 @@ pub const METADATA: &[&str] = &[
     "recuperabit",
     "btrfs",
     "testdisk",
-    "ext4rescue",
 ];
 pub const CARVERS: &[&str] = &[
     "auto",
@@ -49,7 +48,6 @@ const TOOLS: &[(&str, &[&str])] = &[
     ("testdisk", &["/version"]),
     ("debugfs", &["-V"]),
     ("dumpe2fs", &["-V"]),
-    ("ext4rescue", &["--help"]),
     ("photorec", &["/version"]),
     ("scalpel", &["-V"]),
     ("foremost", &["-V"]),
@@ -403,66 +401,6 @@ impl Scanner for Adapter {
                     source,
                     "partition_none,advanced,undelete,allundelete",
                 ]);
-            }
-            "ext4rescue" => {
-                if options.offset_bytes != 0 || options.length_bytes.is_some() {
-                    return fail(
-                        "ext4rescue requires a complete filesystem clone and its matching ddrescue map. Select a partition source instead of a custom byte range.",
-                    );
-                }
-                let clone = c.store.manifest.clone.as_ref().ok_or_else(|| {
-                    Error::Message("ext4rescue requires a retained ddrescue clone and map.".into())
-                })?;
-                let map = c
-                    .store
-                    .manifest
-                    .clone_map
-                    .as_ref()
-                    .ok_or_else(|| Error::Message("The clone has no ddrescue map.".into()))?;
-                if options.clone_backend != "ddrescue" {
-                    return fail("ext4rescue requires a ddrescue map, not safecopy badblocks.");
-                }
-                // Old ext4rescue releases mistake modern ddrescue's three-field
-                // current-position header for a range. Preserve the original map;
-                // supply a separate, validated range-only view to this adapter.
-                let original_map = fs::read_to_string(c.store.directory.join(map))?;
-                let mut ranges = String::new();
-                let mut end = 0_u64;
-                for line in original_map.lines() {
-                    let fields: Vec<_> = line.split_whitespace().collect();
-                    if fields.len() != 3
-                        || !fields[0].starts_with("0x")
-                        || !fields[1].starts_with("0x")
-                    {
-                        continue;
-                    }
-                    let start = u64::from_str_radix(&fields[0][2..], 16)
-                        .map_err(|_| Error::Message("Invalid ddrescue map offset.".into()))?;
-                    let length = u64::from_str_radix(&fields[1][2..], 16)
-                        .map_err(|_| Error::Message("Invalid ddrescue map length.".into()))?;
-                    if start != end
-                        || length == 0
-                        || !["+", "-", "?", "*", "/"].contains(&fields[2])
-                    {
-                        return fail(
-                            "The retained ddrescue map has invalid or noncontiguous ranges.",
-                        );
-                    }
-                    end = start
-                        .checked_add(length)
-                        .ok_or_else(|| Error::Message("ddrescue map address overflow.".into()))?;
-                    ranges.push_str(line);
-                    ranges.push('\n');
-                }
-                if end != c.store.manifest.source.size {
-                    return fail("The ddrescue map does not cover the recorded filesystem clone.");
-                }
-                let compatible_map = dir.join("compatible.map");
-                fs::write(&compatible_map, ranges)?;
-                spec.arg("--to")
-                    .arg(&output)
-                    .arg(c.store.directory.join(clone))
-                    .arg(compatible_map);
             }
             "photorec" => {
                 let commands = super::options::photorec_command(

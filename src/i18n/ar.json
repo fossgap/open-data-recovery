@@ -349,7 +349,6 @@
   "Report: {p0}": "التقرير: {p0}",
   "Requested {p0} scan of {p1}": "الفحص المطلوب: {p0}، المصدر: {p1}",
   "Required when importing an image": "مطلوب عند استيراد صورة",
-  "Requires clone-first with ddrescue and a complete filesystem source.": "يتطلب الاستنساخ المسبق باستخدام ddrescue ومصدر نظام ملفات كاملًا.",
   "Reset demo": "إعادة ضبط العرض التجريبي",
   "Restore available captured file metadata. Unsupported permissions or attributes are reported in the recovery log.": "استعادة بيانات الملفات الوصفية الملتقطة المتاحة. تُذكر الأذونات أو السمات غير المدعومة في سجل الاستعادة.",
   "Results from {p0} · {p1}": "نتائج من {p0} · {p1}",

@@ -349,7 +349,6 @@
   "Report: {p0}": "Relatório: {p0}",
   "Requested {p0} scan of {p1}": "Varredura pedida: {p0}, origem: {p1}",
   "Required when importing an image": "Necessário ao importar uma imagem",
-  "Requires clone-first with ddrescue and a complete filesystem source.": "Requer clonagem prévia com ddrescue e uma origem com um sistema de ficheiros completo.",
   "Reset demo": "Repor demonstração",
   "Restore available captured file metadata. Unsupported permissions or attributes are reported in the recovery log.": "Restaurar os metadados capturados disponíveis. Permissões ou atributos não suportados são indicados no registo de recuperação.",
   "Results from {p0} · {p1}": "Resultados de {p0} · {p1}",

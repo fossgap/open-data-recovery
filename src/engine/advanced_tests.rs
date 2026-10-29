@@ -66,6 +66,21 @@ fn advanced_options_are_backward_compatible_and_context_is_resolved() {
     assert!(plan::resolve(&source("unknown"), &o, &versions()).is_ok());
 }
 #[test]
+fn retired_metadata_engine_is_rejected_in_saved_scan_options() {
+    let mut installed = versions();
+    installed.insert("ext4rescue".into(), "legacy installation".into());
+    for saved in [
+        r#"{"metadata_backend":"ext4rescue"}"#,
+        r#"{"metadata_sequence":["tsk","ext4rescue"]}"#,
+    ] {
+        let mut options: ScanOptions = serde_json::from_str(saved).unwrap();
+        for mode in [Mode::Quick, Mode::Full] {
+            options.mode = mode;
+            assert!(plan::resolve(&source("ext4"), &options, &installed).is_err());
+        }
+    }
+}
+#[test]
 fn families_filter_extraction_without_silently_dropping_unknown_extensions() {
     let mut o = ScanOptions {
         extensions: vec!["docx".into(), "jpg".into()],

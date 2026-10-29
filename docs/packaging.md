@@ -18,13 +18,12 @@ The native packages depend on the default engines (Sleuth Kit, TestDisk/PhotoRec
 
 ## Additional native engines
 
-`packaging/engines/Dockerfile` builds three pinned upstream revisions:
+`packaging/engines/Dockerfile` builds two pinned upstream revisions:
 
 | Engine | Revision | Packaging adaptation |
 | --- | --- | --- |
 | RecuperaBit | `90930dc8e104bb2198c1596004d355066d314d4b` | Relocatable Python launcher; Python 3.9+ |
 | Digler | `2f62fc7e90f5c4123e0f0fa9a31c0128bfffc32c` | Native CLI; build revision recorded in its version banner |
-| ext4rescue | `c9002285aec94e17d2e75296a0aabce78183770e` | Static D runtime; cache uses `XDG_CACHE_HOME` inside the approved artifact directory; creates its output root before extracting orphan files |
 
 ```sh
 sh scripts/package-engines.sh deb
@@ -32,7 +31,9 @@ ODR_SKIP_ENGINE_BUILD=1 sh scripts/package-engines.sh rpm
 ODR_SKIP_ENGINE_BUILD=1 sh scripts/package-engines.sh arch
 ```
 
-Open Data Recovery is licensed under [GPL-3.0-only](../LICENSE). Application packages include the license in `/usr/share/licenses/open-data-recovery/LICENSE`; the Debian package also installs `/usr/share/doc/open-data-recovery/copyright`. Optional engines retain their upstream licenses. The `open-data-recovery-engines` packages include those licenses and the corresponding GPL source, including the ext4rescue cache change. They install ordinary executables; they do not add privileged services.
+Open Data Recovery is licensed under [GPL-3.0-only](../LICENSE). Application packages include the license in `/usr/share/licenses/open-data-recovery/LICENSE`; the Debian package also installs `/usr/share/doc/open-data-recovery/copyright`. Optional engines retain their upstream licenses. The `open-data-recovery-engines` packages include those licenses and the corresponding RecuperaBit GPL source. They install ordinary executables; they do not add privileged services.
+
+The optional-engine bundle is version 0.1.1. Packaging copies only the two supported engines and their required files, so reusing an older build cache does not include retired engines.
 
 ## AppImage
 

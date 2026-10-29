@@ -349,7 +349,6 @@
   "Report: {p0}": "Report: {p0}",
   "Requested {p0} scan of {p1}": "Requested {p0} scan of {p1}",
   "Required when importing an image": "Required when importing an image",
-  "Requires clone-first with ddrescue and a complete filesystem source.": "Requires clone-first with ddrescue and a complete filesystem source.",
   "Reset demo": "Reset demo",
   "Restore available captured file metadata. Unsupported permissions or attributes are reported in the recovery log.": "Restore available captured file metadata. Unsupported permissions or attributes are reported in the recovery log.",
   "Results from {p0} · {p1}": "Results from {p0} · {p1}",

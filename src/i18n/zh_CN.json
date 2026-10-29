@@ -349,7 +349,6 @@
   "Report: {p0}": "报告：{p0}",
   "Requested {p0} scan of {p1}": "请求扫描：{p0}，源：{p1}",
   "Required when importing an image": "导入镜像时必填",
-  "Requires clone-first with ddrescue and a complete filesystem source.": "需要先使用 ddrescue 克隆，并使用完整的文件系统源。",
   "Reset demo": "重置演示",
   "Restore available captured file metadata. Unsupported permissions or attributes are reported in the recovery log.": "还原已采集的可用文件元数据。不支持的权限或属性会记录在恢复日志中。",
   "Results from {p0} · {p1}": "结果来源：{p0} · {p1}",

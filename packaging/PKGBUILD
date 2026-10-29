@@ -1,6 +1,6 @@
 # Build from a checkout containing Cargo.lock. Optional engines may be in the AUR.
 pkgname=open-data-recovery
-pkgver=0.1.1
+pkgver=0.1.2
 pkgrel=1
 url='https://github.com/fossgap/open-data-recovery'
 pkgdesc='Native Linux recovery with read-only sources and persistent scans'

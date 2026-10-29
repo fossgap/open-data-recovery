@@ -73,7 +73,7 @@ pub fn resolve(
             return fail("NTFS recovery needs an NTFS filesystem or explicit NTFS interpretation.");
         }
     }
-    if (has("extundelete") || has("ext4magic") || has("ext4rescue")) && !fs.starts_with("ext") {
+    if (has("extundelete") || has("ext4magic")) && !fs.starts_with("ext") {
         return fail(
             "The selected ext engine needs an ext filesystem or an explicit ext interpretation.",
         );

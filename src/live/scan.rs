@@ -320,7 +320,7 @@ fn refresh_engine_availability(
                         return Some(tr("Folder-scoped scanning uses TSK.").into());
                     }
                     let applicable = match name {
-                        "ext4magic" | "extundelete" | "ext4rescue" => {
+                        "ext4magic" | "extundelete" => {
                             matches!(fs.as_str(), "ext3" | "ext4")
                         }
                         "ntfsundelete" | "recuperabit" | "testdisk" => fs == "ntfs",
@@ -341,18 +341,6 @@ fn refresh_engine_availability(
                     if !applicable {
                         return Some(
                             tr("Unavailable for the selected filesystem interpretation.").into(),
-                        );
-                    }
-                    if name == "ext4rescue"
-                        && (!checked(b, "clone")
-                            || engine_picker::single(b, "clone_engine") != "ddrescue"
-                            || value(b, "offset").parse::<u64>().unwrap_or(0) != 0
-                            || !value(b, "length").is_empty()
-                            || source.partition.is_some())
-                    {
-                        return Some(
-                            tr("Requires clone-first with ddrescue and a complete filesystem source.")
-                                .into(),
                         );
                     }
                 }

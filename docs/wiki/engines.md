@@ -4,7 +4,7 @@
 
 An **implemented engine** has an adapter in this application. An **available engine** has the necessary executable installed. A **used engine** is one selected by the current scan plan. These are different things: implementing or installing an engine does not make it run in every scan.
 
-Check **Help → Backend availability** or `open-data-recovery --backends` for installed tools and recorded versions/hashes. Engines are external programs; the application does not download or install them during a scan. Distribution dependencies and the optional RecuperaBit, Digler and ext4rescue packages are described in [packaging](../packaging.md).
+Check **Help → Backend availability** or `open-data-recovery --backends` for installed tools and recorded versions/hashes. Engines are external programs; the application does not download or install them during a scan. Distribution dependencies and the optional RecuperaBit and Digler packages are described in [packaging](../packaging.md).
 
 ## Metadata engines
 
@@ -20,9 +20,8 @@ These can be used in Quick or in Full's metadata stage. “Automatic” below me
 | RecuperaBit — `recuperabit` | NTFS filesystem reconstruction and extraction; reconstruction state is also retained | Automatic additional engine on NTFS, or custom choice | Extracted files |
 | `btrfs restore` — `btrfs` | Native btrfs tree-based extraction; Custom Scan can select tree/subvolume roots, superblock mirror, snapshots and a directory | Default metadata engine on btrfs, or custom choice | Extracted files |
 | TestDisk — `testdisk` | Scripted NTFS undelete in file scans; a separate action also discovers lost partitions (see below) | Automatic additional engine on NTFS, or custom choice | Extracted files |
-| `ext4rescue` | ext4 recovery using a retained ddrescue clone and its matching map | Custom choice; requires ddrescue clone-first and a complete filesystem source, not a custom byte range | Extracted files and engine cache |
 
-TSK uses `mmls` to enumerate partition ranges. Specialized metadata engines should be given the filesystem partition they expect; an explicit choice does not make an incompatible engine suitable for another filesystem. TestDisk's adapter explicitly requires NTFS. ext4rescue does not accept safecopy's report in place of a ddrescue map.
+TSK uses `mmls` to enumerate partition ranges. Specialized metadata engines should be given the filesystem partition they expect; an explicit choice does not make an incompatible engine suitable for another filesystem. TestDisk's adapter explicitly requires NTFS.
 
 ## Content engines
 

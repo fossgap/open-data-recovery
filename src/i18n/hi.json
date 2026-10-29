@@ -349,7 +349,6 @@
   "Report: {p0}": "रिपोर्ट: {p0}",
   "Requested {p0} scan of {p1}": "अनुरोधित स्कैन: {p0}, स्रोत: {p1}",
   "Required when importing an image": "इमेज आयात करते समय आवश्यक",
-  "Requires clone-first with ddrescue and a complete filesystem source.": "पहले ddrescue से क्लोन और संपूर्ण फ़ाइल सिस्टम स्रोत आवश्यक है।",
   "Reset demo": "डेमो रीसेट करें",
   "Restore available captured file metadata. Unsupported permissions or attributes are reported in the recovery log.": "उपलब्ध संग्रहीत फ़ाइल मेटाडेटा लौटाएँ। असमर्थित अनुमतियाँ या विशेषताएँ पुनर्प्राप्ति लॉग में दर्ज होती हैं।",
   "Results from {p0} · {p1}": "परिणाम स्रोत: {p0} · {p1}",

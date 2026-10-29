@@ -24,7 +24,7 @@ For Quick and Full, **Auto** constructs the following sequence from the identifi
 | btrfs | btrfs restore |
 | FAT12/16/32 / exFAT | TSK |
 
-TSK is required for the TSK-led sequences; Auto does not replace it with `tsk_recover` when it is missing. btrfs restore is required for the automatic btrfs sequence. `tsk_recover` and `ext4rescue` are implemented **custom choices**, not additional Auto steps.
+TSK is required for the TSK-led sequences; Auto does not replace it with `tsk_recover` when it is missing. btrfs restore is required for the automatic btrfs sequence. `tsk_recover` is an implemented **custom choice**, not an additional Auto step.
 
 For a mounted-folder source, automatic additional metadata engines are not appended; the primary metadata adapter's results are filtered to the selected folder. Deep and Full require selecting the containing filesystem because content signatures cannot establish membership of the selected folder.
 

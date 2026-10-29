@@ -539,8 +539,8 @@ fn disposable_optional_carvers_and_ntfs_reconstruction() {
 }
 
 #[test]
-#[ignore = "Runs E01 and ext4rescue on disposable images"]
-fn disposable_ewf_and_ext4rescue() {
+#[ignore = "Runs E01 normalization on a disposable image"]
+fn disposable_ewf_normalization() {
     let source_root = tempfile::tempdir().unwrap();
     let workspace = tempfile::Builder::new()
         .prefix("odr-ewf-test-")
@@ -597,40 +597,6 @@ fn disposable_ewf_and_ext4rescue() {
     let dir = jobs::scan(source, options, &Control::default(), &|e| {
         eprintln!("{e:?}")
     })
-    .unwrap();
-    let store = Store::open(&dir).unwrap();
-    assert!(store.manifest.complete, "{:?}", store.manifest.errors);
-    assert!(
-        store
-            .page(&Query {
-                limit: 250,
-                ..Default::default()
-            })
-            .unwrap()
-            .files
-            .iter()
-            .any(|f| f.path.ends_with("recovered.txt"))
-    );
-    if !adapters::versions().contains_key("ext4rescue") {
-        eprintln!("Skipping unavailable optional ext4rescue");
-        return;
-    }
-    let options = ScanOptions {
-        workspace: workspace.path().join("ext4rescue"),
-        mode: Mode::Quick,
-        metadata_backend: "ext4rescue".into(),
-        clone_first: true,
-        include_existing: true,
-        extensions: vec!["txt".into()],
-        timeout_seconds: 20,
-        ..Default::default()
-    };
-    let dir = jobs::scan(
-        sources::inspect(&image).unwrap(),
-        options,
-        &Control::default(),
-        &|e| eprintln!("{e:?}"),
-    )
     .unwrap();
     let store = Store::open(&dir).unwrap();
     assert!(store.manifest.complete, "{:?}", store.manifest.errors);
