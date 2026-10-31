@@ -8,8 +8,9 @@
 and manual dispatches. It builds the Debian Bookworm GTK 4.8 environment and the
 pinned RecuperaBit and Digler toolchain. Checks cover Rust formatting,
 unit tests, every GtkBuilder layout, GTK smoke checks, all eleven real-engine
-integration cases, advanced scan controls, consolidation/recovery/saved-scan management, and partition
-discovery through the CLI and production UI.
+integration cases, advanced scan and image-restoration controls,
+consolidation/recovery/saved-scan management, and partition discovery through
+the CLI and production UI.
 
 Fixtures are regular disposable image files on container tmpfs mounts. Tests do
 not receive host devices. Actions are pinned to commit hashes; the test and build
@@ -41,8 +42,8 @@ Keep `packaging/PKGBUILD` in sync when changing the application version. The
 optional-engine bundle has its own version and pinned upstream revisions.
 
 ```sh
-git tag -a v0.1.2 -m "Open Data Recovery 0.1.2"
-git push origin v0.1.2
+git tag -a v0.1.3 -m "Open Data Recovery 0.1.3"
+git push origin v0.1.3
 ```
 
 The workflow rejects tags that do not equal `v` plus the Cargo version. After

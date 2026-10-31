@@ -4,6 +4,25 @@
 
 Scanning finds candidates and may already extract contents. **Recovery writes the selected final files to the destination.** It does not rerun the full scan or apply every installed engine to each selected file.
 
+## Restoring an image to a disk
+
+**File → Restore image to disk…** opens a separate destructive utility. It writes an entire raw/dd image onto a physical disk, including any partition table and boot sectors present in the image. An eligible raw image selected in the sidebar is filled in automatically. File recovery and scanning continue to open their sources read-only.
+
+1. Choose an uncompressed raw image, such as a `.img`, `.dd` or ODR `clone/clone.img` file. E01, compressed archives and virtual-machine containers must be exported to raw format first. The image must be a regular file on verifiable local storage.
+2. Choose the whole target disk. Nothing is selected automatically. The list shows the device path, model, serial number and capacity. Unavailable disks include an explanation. Unmount every filesystem on the target and deactivate swap, RAID, LVM or encrypted mappings before refreshing. The wizard never unmounts or deactivates them automatically.
+3. Review the image and target, then click **Overwrite disk and restore**. A confirmation dialog repeats the image and disk details and warns that existing disk data will be lost. **Cancel** is the default; closing the dialog or pressing Escape returns to review without writing. Click **Overwrite disk and restore** in that dialog to proceed. Changing the selection invalidates any previous confirmation. UDisks/polkit may ask for write authorization.
+4. Wait for writing, flushing and SHA-256 verification. **Restoration complete** means the image-sized region was reread and matched the bytes copied. The completion view and Activity show the byte count and hash. Reconnect the disk if the desktop does not display its new partitions.
+
+The disk must be at least as large as the image, with a supported 512- or 4096-byte logical sector size that divides the image length. The image must be on different physical storage from the target. Partitions, loop devices and other virtual block devices cannot be selected as destinations. Unknown device topology fails closed. Disk node identity, attachment sequence, model/serial, capacity, sector size and usage are rechecked after authorization; the writer holds exclusive device access. The source remains open read-only, and the dedicated worker is confined with Landlock after opening its input and target descriptors.
+
+Restoration copies bytes without resizing partitions, converting sector geometry, relocating a GPT backup header, repairing a filesystem or securely erasing the remainder of a larger disk. Space after the image remains unchanged. Use an image whose partition geometry is compatible with the target disk. A partial ddrescue clone remains partial even if its stored bytes copy and verify successfully; finish acquisition first when a complete restoration is required. Verification establishes that the copied bytes match, not that the original filesystem is healthy or bootable.
+
+**Stop restoration**, Escape, closing the wizard or quitting ODR requests cancellation. The window stays open until the worker stops and flushes written data. An in-progress authorization prompt or device I/O may take time to return. Cancellation and errors can leave the disk incomplete; they are never reported as a verified restoration. There is no resume or rollback for this utility. It is unavailable in demo mode and does not change the open scan or its selections.
+
+Device authorization uses UDisks' [OpenDevice API](https://storaged.org/doc/udisks2-api/latest/gdbus-org.freedesktop.UDisks2.Block.html#gdbus-method-org-freedesktop-UDisks2-Block.OpenDevice), requesting read/write access with exclusive, synchronous flags. The existing scan-source access path is unchanged.
+
+For a sample image, run `sh scripts/create-restoration-test-image.sh`. It creates `test.img` in the repository root: a 64 MiB raw disk image with an MBR partition table and an ext2 partition labeled `ODR_TEST` containing sample text files. The script refuses to replace an existing file. Browse to this image in the wizard; reaching the final confirmation still requires an eligible unmounted target disk. Cancel the dialog to review it without writing.
+
 ## Where the recovered bytes come from
 
 | Selected result | Recovery action |

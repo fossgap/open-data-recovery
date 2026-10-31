@@ -14,6 +14,7 @@ pub mod metadata;
 pub mod options;
 pub mod plan;
 pub mod process;
+pub mod restore;
 pub mod safety;
 pub mod sessions;
 #[cfg(test)]

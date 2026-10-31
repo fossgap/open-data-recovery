@@ -2,6 +2,7 @@
 use crate::i18n::tr;
 mod partitions;
 mod partitions_smoke;
+mod restore;
 mod scan;
 mod scan_smoke;
 use crate::{
@@ -61,6 +62,7 @@ pub struct Live {
     query: RefCell<Query>,
     files: RefCell<Vec<Option<i64>>>,
     job: RefCell<Option<Job>>,
+    restoration: RefCell<Option<Rc<restore::Wizard>>>,
     deleting: Cell<bool>,
     partition_search: RefCell<Option<discovery::SearchJob>>,
     partition_report: RefCell<Option<discovery::Report>>,
@@ -168,6 +170,11 @@ impl Live {
     }
     fn busy(&self) -> bool {
         self.job.borrow().is_some()
+            || self
+                .restoration
+                .borrow()
+                .as_ref()
+                .is_some_and(|w| w.running())
             || self.deleting.get()
             || self.partition_search.borrow().is_some()
     }
@@ -201,6 +208,7 @@ impl Live {
             ("add-source", Self::add_source),
             ("reset", Self::refresh),
             ("recover", Self::recovery),
+            ("restore-image", Self::restore_image),
             ("pause", Self::pause),
             ("cancel", Self::cancel),
         ] {
@@ -264,7 +272,14 @@ impl Live {
                     ui.cancel();
                     ui.label(
                         "status_text",
-                        if ui.deleting.get() {
+                        if ui
+                            .restoration
+                            .borrow()
+                            .as_ref()
+                            .is_some_and(|w| w.running())
+                        {
+                            tr("Stopping restoration and flushing written data…")
+                        } else if ui.deleting.get() {
                             tr("Finishing saved-scan deletion before closing…")
                         } else {
                             tr("Stopping the running job and saving partial results…")
@@ -413,6 +428,7 @@ impl Live {
             "saved-scans",
             "save",
             "discover-partitions",
+            "restore-image",
         ] {
             self.enable(name, !busy);
         }
@@ -1152,6 +1168,9 @@ impl Live {
         self.controls();
     }
     fn cancel(self: &Rc<Self>) {
+        if let Some(wizard) = self.restoration.borrow().as_ref() {
+            wizard.cancel();
+        }
         if let Some(search) = self.partition_search.borrow().as_ref() {
             search.control.cancel();
         }
@@ -1503,6 +1522,10 @@ impl Live {
         self.render_files();
     }
     fn tick(self: &Rc<Self>) {
+        let wizard = self.restoration.borrow().clone();
+        if let Some(wizard) = wizard {
+            wizard.tick();
+        }
         self.poll_partition_search();
         let events: Vec<_> = self
             .job
@@ -2081,6 +2104,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         }),
         files: RefCell::new(vec![]),
         job: RefCell::new(None),
+        restoration: RefCell::new(None),
         deleting: Cell::new(false),
         partition_search: RefCell::new(None),
         partition_report: RefCell::new(None),
@@ -2133,6 +2157,9 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         }
     });
     if smoke {
+        if restore::smoke(&ui) {
+            return;
+        }
         if scan_smoke::run(&ui) {
             return;
         }

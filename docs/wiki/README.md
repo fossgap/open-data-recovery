@@ -10,6 +10,7 @@ This wiki describes the current implementation. Start here for the workflow, the
 | [Lost-partition discovery](partition-discovery.md) | How can TestDisk find missing partition boundaries and make them available as scan targets? |
 | [Final consolidation](consolidation.md) | How are duplicate findings displayed or grouped? What changes in time, storage and recovery? |
 | [Recovering files](recovery.md) | Where do recovered bytes come from? What do the recovery options and verification mean? |
+| [Restoring an image](recovery.md#restoring-an-image-to-a-disk) | How can a raw disk image be written back to a physical disk? |
 
 ## Start-to-finish workflow
 

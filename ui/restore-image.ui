@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.8" />
+  <object class="GtkWindow" id="dialog">
+    <property name="title" translatable="yes">Restore image to disk</property>
+    <property name="modal">true</property>
+    <property name="default-width">640</property>
+    <property name="default-height">560</property>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <property name="spacing">16</property>
+        <property name="margin-top">20</property>
+        <property name="margin-bottom">16</property>
+        <property name="margin-start">20</property>
+        <property name="margin-end">20</property>
+        <child>
+          <object class="GtkLabel" id="heading">
+            <property name="label" translatable="yes">Choose an image</property>
+            <property name="xalign">0</property>
+            <property name="wrap">true</property>
+            <style><class name="title-2" /></style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="vexpand">true</property>
+            <property name="hscrollbar-policy">never</property>
+            <property name="child">
+              <object class="GtkStack" id="pages">
+                <property name="vhomogeneous">false</property>
+                <property name="hhomogeneous">true</property>
+                <property name="valign">start</property>
+                <child>
+                  <object class="GtkStackPage">
+                    <property name="name">image</property>
+                    <property name="child">
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">12</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label" translatable="yes">Write a raw disk image onto a physical disk. The image stays read-only; the selected disk will be overwritten.</property>
+                            <property name="xalign">0</property>
+                            <property name="wrap">true</property>
+                            <property name="max-width-chars">66</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label" translatable="yes">_Image file</property>
+                            <property name="use-underline">true</property>
+                            <property name="mnemonic-widget">path</property>
+                            <property name="xalign">0</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="spacing">8</property>
+                            <child><object class="GtkEntry" id="path"><property name="hexpand">true</property><property name="placeholder-text">/media/backup/disk.img</property></object></child>
+                            <child><object class="GtkButton" id="browse"><property name="label" translatable="yes">Browse…</property></object></child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label" translatable="yes">Use an uncompressed raw/dd image, including an ODR clone.img. Export E01 and virtual-machine images to raw format first.</property>
+                            <property name="xalign">0</property>
+                            <property name="wrap">true</property>
+                            <property name="max-width-chars">66</property>
+                            <style><class name="dim-label" /></style>
+                          </object>
+                        </child>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkStackPage">
+                    <property name="name">disk</property>
+                    <property name="child">
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">12</property>
+                        <child><object class="GtkLabel" id="image_details"><property name="xalign">0</property><property name="wrap">true</property><property name="selectable">true</property><property name="max-width-chars">66</property></object></child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label" translatable="yes">Choose the whole disk to overwrite. Unmount its filesystems and deactivate swap or other mappings, then refresh the list.</property>
+                            <property name="xalign">0</property>
+                            <property name="wrap">true</property>
+                            <property name="max-width-chars">66</property>
+                          </object>
+                        </child>
+                        <child><object class="GtkListBox" id="disks"><property name="selection-mode">single</property><style><class name="boxed-list" /></style></object></child>
+                        <child><object class="GtkButton" id="refresh"><property name="label" translatable="yes">Refresh disks</property><property name="halign">start</property></object></child>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkStackPage">
+                    <property name="name">review</property>
+                    <property name="child">
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">12</property>
+                        <child><object class="GtkLabel" id="review_details"><property name="xalign">0</property><property name="wrap">true</property><property name="selectable">true</property><property name="max-width-chars">66</property></object></child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label" translatable="yes">All existing data on the target disk will be lost. This cannot be undone.</property>
+                            <property name="xalign">0</property>
+                            <property name="wrap">true</property>
+                            <property name="max-width-chars">66</property>
+                            <style><class name="error" /></style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label" translatable="yes">The image is copied byte for byte and verified with SHA-256. Space beyond the image is left unchanged; partitions are not resized. Stopping can leave an incomplete disk.</property>
+                            <property name="xalign">0</property>
+                            <property name="wrap">true</property>
+                            <property name="max-width-chars">66</property>
+                          </object>
+                        </child>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkStackPage">
+                    <property name="name">progress</property>
+                    <property name="child">
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="spacing">16</property>
+                        <child><object class="GtkLabel" id="progress_details"><property name="xalign">0</property><property name="wrap">true</property><property name="selectable">true</property><property name="max-width-chars">66</property></object></child>
+                        <child><object class="GtkProgressBar" id="progress"><property name="show-text">true</property></object></child>
+                        <child><object class="GtkLabel" id="result"><property name="xalign">0</property><property name="wrap">true</property><property name="selectable">true</property><property name="max-width-chars">66</property></object></child>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="spacing">8</property>
+            <child><object class="GtkSpinner" id="spinner"><property name="visible">false</property></object></child>
+            <child><object class="GtkLabel" id="validation"><property name="xalign">0</property><property name="wrap">true</property><property name="hexpand">true</property><property name="max-width-chars">62</property></object></child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="spacing">8</property>
+            <child><object class="GtkButton" id="back"><property name="label" translatable="yes">Back</property><property name="visible">false</property></object></child>
+            <child><object class="GtkLabel"><property name="hexpand">true</property></object></child>
+            <child><object class="GtkButton" id="close"><property name="label" translatable="yes">Cancel</property></object></child>
+            <child><object class="GtkButton" id="stop"><property name="label" translatable="yes">Stop restoration</property><property name="visible">false</property></object></child>
+            <child><object class="GtkButton" id="next"><property name="label" translatable="yes">Next</property><property name="sensitive">false</property><style><class name="suggested-action" /></style></object></child>
+            <child><object class="GtkButton" id="restore"><property name="label" translatable="yes">Overwrite disk and restore</property><property name="visible">false</property><property name="sensitive">false</property><style><class name="destructive-action" /></style></object></child>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+  <object class="GtkFileChooserNative" id="chooser">
+    <property name="title" translatable="yes">Choose a raw disk image</property>
+    <property name="action">open</property>
+    <property name="accept-label" translatable="yes">Choose</property>
+    <property name="cancel-label" translatable="yes">Cancel</property>
+  </object>
+</interface>

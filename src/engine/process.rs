@@ -209,6 +209,13 @@ impl Sandbox {
     }
 }
 
+/// Used only on the dedicated restoration worker, after opening its two files.
+/// Landlock leaves those descriptors usable but denies all new writable opens.
+pub(super) fn confine_restore_thread() -> Result<()> {
+    Sandbox::new(&[])?.apply()?;
+    Ok(())
+}
+
 pub fn run(
     mut spec: Spec,
     control: &Control,

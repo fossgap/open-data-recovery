@@ -124,6 +124,8 @@ impl Ui {
             )
         });
         self.enable("discover-partitions", false);
+        self.action("restore-image", |_| {});
+        self.enable("restore-image", false);
         self.action("backends", |ui| ui.info(tr("Demo mode"), tr("The demonstration runs no recovery tools. Launch without --demo to discover devices, inspect installed backends, and perform real recovery.")));
         self.action("reset", Self::reset);
         self.action("search", |ui| {

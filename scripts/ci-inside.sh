@@ -11,6 +11,7 @@ xvfb-run -a sh scripts/check.sh --inside
 sh scripts/check-engines.sh
 for language in en fr ar; do
     ODR_LANGUAGE="$language" sh scripts/check-ui-advanced.sh
+    ODR_LANGUAGE="$language" sh scripts/check-ui-restoration.sh
 done
 ODR_LANGUAGE=en ODR_TEST_STORAGE=/tmp ODR_CONSOLIDATE=1 ODR_MANAGE_SCANS=1 sh scripts/check-ui-recovery.sh
 ODR_LANGUAGE=en ODR_TEST_STORAGE=/tmp sh scripts/check-ui-partitions.sh

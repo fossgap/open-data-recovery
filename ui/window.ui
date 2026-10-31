@@ -16,6 +16,12 @@
       </section>
       <section>
         <item>
+          <attribute name="label" translatable="yes">Restore image to disk…</attribute>
+          <attribute name="action">win.restore-image</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
           <attribute name="label" translatable="yes">Quit</attribute>
           <attribute name="action">app.quit</attribute>
         </item>

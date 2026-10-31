@@ -83,6 +83,8 @@ pub fn run(app: &gtk::Application) {
         include_str!("../../ui/source.ui"),
         include_str!("../../ui/partitions.ui"),
         include_str!("../../ui/resume-imaging.ui"),
+        include_str!("../../ui/restore-image.ui"),
+        include_str!("../../ui/restore-confirm.ui"),
         include_str!("../../ui/findings.ui"),
     ] {
         let b = builder(xml);
