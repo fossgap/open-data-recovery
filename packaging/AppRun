@@ -10,5 +10,9 @@ export GTK_DATA_PREFIX="$appdir/usr"
 export GIO_MODULE_DIR="$appdir/usr/lib/gio/modules"
 export GIO_EXTRA_MODULES="$appdir/usr/lib/gio/modules"
 export GDK_PIXBUF_MODULE_FILE="$appdir/usr/lib/loaders.cache"
+if [ -z "${FONTCONFIG_FILE:-}" ] && [ -z "${FONTCONFIG_PATH:-}" ] && [ ! -f /etc/fonts/fonts.conf ]; then
+    export FONTCONFIG_PATH="$appdir/usr/etc/fonts"
+    export FONTCONFIG_FILE="$FONTCONFIG_PATH/fonts.conf"
+fi
 export ODR_APPIMAGE=1
 exec "$appdir/usr/bin/open-data-recovery" "$@"

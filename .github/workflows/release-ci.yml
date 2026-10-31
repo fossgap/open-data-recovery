@@ -52,9 +52,44 @@ jobs:
           compression-level: 0
           retention-days: 14
 
+  verify-packages:
+    name: Verify packages (${{ matrix.target }})
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [debian, kali, fedora, arch, appimage]
+    steps:
+      - name: Check out installation tests
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Download built packages and checksums
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: linux-x86_64-release
+          path: dist/release
+      - name: Install packages and verify runtime workflows
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p target/package-installation
+          sh scripts/check-package-installation.sh '${{ matrix.target }}' dist/release 2>&1 \
+            | tee 'target/package-installation/${{ matrix.target }}.log'
+      - name: Retain package verification log
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: package-verification-${{ matrix.target }}
+          path: target/package-installation/${{ matrix.target }}.log
+          if-no-files-found: warn
+          retention-days: 14
+
   publish:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: [build, verify-packages]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:

@@ -29,7 +29,7 @@ Maintainer: Open Data Recovery maintainers
 Section: utils
 Priority: optional
 Homepage: https://github.com/fossgap/open-data-recovery
-Depends: libc6 (>= 2.36), libgtk-4-1 (>= 4.8), libglib2.0-0 (>= 2.74), util-linux, udisks2, policykit-1, sleuthkit, testdisk, gddrescue
+Depends: libc6 (>= 2.36), libgtk-4-1 (>= 4.8), libglib2.0-0 (>= 2.74), util-linux, udisks2, polkitd, sleuthkit, testdisk, gddrescue
 Recommends: ext4magic, extundelete, ntfs-3g, btrfs-progs, e2fsprogs, ewf-tools, scalpel, foremost, safecopy, magicrescue, recoverjpeg, bulk-extractor, open-data-recovery-engines
 Description: Native Linux data recovery workspace
  Read-only source access, persistent scans, and verified recovery to validated output storage.
@@ -136,6 +136,15 @@ appdir)
             case "$(basename "$library")" in libc.so.*|libm.so.*|libdl.so.*|libpthread.so.*|librt.so.*|ld-linux*) continue;; esac
             cp -L "$library" "$destination/usr/lib/"
         done
+    done
+    # GIO/Pixbuf needs MIME data even when the image loader libraries are bundled.
+    cp -a /usr/share/mime "$destination/usr/share/"
+    # Minimal hosts may have fonts but no Fontconfig configuration. Dereference
+    # conf.d links so the fallback does not depend on the build host's paths.
+    mkdir -p "$destination/usr/etc" "$destination/usr/share/doc/open-data-recovery/runtime"
+    cp -aL /etc/fonts "$destination/usr/etc/"
+    for package in shared-mime-info fontconfig-config; do
+        cp "/usr/share/doc/$package/copyright" "$destination/usr/share/doc/open-data-recovery/runtime/$package.copyright"
     done
     for data in icons themes; do if [ -d "/usr/share/$data" ]; then cp -a "/usr/share/$data" "$destination/usr/share/"; fi; done
     echo "AppDir created: $destination"

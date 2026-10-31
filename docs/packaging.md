@@ -4,7 +4,7 @@ See [CI and releases](ci-release.md) for automated checks, package artifacts and
 
 `sh scripts/package.sh deb|rpm|arch|appdir` packages a release binary, desktop entry, icon, README and license. Artifacts go to `dist/`, which is ignored by Git. Set `ODR_BINARY` to package a binary built elsewhere. The RPM builder keeps its temporary files and private RPM database inside `target/packages`; it does not install packages or modify the system RPM database. `packaging/PKGBUILD` also supports a normal source build with makepkg. Debian control metadata is generated in `scripts/package.sh`; the optional-engine package uses `scripts/package-engines.sh`.
 
-Build on the oldest supported runtime. The included Debian Bookworm container uses GTK 4.8 and glibc 2.36; a binary built on a newer distribution may require newer libraries. The runtime kernel must provide Landlock ABI 3 (Linux 6.2+). Packages are not published or installed automatically.
+Build on the oldest supported runtime. The included Debian Bookworm container uses GTK 4.8 and glibc 2.36; a binary built on a newer distribution may require newer libraries. The runtime kernel must provide Landlock ABI 3 (Linux 6.2+). The local build commands do not install or publish packages.
 
 ```sh
 cargo build --release --locked
@@ -15,6 +15,31 @@ sh scripts/package.sh appdir
 ```
 
 The native packages depend on the default engines (Sleuth Kit, TestDisk/PhotoRec and ddrescue) and recommend the other distribution recovery tools. Availability and package names differ between repositories; for example, Debian Bookworm does not provide bulk-extractor in its default repository. The UI detects executable availability rather than assuming an optional package exists. No backend is downloaded or installed during a scan.
+
+Debian-family packages require `polkitd` for UDisks authorization. ODR does not
+invoke `pkexec` and does not require the obsolete `policykit-1` transitional
+package. This also allows installation on current Kali and Debian releases where
+that transitional package is unavailable.
+
+To install the optional engine bundle with the application, pass both downloaded
+DEB files to APT in the same command. APT does not fetch sibling assets from a
+GitHub release:
+
+```sh
+sudo apt install './open-data-recovery_<version>_amd64.deb' './open-data-recovery-engines_<engine-version>_amd64.deb'
+```
+
+The application and engine bundle have separate version numbers. Use the exact
+filenames from the release you downloaded.
+
+Release CI runs `scripts/check-deb-dependencies.sh APPLICATION.deb ENGINES.deb`
+against the generated packages. This uses APT simulation with `policykit-1`
+excluded and package removals forbidden, in a container with current package
+lists and no installed `policykit-1`. This preliminary check does not install the
+application. Separate required CI jobs then install the actual application and
+engine packages on Debian, Kali, Fedora and Arch, and run the AppImage on a minimal
+Ubuntu host. They exercise the installed application and both optional engines as
+an ordinary user. See the [installation matrix and local commands](ci-release.md).
 
 ## Additional native engines
 
@@ -37,7 +62,10 @@ The optional-engine bundle is version 0.1.1. Packaging copies only the two suppo
 
 ## AppImage
 
-The AppDir bundles GTK runtime libraries, matching GTK/GIO modules and image loaders, schemas, icons and themes. It uses the host libc/loader and installed recovery commands; optional engine packages remain independently installable. Its launcher locates resources relative to itself. Host recovery commands run without the bundled library/module overrides.
+The AppDir bundles GTK runtime libraries, matching GTK/GIO modules and image loaders, schemas, the MIME database, icons and themes. It includes a fallback Fontconfig configuration for hosts without `/etc/fonts/fonts.conf`, while preserving explicitly configured font settings. It uses the host libc/loader, fonts and installed recovery commands; optional engine packages remain independently installable. Its launcher locates resources relative to itself. Host recovery commands run without the bundled library/module overrides.
+
+Release CI also runs the packaged demo with the host MIME search paths hidden,
+so a missing image-format database cannot be masked by the build environment.
 
 Use `sh scripts/appimage.sh` to wrap an existing AppDir. It downloads the official [appimagetool 1.9.1 release](https://github.com/AppImage/appimagetool/releases/tag/1.9.1) only when needed, verifies the pinned SHA-256, extracts it without FUSE, and builds the AppImage. The tool cache is versioned so older downloads cannot be reused accidentally. The pinned runtime download is also verified and requires network access. Set `APPIMAGETOOL` to a previously extracted compatible AppRun to build with your own verified tool.
 
