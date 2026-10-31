@@ -39,7 +39,7 @@ The optional-engine bundle is version 0.1.1. Packaging copies only the two suppo
 
 The AppDir bundles GTK runtime libraries, matching GTK/GIO modules and image loaders, schemas, icons and themes. It uses the host libc/loader and installed recovery commands; optional engine packages remain independently installable. Its launcher locates resources relative to itself. Host recovery commands run without the bundled library/module overrides.
 
-Use `sh scripts/appimage.sh` to wrap an existing AppDir. It downloads the official appimagetool artifact only when needed, verifies the pinned SHA-256, extracts it without FUSE, and builds the AppImage. The pinned runtime download is also verified and requires network access. Set `APPIMAGETOOL` to a previously extracted compatible AppRun to build with your own verified tool.
+Use `sh scripts/appimage.sh` to wrap an existing AppDir. It downloads the official [appimagetool 1.9.1 release](https://github.com/AppImage/appimagetool/releases/tag/1.9.1) only when needed, verifies the pinned SHA-256, extracts it without FUSE, and builds the AppImage. The tool cache is versioned so older downloads cannot be reused accidentally. The pinned runtime download is also verified and requires network access. Set `APPIMAGETOOL` to a previously extracted compatible AppRun to build with your own verified tool.
 
 ```sh
 sh scripts/package.sh appdir

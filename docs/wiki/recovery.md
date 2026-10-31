@@ -21,8 +21,6 @@ Restoration copies bytes without resizing partitions, converting sector geometry
 
 Device authorization uses UDisks' [OpenDevice API](https://storaged.org/doc/udisks2-api/latest/gdbus-org.freedesktop.UDisks2.Block.html#gdbus-method-org-freedesktop-UDisks2-Block.OpenDevice), requesting read/write access with exclusive, synchronous flags. The existing scan-source access path is unchanged.
 
-For a sample image, run `sh scripts/create-restoration-test-image.sh`. It creates `test.img` in the repository root: a 64 MiB raw disk image with an MBR partition table and an ext2 partition labeled `ODR_TEST` containing sample text files. The script refuses to replace an existing file. Browse to this image in the wizard; reaching the final confirmation still requires an eligible unmounted target disk. Cancel the dialog to review it without writing.
-
 ## Where the recovered bytes come from
 
 | Selected result | Recovery action |
