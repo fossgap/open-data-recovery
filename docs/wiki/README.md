@@ -39,6 +39,28 @@ flowchart LR
 
 The optional clone is inside the workspace. When available, it can supply the source reads shown above without reconnecting the original source.
 
+## Theme settings
+
+**View → Theme** offers two choices:
+
+- **System Default** is the default. It follows your desktop's GTK theme, including
+  light, dark and high-contrast colors, fonts and native widget styling.
+- **Evergreen** restores the original green-and-cream interface with a dark
+  sidebar and filesystem colors. It keeps its light workspace even when the
+  desktop uses a dark theme.
+
+The selected option is marked in the menu. Switching applies immediately to the
+workspace and application dialogs without interrupting scans or changing selections. Both
+the production application and `--demo` share the preference. Returning to
+**System Default** removes the custom styling without changing desktop settings.
+
+The choice is saved in `$XDG_CONFIG_HOME/open-data-recovery/theme`, or
+`~/.config/open-data-recovery/theme` when XDG_CONFIG_HOME is unset. Missing or
+unrecognized preferences fall back to **System Default**. If the preference cannot
+be saved, an error explains the problem and the previous theme stays selected.
+
+![Evergreen theme](../screenshots/theme-custom.png)
+
 ## Language settings
 
 The interface supports English, French, Spanish, Simplified Chinese, Hindi,

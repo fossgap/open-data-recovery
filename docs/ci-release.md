@@ -67,8 +67,8 @@ Keep `packaging/PKGBUILD` in sync when changing the application version. The
 optional-engine bundle has its own version and pinned upstream revisions.
 
 ```sh
-git tag -a v0.1.4 -m "Open Data Recovery 0.1.4"
-git push origin v0.1.4
+git tag -a v0.1.5 -m "Open Data Recovery 0.1.5"
+git push origin v0.1.5
 ```
 
 The workflow rejects tags that do not equal `v` plus the Cargo version. After

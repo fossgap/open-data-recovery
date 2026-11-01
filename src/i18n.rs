@@ -64,16 +64,7 @@ fn system_language(language: &str, locale: &str) -> &'static str {
 }
 
 fn config_path() -> Option<PathBuf> {
-    std::env::var_os("XDG_CONFIG_HOME")
-        .map(PathBuf::from)
-        .filter(|p| p.is_absolute())
-        .or_else(|| {
-            std::env::var_os("HOME")
-                .map(PathBuf::from)
-                .filter(|p| p.is_absolute())
-                .map(|p| p.join(".config"))
-        })
-        .map(|p| p.join("open-data-recovery/language"))
+    crate::preferences::path("language")
 }
 
 fn preference() -> String {
@@ -99,25 +90,7 @@ fn write_preference(path: &std::path::Path, code: &str) -> std::io::Result<()> {
             "Unknown language",
         ));
     }
-    std::fs::create_dir_all(path.parent().unwrap())?;
-    // A private, newly created temporary file prevents following an existing symlink.
-    use std::io::Write;
-    use std::os::unix::fs::OpenOptionsExt;
-    let temporary = path.with_extension(format!("{}.tmp", std::process::id()));
-    let mut file = std::fs::OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .mode(0o600)
-        .open(&temporary)?;
-    let result = (|| {
-        writeln!(file, "{code}")?;
-        file.sync_all()?;
-        std::fs::rename(&temporary, path)
-    })();
-    if result.is_err() {
-        let _ = std::fs::remove_file(temporary);
-    }
-    result
+    crate::preferences::write(path, code)
 }
 
 pub fn init() {

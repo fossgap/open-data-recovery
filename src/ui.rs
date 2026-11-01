@@ -373,6 +373,10 @@ impl Ui {
                     let source = &state.sources[child];
                     (
                         source.size_mib,
+                        crate::appearance::filesystem_class(
+                            source.filesystem,
+                            source.kind == SourceKind::Unallocated,
+                        ),
                         source.kind == SourceKind::Unallocated,
                         child,
                     )
@@ -383,9 +387,10 @@ impl Ui {
                 let selected = weak.upgrade().map(|ui| ui.state.borrow().session.source);
                 let segments: Vec<_> = segments
                     .iter()
-                    .map(|&(size, unallocated, child)| {
+                    .map(|&(size, class, unallocated, child)| {
                         (
                             size,
+                            class,
                             unallocated,
                             selected == Some(child) || selected == Some(id),
                         )
@@ -404,6 +409,12 @@ impl Ui {
             for child in children {
                 let source = &state.sources[child];
                 let builder = crate::i18n::builder(PARTITION_ROW);
+                object::<gtk::Box>(&builder, "marker").add_css_class(
+                    crate::appearance::filesystem_class(
+                        source.filesystem,
+                        source.kind == SourceKind::Unallocated,
+                    ),
+                );
                 object::<gtk::Image>(&builder, "icon").set_icon_name(Some(source.icon));
                 object::<gtk::Label>(&builder, "name").set_text(&source.name);
                 object::<gtk::Label>(&builder, "capacity").set_text(source.capacity);
@@ -1345,7 +1356,7 @@ fn clear_list(list: &gtk::ListBox) {
     }
 }
 
-type MapSegment = (u64, bool, bool);
+type MapSegment = (u64, &'static str, bool, bool);
 
 /// Schematic size map. Tiny partitions get a minimum width so they remain visible.
 fn draw_disk_map(
@@ -1369,19 +1380,23 @@ fn draw_disk_map(
         .max(1.0);
     let (foreground, accent) = crate::appearance::map_colors(area);
     let mut x = 0.0;
-    for &(size, unallocated, selected) in segments {
+    for &(size, class, unallocated, selected) in segments {
         let segment_width = minimum + proportional * size as f64 / total;
-        crate::appearance::source(
-            context,
-            if selected { &accent } else { &foreground },
-            if selected {
-                1.0
-            } else if unallocated {
-                0.1
-            } else {
-                0.35
-            },
-        );
+        if let Some(color) = crate::appearance::filesystem_color(area, class) {
+            crate::appearance::source(context, &color, 1.0);
+        } else {
+            crate::appearance::source(
+                context,
+                if selected { &accent } else { &foreground },
+                if selected {
+                    1.0
+                } else if unallocated {
+                    0.1
+                } else {
+                    0.35
+                },
+            );
+        }
         context.rectangle(x, 0.0, segment_width, height as f64);
         let _ = context.fill();
         if unallocated {
@@ -1415,13 +1430,6 @@ fn draw_disk_map(
 }
 
 pub fn activate(app: &gtk::Application, smoke_test: bool) {
-    let css = gtk::CssProvider::new();
-    css.load_from_data(include_str!("../ui/layout.css"));
-    gtk::style_context_add_provider_for_display(
-        &gtk::gdk::Display::default().expect("GTK display"),
-        &css,
-        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-    );
     let ui = Rc::new(Ui {
         builder: crate::i18n::builder(WINDOW),
         state: RefCell::new(Workspace::default()),

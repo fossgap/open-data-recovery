@@ -77,6 +77,21 @@
           <attribute name="label" translatable="yes">Refresh sources</attribute>
           <attribute name="action">win.reset</attribute>
         </item>
+      </section>
+      <section>
+        <submenu>
+          <attribute name="label" translatable="yes">Theme</attribute>
+          <item>
+            <attribute name="label" translatable="yes">System Default</attribute>
+            <attribute name="action">app.theme</attribute>
+            <attribute name="target">system</attribute>
+          </item>
+          <item>
+            <attribute name="label" translatable="yes">Evergreen</attribute>
+            <attribute name="action">app.theme</attribute>
+            <attribute name="target">custom</attribute>
+          </item>
+        </submenu>
         <item>
           <attribute name="label" translatable="yes">Language…</attribute>
           <attribute name="action">win.language</attribute>
@@ -369,6 +384,9 @@
                         <property name="spacing">6</property>
                         <property name="valign">center</property>
                         <property name="tooltip-text" translatable="yes">Source protection: read-only access</property>
+                        <style>
+                          <class name="safe-badge" />
+                        </style>
                         <child>
                           <object class="GtkImage" id="source_lock">
                             <property name="icon-name">changes-prevent-symbolic</property>

@@ -7,6 +7,7 @@ if [ "${1:-}" = "--inside" ]; then
     done
     ODR_LANGUAGE=en G_DEBUG=fatal-criticals target/debug/open-data-recovery --smoke-test
     ODR_LANGUAGE=en G_DEBUG=fatal-criticals target/debug/open-data-recovery --live-smoke-test
+    GTK_A11Y=none sh scripts/check-ui-themes.sh --inside
     sh scripts/check-i18n.sh --inside
 else
     cargo test --locked

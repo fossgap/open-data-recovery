@@ -18,7 +18,7 @@ sh scripts/check.sh
 ```
 
 `check.sh` runs unit tests, builds the application, validates every GtkBuilder
-layout, and runs demo/production smoke checks in Xvfb. It needs `xvfb`, `xauth`
+layout, and runs demo/production, theme and localization smoke checks in Xvfb. It needs `xvfb`, `xauth`
 and `gtk4-builder-tool`. The pinned Debian Bookworm `Dockerfile` includes these
 dependencies; its default command runs the same checks. Use
 `docker run --rm --tmpfs /tmp:rw,exec open-data-recovery-dev` so test images live
@@ -66,6 +66,12 @@ validation, or `sh scripts/check-i18n.sh` to exercise every language in GTK.
 The latter requires a built executable and Xvfb; `scripts/check.sh` includes it.
 The [translation guide](../src/i18n/README.md) explains message marking,
 dropdown identifiers, fallback rules and right-to-left layout.
+
+`sh scripts/check-ui-themes.sh` checks saved theme startup, the View menu's radio
+targets, repeated live switching, existing/new dialogs, save errors and restoration
+of the system palette. It uses private temporary preferences and exercises GTK
+light, dark and high-contrast themes plus Arabic labels. No recovery sources are
+opened. `scripts/check.sh` includes these checks.
 
 Keep workflow details in `docs/wiki/` and the README focused on getting started.
 Record checks actually performed, including limitations, in the local ignored

@@ -43,5 +43,6 @@ Catalog checks reject missing messages, empty translations and changed
 placeholders. Unit tests cover locale fallback, preference persistence and
 interpolation of filenames containing braces. GTK checks cover menus, dialogs,
 RTL direction, text inputs, dropdown values and multi-engine selection in all
-seven languages. Inspect production screenshots with disposable sources for
-long labels and missing glyphs; Noto fonts provide Chinese and Hindi coverage.
+seven languages with both System Default and Evergreen themes. Inspect production
+screenshots with disposable sources for long labels and missing glyphs; Noto fonts
+provide Chinese and Hindi coverage.

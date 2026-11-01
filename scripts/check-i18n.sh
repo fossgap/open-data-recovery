@@ -37,7 +37,11 @@ fi
 : "${ODR_BINARY:=target/debug/open-data-recovery}"
 fixture=$(mktemp -d "${TMPDIR:-/tmp}/odr-i18n-XXXXXX")
 trap 'rm -rf "$fixture"' EXIT HUP INT TERM
-for language in en fr es zh_CN hi ar pt; do
-    XDG_CONFIG_HOME="$fixture" ODR_LANGUAGE="$language" G_DEBUG=fatal-criticals \
-        "$ODR_BINARY" --i18n-smoke-test
+mkdir -p "$fixture/open-data-recovery"
+for theme in system custom; do
+    printf '%s\n' "$theme" > "$fixture/open-data-recovery/theme"
+    for language in en fr es zh_CN hi ar pt; do
+        XDG_CONFIG_HOME="$fixture" ODR_LANGUAGE="$language" G_DEBUG=fatal-criticals \
+            "$ODR_BINARY" --i18n-smoke-test
+    done
 done

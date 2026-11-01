@@ -638,6 +638,12 @@ impl Live {
             if let Some(icon) = b.object::<gtk::Image>("icon") {
                 icon.set_icon_name(Some(source_icon(source)));
             }
+            if let Some(marker) = b.object::<gtk::Box>("marker") {
+                marker.add_css_class(crate::appearance::filesystem_class(
+                    &source.filesystem,
+                    false,
+                ));
+            }
             let row: gtk::ListBoxRow = obj(&b, "row");
             if disk {
                 let parent_selected = selected
@@ -675,6 +681,11 @@ impl Live {
                             let active = selected == Some(*j);
                             if active {
                                 crate::appearance::source(ctx, &accent, 1.0);
+                            } else if let Some(color) = crate::appearance::filesystem_color(
+                                area,
+                                crate::appearance::filesystem_class(&s.filesystem, false),
+                            ) {
+                                crate::appearance::source(ctx, &color, 1.0);
                             } else {
                                 crate::appearance::source(ctx, &foreground, 0.35);
                             }
@@ -2067,13 +2078,6 @@ fn scan_options(b: &gtk::Builder) -> engine::Result<ScanOptions> {
 }
 
 pub fn activate(app: &gtk::Application, smoke: bool) {
-    let css = gtk::CssProvider::new();
-    css.load_from_data(include_str!("../ui/layout.css"));
-    gtk::style_context_add_provider_for_display(
-        &gtk::gdk::Display::default().expect("GTK display"),
-        &css,
-        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
-    );
     let (tasks, rx) = mpsc::channel::<Task>();
     let (tx, messages) = mpsc::channel();
     std::thread::spawn(move || {
