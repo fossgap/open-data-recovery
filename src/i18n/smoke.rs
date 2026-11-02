@@ -6,6 +6,7 @@ pub fn run(app: &gtk::Application) {
     let window_builder = builder(include_str!("../../ui/window.ui"));
     let window: gtk::ApplicationWindow = window_builder.object("window").unwrap();
     window.set_application(Some(app));
+    crate::ui::about::install(&window, false);
     let expected = if language() == "ar" {
         gtk::TextDirection::Rtl
     } else {
@@ -113,6 +114,7 @@ pub fn run(app: &gtk::Application) {
             "Tab clipped"
         );
         dialog.destroy();
+        crate::ui::about::smoke(&window, false);
         window.destroy();
         println!("Localization GTK check passed: {}", language());
     });

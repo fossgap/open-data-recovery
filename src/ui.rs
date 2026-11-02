@@ -1,4 +1,5 @@
 use crate::i18n::tr;
+pub(crate) mod about;
 pub(crate) mod engine_picker;
 
 use crate::model::{self, Filter, Kind, Phase, ScanMode, Session, Snapshot, Source, SourceKind};
@@ -109,6 +110,7 @@ impl Ui {
 
     fn connect(self: &Rc<Self>, app: &gtk::Application) {
         crate::i18n::language_action(&self.window());
+        about::install(&self.window(), true);
         self.action("start", Self::start);
         self.action("pause", Self::pause);
         self.action("cancel", Self::cancel);
@@ -131,7 +133,6 @@ impl Ui {
         self.action("search", |ui| {
             ui.widget::<gtk::SearchEntry>("search").grab_focus();
         });
-        self.action("about", |ui| ui.info("Open Data Recovery", &crate::trf!("A native Linux recovery workspace.\n\nDemo mode uses fictional sources, files, previews, and destinations. Its saved scans live only in memory and disappear when the app closes.\n\nNo recovery backends, source access, disk writes, or permission prompts run in demo mode. Launch without --demo to use the recovery engines.\n\nVersion {version} · Demo mode", version = env!("CARGO_PKG_VERSION"))));
         self.action("shortcuts", |ui| ui.info(tr("Keyboard shortcuts"), tr("Ctrl+O    Add a sample source\nCtrl+S    Save a demo snapshot\nCtrl+F    Search files\nCtrl+R    Start scan\nCtrl+P    Toggle file preview\nCtrl+L    Toggle activity log\nCtrl+Q    Quit\n\nTab / Shift+Tab    Move between controls\nSpace    Toggle a focused checkbox\nEnter    Expand or collapse a focused folder")));
 
         for (name, panel) in [("preview", "preview_panel"), ("events", "events_panel")] {
@@ -1496,6 +1497,7 @@ mod smoke {
     }
 
     pub fn run(ui: &Rc<Ui>) {
+        about::smoke(&ui.window(), true);
         let source_count = model::sources().len();
         let sources: gtk::ListBox = ui.widget("sources");
         let disk_row = sources.row_at_index(0).unwrap();

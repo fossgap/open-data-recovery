@@ -199,6 +199,7 @@ impl Live {
     }
     fn connect(self: &Rc<Self>, app: &gtk::Application) {
         crate::i18n::language_action(&self.window());
+        crate::ui::about::install(&self.window(), false);
         for (name, handler) in [
             ("start", Self::start as fn(&Rc<Self>)),
             ("custom-scan", Self::custom_scan),
@@ -217,7 +218,6 @@ impl Live {
         self.action("search", |ui| {
             ui.widget::<gtk::SearchEntry>("search").grab_focus();
         });
-        self.action("about",|ui|ui.info("Open Data Recovery",&crate::trf!("Native Linux recovery workspace · {version}\n\nRead-only source access, isolated recovery engines, persistent SQLite scans, and verified recovery to validated output storage.\n\nSource discovery does not unmount live filesystems. Recovery results depend on filesystem damage and the installed backend versions.", version = env!("CARGO_PKG_VERSION"))));
         self.action("shortcuts",|ui|ui.info(tr("Keyboard shortcuts"),tr("Ctrl+O  Add source\nCtrl+R  Start default scan\nCtrl+S  Saved scans\nCtrl+F  Search files\nCtrl+P  Toggle preview\nCtrl+L  Toggle activity\nCtrl+Q  Quit\n\nSelection controls apply to the current page. Selections persist across pages and filters.")));
         self.action("backends", |ui| {
             ui.submit(|| {
@@ -2427,6 +2427,7 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         let weak = Rc::downgrade(&ui);
         glib::timeout_add_local_once(Duration::from_millis(700), move || {
             if let Some(ui) = weak.upgrade() {
+                crate::ui::about::smoke(&ui.window(), false);
                 let selected = ui.selected.get();
                 ui.widget::<gtk::ListBox>("sources").unselect_all();
                 assert!(ui.selected.get().is_none());
