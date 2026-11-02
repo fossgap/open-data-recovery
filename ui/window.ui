@@ -102,7 +102,7 @@
       <attribute name="label" translatable="yes">_Help</attribute>
       <section>
         <item>
-          <attribute name="label" translatable="yes">About Open Data Recovery</attribute>
+          <attribute name="label" translatable="yes">About</attribute>
           <attribute name="action">win.about</attribute>
         </item>
         <item>
