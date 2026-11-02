@@ -29,7 +29,7 @@ Maintainer: Open Data Recovery maintainers
 Section: utils
 Priority: optional
 Homepage: https://github.com/fossgap/open-data-recovery
-Depends: libc6 (>= 2.36), libgtk-4-1 (>= 4.8), libglib2.0-0 (>= 2.74), util-linux, udisks2, polkitd, sleuthkit, testdisk, gddrescue
+Depends: libc6 (>= 2.36), libgtk-4-1 (>= 4.8), libglib2.0-0 (>= 2.74), coreutils, util-linux, udisks2, polkitd, sleuthkit, testdisk, gddrescue
 Recommends: ext4magic, extundelete, ntfs-3g, btrfs-progs, e2fsprogs, ewf-tools, scalpel, foremost, safecopy, magicrescue, recoverjpeg, bulk-extractor, open-data-recovery-engines
 Description: Native Linux data recovery workspace
  Read-only source access, persistent scans, and verified recovery to validated output storage.
@@ -49,7 +49,7 @@ URL: https://github.com/fossgap/open-data-recovery
 License: GPL-3.0-only
 Source0: payload.tar.gz
 AutoReqProv: no
-Requires: glibc >= 2.36, gtk4 >= 4.8, glib2 >= 2.74, util-linux, udisks2, polkit, sleuthkit, testdisk, ddrescue
+Requires: glibc >= 2.36, gtk4 >= 4.8, glib2 >= 2.74, coreutils, util-linux, udisks2, polkit, sleuthkit, testdisk, ddrescue
 Recommends: ext4magic, extundelete, ntfs-3g, btrfs-progs, e2fsprogs, libewf-tools, scalpel, foremost, safecopy, magicrescue, recoverjpeg, bulk_extractor, open-data-recovery-engines
 %description
 Read-only source access, persistent scans, and verified recovery to validated output storage.
@@ -80,6 +80,7 @@ arch = $(uname -m)
 license = GPL-3.0-only
 depend = gtk4
 depend = glib2
+depend = coreutils
 depend = util-linux
 depend = udisks2
 depend = polkit

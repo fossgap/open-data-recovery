@@ -86,7 +86,7 @@ runuser -u odrtest -- recuperabit --help >/tmp/odr-recuperabit-help.txt
 runuser -u odrtest -- digler --help >/tmp/odr-digler-help.txt
 runuser -u odrtest -- "$binary" --backends >/tmp/odr-installed-backends.txt
 cat /tmp/odr-installed-backends.txt
-for engine in fls icat mmls testdisk photorec ddrescue recuperabit digler; do
+for engine in fls icat mmls testdisk photorec ddrescue dd recuperabit digler; do
     grep -q "^$engine: " /tmp/odr-installed-backends.txt
 done
 echo 'PACKAGES_INSTALLED_AND_REQUIRED_BACKENDS_DETECTED'

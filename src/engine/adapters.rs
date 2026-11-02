@@ -56,6 +56,7 @@ const TOOLS: &[(&str, &[&str])] = &[
     ("recoverjpeg", &["-V"]),
     ("bulk_extractor", &["-V"]),
     ("ddrescue", &["--version"]),
+    ("dd", &["--version"]),
     ("safecopy", &["--help"]),
     ("ewfexport", &["-V"]),
 ];

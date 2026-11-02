@@ -48,6 +48,7 @@ These are supporting operations, not additional competing file-recovery engines.
 | Tool | Role and trigger | Retained output |
 | --- | --- | --- |
 | GNU ddrescue — `ddrescue` | Default clone engine; tunable acquisition with persistent map and separate resume action | Input image and map |
+| GNU dd — `dd` | Image-to-disk restoration utility; ODR validates and authorizes the target and verifies SHA-256 after copying | Overwritten target disk |
 | `safecopy` | Custom alternative clone engine | Input image and bad-block report |
 | `ewfinfo` / `ewfexport` | Inspect E01 input and convert its segments to a raw scan input | Raw image and export diagnostics |
 | TSK `mmls` | Discover partition ranges for TSK metadata scans | Partition offsets and lengths recorded with findings |

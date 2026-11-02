@@ -6,7 +6,7 @@ use sha2::{Digest, Sha256};
 use std::{
     collections::BTreeMap,
     fs::{self, File, Metadata, OpenOptions},
-    io::{Read, Seek, SeekFrom, Write},
+    io::{Read, Seek, SeekFrom},
     os::{
         fd::AsRawFd,
         unix::fs::{FileTypeExt, MetadataExt, OpenOptionsExt},
@@ -14,6 +14,8 @@ use std::{
     path::{Path, PathBuf},
     sync::mpsc::{self, Receiver},
 };
+
+mod dd;
 
 #[cfg(test)]
 #[path = "restore_tests.rs"]
@@ -363,6 +365,7 @@ pub fn prepare(image: &Image, disk: &Disk) -> Result<Plan> {
     }
     let disk = current_disk(disk)?;
     validate_pair(&current, &disk)?;
+    dd::check_available()?;
     Ok(Plan {
         image: current,
         disk,
@@ -491,20 +494,23 @@ fn restore(
     validate_image(&source, &checked.image.identity)?;
     control.checkpoint()?;
     process::confine_restore_thread()?;
-    let copied = copy_image(
+    dd::copy(
         &mut source,
         &mut target,
         plan.image.size,
         control,
         |bytes| progress(Phase::Writing, bytes, plan.image.size),
-    );
-    // Flush even on cancellation or a partial write; never report completion first.
-    target.sync_all()?;
-    let hash = copied?;
+    )?;
     validate_image(&source, &plan.image.identity)?;
-    verify_image(&mut target, plan.image.size, &hash, control, |bytes| {
-        progress(Phase::Verifying, bytes, plan.image.size)
-    })?;
+    let hash = verify_image(
+        &mut source,
+        &mut target,
+        plan.image.size,
+        control,
+        |bytes| progress(Phase::Verifying, bytes, plan.image.size),
+    )?;
+    validate_image(&source, &plan.image.identity)?;
+    control.checkpoint()?;
     Ok(Completed {
         bytes: plan.image.size,
         sha256: hash,
@@ -524,14 +530,18 @@ pub(super) fn validate_image(file: &File, identity: &Identity) -> Result<()> {
     Ok(())
 }
 
-pub(super) fn copy_image(
-    source: &mut impl Read,
-    target: &mut impl Write,
+pub(super) fn verify_image(
+    source: &mut (impl Read + Seek),
+    target: &mut (impl Read + Seek),
     size: u64,
     control: &Control,
     mut progress: impl FnMut(u64),
 ) -> Result<String> {
-    let mut hash = Sha256::new();
+    control.checkpoint()?;
+    source.seek(SeekFrom::Start(0))?;
+    target.seek(SeekFrom::Start(0))?;
+    let mut source_hash = Sha256::new();
+    let mut target_hash = Sha256::new();
     let mut buffer = vec![0; 1024 * 1024];
     let mut done = 0;
     progress(0);
@@ -539,37 +549,16 @@ pub(super) fn copy_image(
         control.checkpoint()?;
         let length = (size - done).min(buffer.len() as u64) as usize;
         source.read_exact(&mut buffer[..length])?;
-        control.checkpoint()?;
-        target.write_all(&buffer[..length])?;
-        hash.update(&buffer[..length]);
-        done += length as u64;
-        progress(done);
-    }
-    Ok(format!("{:x}", hash.finalize()))
-}
-
-pub(super) fn verify_image(
-    target: &mut (impl Read + Seek),
-    size: u64,
-    expected: &str,
-    control: &Control,
-    mut progress: impl FnMut(u64),
-) -> Result<()> {
-    target.seek(SeekFrom::Start(0))?;
-    let mut hash = Sha256::new();
-    let mut buffer = vec![0; 1024 * 1024];
-    let mut done = 0;
-    progress(0);
-    while done < size {
-        control.checkpoint()?;
-        let length = (size - done).min(buffer.len() as u64) as usize;
+        source_hash.update(&buffer[..length]);
         target.read_exact(&mut buffer[..length])?;
-        hash.update(&buffer[..length]);
+        target_hash.update(&buffer[..length]);
         done += length as u64;
         progress(done);
     }
-    if format!("{:x}", hash.finalize()) != expected {
+    let hash = source_hash.finalize();
+    if target_hash.finalize() != hash {
         return fail("Verification failed: the written disk bytes do not match the image.");
     }
-    control.checkpoint()
+    control.checkpoint()?;
+    Ok(format!("{hash:x}"))
 }

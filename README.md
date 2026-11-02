@@ -30,7 +30,7 @@ Open Data Recovery (ODR) brings Sleuth Kit, TestDisk, PhotoRec and other recover
 - Extraction filters where supported, PhotoRec scope/families/JPEG controls, and resumable ddrescue imaging
 - Targeted ext, Btrfs and NTFS recovery, filesystem interpretation overrides, and optional Linux file metadata preservation
 - Read-only TestDisk lost-partition discovery, with saved reports and bounded partition scan targets
-- Image-to-disk restoration wizard with explicit disk confirmation and SHA-256 verification
+- Image-to-disk restoration through GNU dd, with explicit disk confirmation and SHA-256 verification
 - Persistent SQLite scans, selections, engine records and activity logs; reopen, compare or delete saved scans
 - Optional final consolidation of byte-identical findings, preserving all recorded names and engine details
 - Search, file-type filters, folder selection, and image/text previews
@@ -58,6 +58,7 @@ Release packages target Linux x86_64: Debian/Ubuntu (`.deb`), Fedora (`.rpm`), A
 - Linux 6.2 or newer with Landlock ABI 3 enabled for backend write confinement
 - glibc 2.36 or newer; GTK 4.8 or newer for native packages
 - Sleuth Kit, TestDisk/PhotoRec and GNU ddrescue for the default toolset
+- GNU coreutils (`dd`) for image-to-disk restoration
 - UDisks2 and polkit for device access as a normal user (read-only scans; explicitly authorized restoration writes)
 - Additional installed tools for [optional recovery engines](docs/wiki/engines.md)
 

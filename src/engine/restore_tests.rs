@@ -1,5 +1,5 @@
 use super::*;
-use std::io::Cursor;
+use std::io::{Cursor, Write};
 
 pub(crate) fn pair() -> (Image, Disk) {
     let file = tempfile::NamedTempFile::new().unwrap();
@@ -221,9 +221,11 @@ fn image_identity_detects_replacement_size_and_in_place_changes() {
 }
 
 #[test]
-fn disposable_restoration_copies_exact_bytes_verifies_and_keeps_source_and_target_tail() {
+#[ignore = "requires GNU dd; uses only disposable regular files"]
+fn disposable_restoration_dd_copies_exact_bytes_verifies_and_keeps_source_and_target_tail() {
+    dd::check_available().unwrap();
     let root = tempfile::tempdir().unwrap();
-    let path = root.path().join("source.img");
+    let path = root.path().join("source with spaces;$(false).img");
     let contents: Vec<u8> = (0..3 * 1024 * 1024 + 512)
         .map(|i| (i % 251) as u8)
         .collect();
@@ -231,9 +233,8 @@ fn disposable_restoration_copies_exact_bytes_verifies_and_keeps_source_and_targe
     let mut source = open_image(&path).unwrap();
     let mut disk = tempfile::tempfile().unwrap();
     disk.write_all(&vec![0x55; contents.len() + 4096]).unwrap();
-    disk.rewind().unwrap();
     let mut positions = Vec::new();
-    let hash = copy_image(
+    dd::copy(
         &mut source,
         &mut disk,
         contents.len() as u64,
@@ -241,122 +242,257 @@ fn disposable_restoration_copies_exact_bytes_verifies_and_keeps_source_and_targe
         |n| positions.push(n),
     )
     .unwrap();
-    disk.sync_all().unwrap();
-    verify_image(
+    let hash = verify_image(
+        &mut source,
         &mut disk,
         contents.len() as u64,
-        &hash,
         &Control::default(),
         |_| {},
     )
     .unwrap();
+    assert_eq!(hash, format!("{:x}", Sha256::digest(&contents)));
     assert_eq!(positions.first(), Some(&0));
     assert_eq!(positions.last(), Some(&(contents.len() as u64)));
+    assert!(positions.windows(2).all(|pair| pair[0] <= pair[1]));
     assert_eq!(fs::read(&path).unwrap(), contents);
     disk.rewind().unwrap();
     let mut actual = Vec::new();
     disk.read_to_end(&mut actual).unwrap();
     assert_eq!(actual[..contents.len()], contents);
     assert_eq!(actual[contents.len()..], vec![0x55; 4096]);
-    disk.rewind().unwrap();
-    disk.write_all(b"corrupt").unwrap();
-    assert!(
-        verify_image(
-            &mut disk,
-            contents.len() as u64,
-            &hash,
-            &Control::default(),
-            |_| {}
-        )
-        .is_err()
-    );
 }
 
 #[test]
-fn cancellation_stops_before_writes_and_between_chunks_without_success() {
-    let bytes = vec![1u8; 3 * 1024 * 1024];
+fn restoration_cancellation_and_short_source_stop_before_starting_dd() {
+    let mut source = tempfile::tempfile().unwrap();
+    source.write_all(&[1; 512]).unwrap();
+    let mut target = tempfile::tempfile().unwrap();
+    target.write_all(&[0x55; 4096]).unwrap();
     let control = Control::default();
     control.cancel();
-    let mut output = Vec::new();
     assert!(matches!(
-        copy_image(
-            &mut bytes.as_slice(),
-            &mut output,
-            bytes.len() as u64,
-            &control,
-            |_| {}
-        ),
+        dd::copy(&mut source, &mut target, 512, &control, |_| {}),
         Err(Error::Cancelled)
     ));
-    assert!(output.is_empty());
+    assert!(
+        dd::copy(&mut source, &mut target, 4096, &Control::default(), |_| {})
+            .unwrap_err()
+            .to_string()
+            .contains("length changed")
+    );
+    target.rewind().unwrap();
+    let mut actual = Vec::new();
+    target.read_to_end(&mut actual).unwrap();
+    assert_eq!(actual, vec![0x55; 4096]);
+}
+
+#[test]
+fn restoration_verification_rejects_corruption_short_reads_and_cancellation() {
+    let contents = vec![42; 4096];
+    let hash = verify_image(
+        &mut Cursor::new(&contents),
+        &mut Cursor::new(&contents),
+        4096,
+        &Control::default(),
+        |_| {},
+    )
+    .unwrap();
+    assert_eq!(hash, format!("{:x}", Sha256::digest(&contents)));
+    let changed = vec![24; 4096];
+    let short = vec![42; 32];
+    for (source, target) in [
+        (&contents, &changed),
+        (&short, &contents),
+        (&contents, &short),
+    ] {
+        assert!(
+            verify_image(
+                &mut Cursor::new(source),
+                &mut Cursor::new(target),
+                4096,
+                &Control::default(),
+                |_| {},
+            )
+            .is_err()
+        );
+    }
     let control = Control::default();
+    control.cancel();
     assert!(matches!(
-        copy_image(
-            &mut bytes.as_slice(),
-            &mut output,
-            bytes.len() as u64,
+        verify_image(
+            &mut Cursor::new(&contents),
+            &mut Cursor::new(&contents),
+            4096,
             &control,
-            |n| {
-                if n > 0 {
-                    control.cancel();
-                }
-            }
+            |_| {},
         ),
-        Err(Error::Cancelled)
-    ));
-    assert_eq!(output.len(), 1024 * 1024);
-    assert!(matches!(
-        verify_image(&mut Cursor::new(output), 1024 * 1024, "", &control, |_| {}),
         Err(Error::Cancelled)
     ));
 }
 
 #[test]
-fn short_source_and_write_errors_are_reported_without_false_completion() {
-    let mut target = Vec::new();
+#[ignore = "requires GNU dd; uses only disposable regular files"]
+fn disposable_restoration_dd_rejects_early_eof_and_write_errors() {
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("source.img");
+    fs::write(&path, vec![42; 4096]).unwrap();
+    let mut source = open_image(&path).unwrap();
+    let mut disk = tempfile::tempfile().unwrap();
+    disk.write_all(&[0x55; 8192]).unwrap();
+    let mut truncated = false;
+    let error = dd::copy(&mut source, &mut disk, 4096, &Control::default(), |_| {
+        if !truncated {
+            // Simulate an external change after the size check but before dd.
+            OpenOptions::new()
+                .write(true)
+                .open(&path)
+                .unwrap()
+                .set_len(512)
+                .unwrap();
+            truncated = true;
+        }
+    })
+    .unwrap_err();
     assert!(
-        copy_image(
-            &mut [1u8; 512].as_slice(),
-            &mut target,
-            4096,
-            &Control::default(),
-            |_| {}
-        )
-        .is_err()
+        error
+            .to_string()
+            .contains("did not copy the complete image")
     );
-    assert!(target.is_empty());
-    struct Failing;
-    impl Write for Failing {
-        fn write(&mut self, _: &[u8]) -> std::io::Result<usize> {
-            Err(std::io::Error::other("disconnected"))
-        }
-        fn flush(&mut self) -> std::io::Result<()> {
-            Ok(())
-        }
-    }
-    let error = copy_image(
-        &mut [1u8; 512].as_slice(),
-        &mut Failing,
-        512,
+    disk.rewind().unwrap();
+    let mut actual = Vec::new();
+    disk.read_to_end(&mut actual).unwrap();
+    assert_eq!(&actual[..512], &[42; 512]);
+    assert_eq!(&actual[512..], &[0x55; 7680]);
+
+    fs::write(&path, vec![42; 4096]).unwrap();
+    source = open_image(&path).unwrap();
+    let target = root.path().join("readonly-target.img");
+    fs::write(&target, [0x55; 8192]).unwrap();
+    let mut readonly = File::open(&target).unwrap();
+    let error = dd::copy(
+        &mut source,
+        &mut readonly,
+        4096,
         &Control::default(),
         |_| {},
     )
     .unwrap_err();
-    assert!(error.to_string().contains("disconnected"));
-    assert!(
-        verify_image(
-            &mut Cursor::new([1u8; 32]),
-            512,
-            "",
-            &Control::default(),
-            |_| {}
-        )
-        .is_err()
-    );
+    assert!(error.to_string().contains("GNU dd failed"), "{error}");
+    assert_eq!(fs::read(&path).unwrap(), vec![42; 4096]);
+    assert_eq!(fs::read(&target).unwrap(), vec![0x55; 8192]);
 }
 
 #[test]
-fn restoration_confinement_only_writes_through_the_preopened_target() {
+#[ignore = "requires GNU dd; uses only disposable regular files"]
+fn disposable_restoration_dd_limits_writes_if_the_source_grows() {
+    let root = tempfile::tempdir().unwrap();
+    let path = root.path().join("source.img");
+    fs::write(&path, [42; 4096]).unwrap();
+    let mut source = open_image(&path).unwrap();
+    let identity = Identity::from(source.metadata().unwrap());
+    let mut target = tempfile::tempfile().unwrap();
+    target.write_all(&[0x55; 8192]).unwrap();
+    let mut appended = false;
+    dd::copy(&mut source, &mut target, 4096, &Control::default(), |_| {
+        if !appended {
+            OpenOptions::new()
+                .append(true)
+                .open(&path)
+                .unwrap()
+                .write_all(&[24; 4096])
+                .unwrap();
+            appended = true;
+        }
+    })
+    .unwrap();
+    assert!(validate_image(&source, &identity).is_err());
+    target.rewind().unwrap();
+    let mut actual = Vec::new();
+    target.read_to_end(&mut actual).unwrap();
+    assert_eq!(&actual[..4096], &[42; 4096]);
+    assert_eq!(&actual[4096..], &[0x55; 4096]);
+}
+
+#[test]
+#[ignore = "requires GNU dd; uses a socket input and disposable regular target"]
+fn disposable_restoration_dd_cancellation_stops_and_reaps_a_blocked_writer() {
+    use std::{
+        os::{fd::OwnedFd, unix::net::UnixStream},
+        process::Stdio,
+        time::{Duration, Instant},
+    };
+    for ignore_interrupt in [false, true] {
+        let (mut input, reader) = UnixStream::pair().unwrap();
+        input.write_all(&[42; 512]).unwrap();
+        // Keep the input open so real dd blocks after the first block. No timing or
+        // large allocation is needed to catch an actively running copy.
+        let mut target = tempfile::tempfile().unwrap();
+        target.write_all(&[0x55; 8192]).unwrap();
+        target.rewind().unwrap();
+        let mut command = dd::command();
+        command
+            .args([
+                "bs=512",
+                "iflag=fullblock",
+                "conv=notrunc,fsync",
+                "status=progress",
+            ])
+            .stdin(Stdio::from(OwnedFd::from(reader)))
+            .stdout(Stdio::from(target.try_clone().unwrap()));
+        // Validate that the child-death guard was installed before exec as well.
+        use std::os::unix::process::CommandExt;
+        unsafe {
+            command.pre_exec(move || {
+                let mut signal: libc::c_int = 0;
+                if libc::prctl(libc::PR_GET_PDEATHSIG, &mut signal) != 0 || signal != libc::SIGKILL
+                {
+                    return Err(std::io::Error::from_raw_os_error(libc::EINVAL));
+                }
+                if ignore_interrupt {
+                    let mut action: libc::sigaction = std::mem::zeroed();
+                    action.sa_sigaction = libc::SIG_IGN;
+                    libc::sigemptyset(&mut action.sa_mask);
+                    if libc::sigaction(libc::SIGINT, &action, std::ptr::null_mut()) != 0 {
+                        return Err(std::io::Error::last_os_error());
+                    }
+                }
+                Ok(())
+            });
+        }
+        let control = Control::default();
+        let began = Instant::now();
+        let mut saw_partial_write = false;
+        let error = dd::run(&mut command, &mut target, &control, |bytes| {
+            if bytes == 512 {
+                saw_partial_write = true;
+                control.cancel();
+            }
+            if began.elapsed() > Duration::from_secs(5) {
+                control.cancel();
+            }
+        })
+        .unwrap_err();
+        drop(command);
+        assert!(matches!(error, Error::Cancelled));
+        assert!(saw_partial_write);
+        assert!(began.elapsed() < Duration::from_secs(5));
+        if ignore_interrupt {
+            assert!(began.elapsed() >= Duration::from_secs(2));
+        }
+        target.sync_all().unwrap();
+        // The sole socket reader was closed when dd was reaped.
+        assert!(input.write_all(&[0; 512]).is_err());
+        target.rewind().unwrap();
+        let mut actual = Vec::new();
+        target.read_to_end(&mut actual).unwrap();
+        assert_eq!(&actual[..512], &[42; 512]);
+        assert_eq!(&actual[512..], &[0x55; 7680]);
+    }
+}
+
+#[test]
+#[ignore = "requires GNU dd and Landlock; uses only disposable regular files"]
+fn disposable_restoration_dd_confinement_only_writes_through_the_preopened_target() {
     let root = tempfile::tempdir().unwrap();
     let image = root.path().join("image.raw");
     let target = root.path().join("target.raw");
@@ -375,7 +511,7 @@ fn restoration_confinement_only_writes_through_the_preopened_target() {
         assert!(OpenOptions::new().write(true).open(&image_path).is_err());
         assert!(OpenOptions::new().write(true).open(&target_path).is_err());
         assert!(fs::write(target_path.with_extension("other"), b"forbidden").is_err());
-        let hash = copy_image(
+        dd::copy(
             &mut source,
             &mut destination,
             4096,
@@ -383,11 +519,29 @@ fn restoration_confinement_only_writes_through_the_preopened_target() {
             |_| {},
         )
         .unwrap();
-        destination.sync_all().unwrap();
-        verify_image(&mut destination, 4096, &hash, &Control::default(), |_| {}).unwrap();
+        verify_image(
+            &mut source,
+            &mut destination,
+            4096,
+            &Control::default(),
+            |_| {},
+        )
+        .unwrap();
+
+        // An exec'd dd inherits Landlock and cannot reopen a writable path.
+        let forbidden = dd::command()
+            .arg("count=0")
+            .arg(format!("of={}", target_path.display()))
+            .stdin(std::process::Stdio::from(source.try_clone().unwrap()))
+            .stdout(std::process::Stdio::from(destination.try_clone().unwrap()))
+            .output()
+            .unwrap();
+        assert!(!forbidden.status.success());
     })
     .join()
     .unwrap();
     assert_eq!(fs::read(image).unwrap(), vec![42u8; 4096]);
-    assert_eq!(&fs::read(target).unwrap()[..4096], vec![42u8; 4096]);
+    let actual = fs::read(target).unwrap();
+    assert_eq!(&actual[..4096], vec![42u8; 4096]);
+    assert_eq!(&actual[4096..], vec![0u8; 4096]);
 }

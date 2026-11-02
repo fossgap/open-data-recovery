@@ -16,6 +16,10 @@ sh scripts/package.sh appdir
 
 The native packages depend on the default engines (Sleuth Kit, TestDisk/PhotoRec and ddrescue) and recommend the other distribution recovery tools. Availability and package names differ between repositories; for example, Debian Bookworm does not provide bulk-extractor in its default repository. The UI detects executable availability rather than assuming an optional package exists. No backend is downloaded or installed during a scan.
 
+GNU coreutils is also required: image-to-disk restoration uses its `dd` executable.
+The AppImage uses the host's GNU `dd`; the wizard reports a missing or unsupported
+implementation before granting access to the target.
+
 Debian-family packages require `polkitd` for UDisks authorization. ODR does not
 invoke `pkexec` and does not require the obsolete `policykit-1` transitional
 package. This also allows installation on current Kali and Debian releases where
