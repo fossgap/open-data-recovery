@@ -13,7 +13,7 @@
 [![GTK 4.8+](https://img.shields.io/badge/GTK-4.8%2B-blue.svg)](Cargo.toml)
 [![Platform: Linux](https://img.shields.io/badge/Platform-Linux-lightgrey.svg)](docs/packaging.md)
 
-> A native GTK data recovery application for Linux — scan disks and images, review recoverable files, and restore selected contents with verification.
+> A native GTK and GPU accelerated data recovery application for Linux — scan disks and images, review recoverable files, and restore selected contents with verification.
 
 Open Data Recovery (ODR) brings Sleuth Kit, TestDisk, PhotoRec and other recovery tools into one interface, with read-only source access and persistent scans.
 
