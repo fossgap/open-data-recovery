@@ -2,6 +2,8 @@
 use crate::i18n::tr;
 mod partitions;
 mod partitions_smoke;
+mod preview;
+mod preview_smoke;
 mod restore;
 mod scan;
 mod scan_smoke;
@@ -23,7 +25,7 @@ use std::{
     path::{Path, PathBuf},
     rc::Rc,
     sync::mpsc::{self, Receiver, Sender},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 type Task = Box<dyn FnOnce() -> Message + Send>;
@@ -40,7 +42,6 @@ enum Message {
     Deleted(PathBuf, bool, engine::Result<()>),
     PartitionReport(u64, engine::Result<discovery::Report>),
     Selected(engine::Result<()>),
-    Preview(u64, engine::Result<PathBuf>),
     Saved(u64, engine::Result<Vec<SavedScan>>),
     Info(String, engine::Result<String>),
 }
@@ -73,8 +74,12 @@ pub struct Live {
     pulse: Cell<bool>,
     rendering: Cell<bool>,
     generation: Cell<u64>,
+    page_loading: Cell<bool>,
+    page_dirty: Cell<bool>,
     view_generation: Cell<u64>,
     preview_generation: Cell<u64>,
+    preview_loading: Cell<bool>,
+    previews: preview::Worker,
     saved: RefCell<Vec<SavedScan>>,
     quitting: Cell<bool>,
     tasks: Sender<Task>,
@@ -149,7 +154,9 @@ fn file_icon(path: &str) -> &'static str {
         .to_ascii_lowercase()
         .as_str()
     {
-        "png" | "jpg" | "jpeg" | "gif" | "bmp" | "webp" => "image-x-generic-symbolic",
+        "png" | "jpg" | "jpeg" | "gif" | "bmp" | "webp" | "tif" | "tiff" => {
+            "image-x-generic-symbolic"
+        }
         "txt" | "md" | "pdf" | "csv" | "docx" => "text-x-generic-symbolic",
         _ => "application-x-generic-symbolic",
     }
@@ -267,6 +274,7 @@ impl Live {
         let weak = Rc::downgrade(self);
         self.window().connect_close_request(move |_| {
             if let Some(ui) = weak.upgrade() {
+                ui.previews.cancel();
                 if ui.busy() {
                     ui.quitting.set(true);
                     ui.cancel();
@@ -709,23 +717,39 @@ impl Live {
         self.rendering.set(false);
     }
     fn reload(&self) {
+        self.generation.set(self.generation.get() + 1);
+        self.refresh_page();
+    }
+    fn refresh_page(&self) {
+        self.page_dirty.set(true);
+        self.load_page();
+    }
+    fn load_page(&self) {
+        if self.page_loading.get() || !self.page_dirty.get() {
+            return;
+        }
         let Some(dir) = self.directory.borrow().clone() else {
             return;
         };
+        self.page_dirty.set(false);
+        self.page_loading.set(true);
         let query = self.query.borrow().clone();
-        let generation = self.generation.get() + 1;
-        self.generation.set(generation);
+        let generation = self.generation.get();
         self.submit(move || {
             Message::Page(generation, Store::open(&dir).and_then(|s| s.page(&query)))
         });
     }
     fn invalidate_view(&self) {
         self.generation.set(self.generation.get() + 1);
+        self.page_dirty.set(false);
         self.view_generation.set(self.view_generation.get() + 1);
         self.preview_generation
             .set(self.preview_generation.get() + 1);
-        self.widget::<gtk::Picture>("preview_picture")
-            .set_visible(false);
+        self.previews.cancel();
+        self.preview_loading.set(false);
+        let picture = self.widget::<gtk::Picture>("preview_picture");
+        picture.set_visible(false);
+        picture.set_paintable(gtk::gdk::Paintable::NONE);
         self.label("preview_name", tr("Choose a file"));
         self.label("preview_path", "");
         self.label("preview_metadata", "");
@@ -957,8 +981,9 @@ impl Live {
         let Some(dir) = self.directory.borrow().clone() else {
             return;
         };
-        self.widget::<gtk::Picture>("preview_picture")
-            .set_visible(false);
+        let picture = self.widget::<gtk::Picture>("preview_picture");
+        picture.set_visible(false);
+        picture.set_paintable(gtk::gdk::Paintable::NONE);
         self.label(
             "preview_name",
             Path::new(&file.path)
@@ -974,7 +999,50 @@ impl Live {
             .set_icon_name(Some(file_icon(&file.path)));
         let generation = self.preview_generation.get() + 1;
         self.preview_generation.set(generation);
-        self.submit(move || Message::Preview(generation, jobs::preview(&dir, id)));
+        self.preview_loading.set(true);
+        self.previews.request(
+            generation,
+            dir,
+            id,
+            file_icon(&file.path) == "image-x-generic-symbolic",
+        );
+    }
+    fn show_preview(&self, generation: u64, result: engine::Result<engine::preview::Content>) {
+        if generation != self.preview_generation.get() {
+            return;
+        }
+        self.preview_loading.set(false);
+        match result {
+            Ok(engine::preview::Content::Image(image)) => {
+                let texture = gtk::gdk::MemoryTexture::new(
+                    image.width as i32,
+                    image.height as i32,
+                    gtk::gdk::MemoryFormat::R8g8b8a8,
+                    &image.pixels,
+                    image.width as usize * 4,
+                );
+                let picture: gtk::Picture = self.widget("preview_picture");
+                picture.set_paintable(Some(&texture));
+                picture.set_visible(true);
+                self.label(
+                    "preview_text",
+                    tr("Image preview · recovery integrity has not been verified."),
+                );
+            }
+            Ok(engine::preview::Content::Text(text)) => self.label("preview_text", &text),
+            Ok(engine::preview::Content::Binary) => self.label(
+                "preview_text",
+                tr("Binary content. Recover the file to view it in its native application."),
+            ),
+            Err(error) => self.label("preview_text", &error.to_string()),
+        }
+    }
+    fn cancel_preview(&self) -> preview::Idle {
+        let stopped = self.previews.cancel();
+        if self.preview_loading.replace(false) {
+            self.label("preview_text", tr("Cancelled"));
+        }
+        stopped
     }
     fn show_findings(self: &Rc<Self>, group: Candidate) {
         let b = self.show(include_str!("../ui/findings.ui"));
@@ -1416,7 +1484,13 @@ impl Live {
                 tr("Checking the selected saved scan…"),
             );
             let generation = ui.dialog_generation.get();
-            ui.submit(move || Message::DeletePrepared(generation, Deletion::prepare(scan)));
+            let stopped = ui.cancel_preview();
+            ui.submit(move || {
+                Message::DeletePrepared(
+                    generation,
+                    stopped.wait().and_then(|()| Deletion::prepare(scan)),
+                )
+            });
         });
         let weak = Rc::downgrade(self);
         let dialog = b.downgrade();
@@ -1533,26 +1607,35 @@ impl Live {
         self.render_files();
     }
     fn tick(self: &Rc<Self>) {
+        if let Some((generation, result)) = self.previews.take() {
+            self.show_preview(generation, result);
+        }
         let wizard = self.restoration.borrow().clone();
         if let Some(wizard) = wizard {
             wizard.tick();
         }
         self.poll_partition_search();
-        let events: Vec<_> = self
-            .job
-            .borrow()
-            .as_ref()
-            .map(|job| job.events.try_iter().collect())
-            .unwrap_or_default();
-        for event in events {
+        let started = Instant::now();
+        let mut candidates = None;
+        for _ in 0..64 {
+            if started.elapsed() >= Duration::from_millis(4) {
+                break;
+            }
+            let event = self
+                .job
+                .borrow()
+                .as_ref()
+                .and_then(|job| job.events.try_recv().ok());
+            let Some(event) = event else {
+                break;
+            };
             match event {
                 Event::Message(message) => self.event(&message),
                 Event::Session(dir) => {
                     self.directory.replace(Some(dir));
                 }
                 Event::Candidates(count) => {
-                    self.label("result_count", &count.to_string());
-                    self.reload();
+                    candidates = Some(count);
                 }
                 Event::Imaged {
                     directory,
@@ -1661,7 +1744,18 @@ impl Live {
                 }
             }
         }
-        while let Ok(message) = self.messages.try_recv() {
+        if let Some(count) = candidates {
+            self.label("result_count", &count.to_string());
+            self.refresh_page();
+        }
+        let started = Instant::now();
+        for _ in 0..32 {
+            if started.elapsed() >= Duration::from_millis(4) {
+                break;
+            }
+            let Ok(message) = self.messages.try_recv() else {
+                break;
+            };
             match message {
                 Message::PartitionReport(generation, result) => {
                     if generation == self.dialog_generation.get() && !self.busy() {
@@ -1790,6 +1884,7 @@ impl Live {
                     }
                 },
                 Message::Page(generation, result) => {
+                    self.page_loading.set(false);
                     if generation == self.generation.get() {
                         match result {
                             Ok(page) => {
@@ -1799,6 +1894,7 @@ impl Live {
                             Err(error) => self.event(&error.to_string()),
                         }
                     }
+                    self.load_page();
                 }
                 Message::Selected(result) => {
                     if let Err(error) = result {
@@ -1907,33 +2003,6 @@ impl Live {
                     self.controls();
                     if self.quitting.get() {
                         self.window().close();
-                    }
-                }
-                Message::Preview(generation, result) => {
-                    if generation == self.preview_generation.get() {
-                        match result {
-                            Ok(path) => {
-                                if file_icon(path.to_str().unwrap_or(""))
-                                    == "image-x-generic-symbolic"
-                                {
-                                    let picture: gtk::Picture = self.widget("preview_picture");
-                                    picture.set_filename(Some(&path));
-                                    picture.set_visible(true);
-                                    self.label(
-                                        "preview_text",
-                                        tr("Image preview · recovery integrity has not been verified."),
-                                    );
-                                } else {
-                                    use std::io::Read;
-                                    let mut bytes = Vec::new();
-                                    if let Ok(file) = std::fs::File::open(path) {
-                                        let _ = file.take(65536).read_to_end(&mut bytes);
-                                    }
-                                    self.label("preview_text",if bytes.contains(&0){tr("Binary content. Recover the file to view it in its native application.")}else{std::str::from_utf8(&bytes).unwrap_or(tr("Binary content. Recover the file to inspect it."))});
-                                }
-                            }
-                            Err(error) => self.label("preview_text", &error.to_string()),
-                        }
                     }
                 }
                 Message::Saved(generation, result) => match result {
@@ -2119,8 +2188,12 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         pulse: Cell::new(false),
         rendering: Cell::new(false),
         generation: Cell::new(0),
+        page_loading: Cell::new(false),
+        page_dirty: Cell::new(false),
         view_generation: Cell::new(0),
         preview_generation: Cell::new(0),
+        preview_loading: Cell::new(false),
+        previews: preview::Worker::new(),
         saved: RefCell::new(vec![]),
         quitting: Cell::new(false),
         tasks,
@@ -2161,6 +2234,9 @@ pub fn activate(app: &gtk::Application, smoke: bool) {
         }
     });
     if smoke {
+        if preview_smoke::run(&ui) {
+            return;
+        }
         if restore::smoke(&ui) {
             return;
         }

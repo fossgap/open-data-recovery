@@ -13,6 +13,7 @@ pub mod jobs;
 pub mod metadata;
 pub mod options;
 pub mod plan;
+pub mod preview;
 pub mod process;
 pub mod restore;
 pub mod safety;

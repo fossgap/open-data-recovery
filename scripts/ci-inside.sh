@@ -9,6 +9,7 @@ for engine in recuperabit digler; do command -v "$engine" >/dev/null; done
 cargo fmt --all -- --check
 xvfb-run -a sh scripts/check.sh --inside
 sh scripts/check-engines.sh
+sh scripts/check-ui-previews.sh
 for language in en fr ar; do
     ODR_LANGUAGE="$language" sh scripts/check-ui-advanced.sh
     ODR_LANGUAGE="$language" sh scripts/check-ui-restoration.sh
@@ -30,6 +31,8 @@ if [ "$mode" = release ]; then
     APPIMAGE_EXTRACT_AND_RUN=1 XDG_DATA_HOME="$runtime_data" XDG_DATA_DIRS="$runtime_data" \
         ODR_LANGUAGE=en G_DEBUG=fatal-criticals xvfb-run -a dist/OpenDataRecovery-x86_64.AppImage --smoke-test
     rmdir "$runtime_data"
+    APPIMAGE_EXTRACT_AND_RUN=1 ODR_BINARY=dist/OpenDataRecovery-x86_64.AppImage \
+        sh scripts/check-ui-previews.sh
     APPIMAGE_EXTRACT_AND_RUN=1 ODR_BINARY=dist/OpenDataRecovery-x86_64.AppImage \
         ODR_LANGUAGE=en ODR_TEST_STORAGE=/tmp ODR_CONSOLIDATE=1 ODR_MANAGE_SCANS=1 sh scripts/check-ui-recovery.sh
     APPIMAGE_EXTRACT_AND_RUN=1 ODR_BINARY=dist/OpenDataRecovery-x86_64.AppImage \

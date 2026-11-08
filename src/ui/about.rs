@@ -37,7 +37,7 @@ fn create(parent: &gtk::ApplicationWindow, demo: bool) -> gtk::AboutDialog {
     dialog.set_logo(Some(&gtk::gdk::Texture::for_pixbuf(&logo)));
     // Setting the name/version resets GTK's title in the desktop locale.
     // Apply ODR's selected language after populating the dialog.
-    dialog.set_title(Some(tr("About")));
+    dialog.set_title(Some(tr("About Open Data Recovery")));
     dialog
 }
 
@@ -74,7 +74,7 @@ pub fn smoke(window: &gtk::ApplicationWindow, demo: bool) {
     assert!(dialog.is_visible() && dialog.is_modal());
     assert_eq!(
         dialog.title().as_deref(),
-        Some(tr("About"))
+        Some(tr("About Open Data Recovery"))
     );
     assert_eq!(dialog.version().as_deref(), Some(env!("CARGO_PKG_VERSION")));
     assert_eq!(

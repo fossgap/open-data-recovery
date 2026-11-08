@@ -35,6 +35,7 @@ Do not run checks on physical recovery devices or user snapshots.
 sh scripts/check-engines.sh
 sh scripts/check-ui-advanced.sh
 sh scripts/check-ui-recovery.sh
+sh scripts/check-ui-previews.sh
 ODR_CONSOLIDATE=1 ODR_MANAGE_SCANS=1 sh scripts/check-ui-recovery.sh
 sh scripts/check-ui-partitions.sh
 ODR_TEST_STORAGE=/tmp sh scripts/check-ui-partitions.sh

@@ -894,7 +894,8 @@ pub fn hash_file(file: &mut File, control: &Control) -> Result<String> {
     Ok(format!("{:x}", hash.finalize()))
 }
 
-pub fn preview(directory: &Path, id: i64) -> Result<PathBuf> {
+pub fn preview(directory: &Path, id: i64, control: &Control) -> Result<PathBuf> {
+    control.checkpoint()?;
     let store = Store::open(directory)?;
     let candidate = store.get(id)?;
     if candidate
@@ -933,7 +934,6 @@ pub fn preview(directory: &Path, id: i64) -> Result<PathBuf> {
         );
     }
     let file = new_file(&path)?;
-    let control = Control::default();
     let result = Adapter(candidate.backend.clone()).recover(
         &input_for(&store)?,
         &candidate,
@@ -941,7 +941,7 @@ pub fn preview(directory: &Path, id: i64) -> Result<PathBuf> {
         &dir,
         super::options::sector(&source, &store.manifest.options),
         &store.manifest.options.interpretation.filesystem,
-        &control,
+        control,
     );
     if result.is_err() {
         let _ = fs::remove_file(&path);

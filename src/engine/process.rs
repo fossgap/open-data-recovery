@@ -216,6 +216,25 @@ pub(super) fn confine_restore_thread() -> Result<()> {
     Ok(())
 }
 
+/// Only called in the dedicated preview decoder process, before loading data.
+pub(super) fn confine_preview_decoder() -> Result<()> {
+    for (resource, limit) in [
+        (libc::RLIMIT_AS, 768 * 1024 * 1024),
+        (libc::RLIMIT_CPU, 5),
+        (libc::RLIMIT_CORE, 0),
+    ] {
+        let limits = libc::rlimit {
+            rlim_cur: limit,
+            rlim_max: limit,
+        };
+        if unsafe { libc::setrlimit(resource, &limits) } != 0 {
+            return Err(std::io::Error::last_os_error().into());
+        }
+    }
+    Sandbox::new(&[])?.apply()?;
+    Ok(())
+}
+
 pub fn run(
     mut spec: Spec,
     control: &Control,

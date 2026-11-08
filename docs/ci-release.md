@@ -7,7 +7,7 @@
 [Test CI](../.github/workflows/test-ci.yml) runs for pushes to `main`, pull requests
 and manual dispatches. It builds the Debian Bookworm GTK 4.8 environment and the
 pinned RecuperaBit and Digler toolchain. Checks cover Rust formatting,
-unit tests, every GtkBuilder layout, GTK smoke checks, disposable real-engine
+unit tests, every GtkBuilder layout, GTK smoke and bounded-preview checks, disposable real-engine
 integration cases (including GNU dd restoration), advanced scan and image-restoration controls,
 consolidation/recovery/saved-scan management, and partition discovery through
 the CLI and production UI.
@@ -27,7 +27,7 @@ produces:
 - An archive of the exact committed application source.
 - `SHA256SUMS` covering all eight downloadable files.
 
-The AppImage also passes the production recovery and partition-discovery GUI
+The AppImage also passes the production preview, recovery and partition-discovery GUI
 workflows, including a startup check with host MIME search paths hidden. The
 `linux-x86_64-release` Actions artifact retains the packages for 14 days.
 
@@ -46,7 +46,7 @@ Native-package jobs check installed versions and dependency resolution. The
 AppImage job checks that its binary matches the application DEB and runs without
 host GTK libraries, a MIME database, or Fontconfig configuration. Every job runs
 ODR as an ordinary user and checks demo/live startup, English/French/Arabic UI,
-recovery and saved scans, CLI/GUI partition discovery, restoration navigation,
+bounded previews, recovery and saved scans, CLI/GUI partition discovery, restoration navigation,
 and actual PNG carving with Digler and NTFS reconstruction with RecuperaBit.
 Recovered bytes must match the fixtures, and source images must remain unchanged.
 Advanced-scan controls are also exercised when Foremost and extundelete are
@@ -67,8 +67,8 @@ Keep `packaging/PKGBUILD` in sync when changing the application version. The
 optional-engine bundle has its own version and pinned upstream revisions.
 
 ```sh
-git tag -a v0.1.7 -m "Open Data Recovery 0.1.7"
-git push origin v0.1.7
+git tag -a v0.1.8 -m "Open Data Recovery 0.1.8"
+git push origin v0.1.8
 ```
 
 The workflow rejects tags that do not equal `v` plus the Cargo version. After

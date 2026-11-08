@@ -1,6 +1,6 @@
 [package]
 name = "open-data-recovery"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2024"
 rust-version = "1.85"
 description = "Native Linux data recovery with read-only sources and persistent scan sessions"
@@ -16,6 +16,7 @@ rusqlite = { version = "0.40.2", features = ["bundled"] }
 sha2 = "0.10.9"
 libc = "0.2.189"
 thiserror = "2.0.21"
+image = { version = "=0.25.9", default-features = false, features = ["png", "jpeg", "gif", "bmp", "webp", "tiff"] }
 
 [dev-dependencies]
 tempfile = "3.27.0"

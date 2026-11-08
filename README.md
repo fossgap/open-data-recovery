@@ -33,7 +33,7 @@ Open Data Recovery (ODR) brings Sleuth Kit, TestDisk, PhotoRec and other recover
 - Image-to-disk restoration through GNU dd, with explicit disk confirmation and SHA-256 verification
 - Persistent SQLite scans, selections, engine records and activity logs; reopen, compare or delete saved scans
 - Optional final consolidation of byte-identical findings, preserving all recorded names and engine details
-- Search, file-type filters, folder selection, and image/text previews
+- Search, file-type filters, folder selection, and responsive image/text previews
 - Recovery options for folder structure, filename conflicts, timestamps and SHA-256 output verification
 - Native GTK4 interface with system light/dark themes and the optional Evergreen theme, plus a CLI for scanning and recovery
 - Interface in English, French, Spanish, Simplified Chinese, Hindi, Arabic and Portuguese, with automatic system-language detection
@@ -117,6 +117,7 @@ sudo apt install build-essential pkg-config libgtk-4-dev sleuthkit testdisk gddr
 cargo run --locked                    # Launch the application
 cargo test --locked                   # Unit tests
 sh scripts/check.sh                  # Build, layouts and GTK smoke checks; requires Xvfb
+sh scripts/check-ui-previews.sh       # Bounded previews, cancellation and responsive results
 cargo build --release --locked
 sh scripts/package.sh deb            # Also rpm, arch, appdir; outputs go to dist/
 ```

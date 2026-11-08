@@ -20,6 +20,7 @@ if command -v foremost >/dev/null && command -v extundelete >/dev/null; then
 else
     echo 'Advanced-scan fixture requires optional Foremost and extundelete; testing the installed default workflows below.'
 fi
+sh /workspace/scripts/check-ui-previews.sh
 sh /workspace/scripts/check-ui-recovery.sh
 sh /workspace/scripts/check-ui-partitions.sh
 truncate -s 4M "$fixture/restore.img"

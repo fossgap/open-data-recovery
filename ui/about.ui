@@ -3,7 +3,7 @@
   <requires lib="gtk" version="4.8" />
   <object class="GtkAboutDialog" id="about">
     <property name="program-name">Open Data Recovery</property>
-    <property name="title" translatable="yes">About</property>
+    <property name="title" translatable="yes">About Open Data Recovery</property>
     <property name="comments" translatable="yes">Native Linux data recovery with read-only sources and persistent scan sessions.</property>
     <property name="website-label" translatable="yes">Project website</property>
     <property name="license-type">gpl-3-0-only</property>

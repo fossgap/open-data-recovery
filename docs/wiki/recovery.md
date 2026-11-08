@@ -53,6 +53,15 @@ Changing or adding a source in the sidebar leaves the current scan and its selec
 
 Small image/text previews and metadata can help selection. Preview extraction is limited to files up to 8 MiB. A preview is not proof that every original byte is intact, and the scan's file count is not a guaranteed recovery count.
 
+PNG, JPEG, GIF, BMP, WebP and TIFF images are shown as thumbnails up to 1024
+pixels on their longest side. Image loading runs separately so you can keep
+browsing; selecting another file cancels an obsolete preview. Recent thumbnails
+are cached in memory. Images that are malformed, too large to decode within the
+preview limits, or too slow show an error without stopping the scan. Recover
+those files to inspect them in another application. Thumbnail scaling never
+changes the recovered file. Text previews show up to 64 KiB; animated formats
+show a still image.
+
 ## Destination validation
 
 For device and mounted-folder sources, the destination must be on physical storage separate from the original source. Regular raw/dd/E01 image files may share their hosting drive with the destination. Output folders must not contain the image or any segment. The destination must neither be inside the saved-scan directory nor contain that directory. Workspace and destination can be sibling directories on the same permitted drive, as shown in [storage](storage.md).
