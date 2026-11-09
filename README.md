@@ -21,6 +21,7 @@ Open Data Recovery (ODR) brings Sleuth Kit, TestDisk, PhotoRec and other recover
 
 ![Open Data Recovery main window](docs/screenshots/workspace.png)
 
+Browse [docs/screenshots](docs/screenshots/) for more application screenshots.
 
 ## Features
 
